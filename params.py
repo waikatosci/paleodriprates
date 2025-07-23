@@ -1,0 +1,41 @@
+"""
+CONTAINS PARAMETERS FOR THE DRIPRATE ANALYSIS
+=============================================
+
+"""
+# Created: Thu Jun 13, 2019  03:31pm
+# Last modified: Tue Nov 03, 2020  08:32am
+# Copyright: Bedartha Goswami <goswami@uni-potsdam.de>
+
+
+import numpy as np
+
+
+DATPATH = "../data/"
+FIGPATH = "../plots/"
+
+AXLABFS, TIKLABFS, SPLABFS = 13, 11, 14
+MAJTIKSZ, MINTIKSZ = 8, 4
+
+OUTLIER_WINDOW_SIZE = 11
+OUTLIER_ZERO_TOL = 1E-3
+OUTLIER_PDF_TOL = 3.
+
+BAYPROX_SAMPLING_RES = 1
+# CALAGE_MIN = -51.
+# CALAGE_MAX = 9500.
+# CALAGE_ARR = np.arange(CALAGE_MIN, CALAGE_MAX, BAYPROX_SAMPLING_RES)
+BAYPROX_MAX_DEGREE = 2
+BAYPROX_SOLVER_METHOD = "pinv"
+
+VMAX, VRES = 100., 5000
+VMIN = 0. + VMAX / VRES
+
+
+KRES = 5000
+KLIM = 20.
+
+# BAYPROX_PREREMVAR_FACTOR = 0.112 # method="LUpinv"
+# BAYPROX_PREREMVAR_FACTOR = 0.095 # method = "pinvLU", "pinv", "LU", "lstsq"
+# BAYPROX_PREREMVAR_FACTOR_ISO = 0.092
+# BAYPROX_PREREMVAR_FACTOR_TRC = 0.112

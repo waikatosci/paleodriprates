@@ -1,0 +1,43 @@
+  [
++---------------------------------------------------------------------
+| In /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/__init__.py:
+| Import failed (but source code parsing was successful).
+|     Error: ImportError: cannot import name lil_diags (line 81)
+|   
+  [...
++---------------------------------------------------------------------
+| In /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/utils.py:
+| Import failed (but source code parsing was successful).
+|     Error: ImportError: cannot import name lil_diags (line 81)
+|   
+  [.......
++---------------------------------------------------------------------
+| In /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/examples.py:
+| Import failed (but source code parsing was successful).
+|     Error: ImportError: cannot import name lil_diags (line 81)
+|   
+  [...........
++---------------------------------------------------------------------
+| In /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/ipython_log.py:
+| Import failed (but source code parsing was successful).
+|     Error: ImportError: cannot import name lil_diags (line 81)
+|   
+  [...............
++---------------------------------------------------------------------
+| In /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/function.py:
+| Import failed (but source code parsing was successful).
+|     Error: ImportError: cannot import name lil_diags (line 81)
+|   
+  [.......................
++---------------------------------------------------------------------
+| File /home/jobst/workspace/taylor_expansion_regression/trunk/src/
+| motabar/function.py, line 252, in 
+| motabar.function.Function.set_priors
+|   Warning: @type for unknown parameter "corr1,corr2"
+|   
+  [.........................................................................]

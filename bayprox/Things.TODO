@@ -1,0 +1,23 @@
+BayProX:
+ ☐ Error in  with #agedepth@get_caldat >> interpolate x_new outof bounds @bugs
+ ☐ Error in including LaTeX preamble for mpl rcParams @bugs
+ ☐ Bug in #visualize@trunc for >> spread="variance" << @bugs
+ ✔ incorporate axis labels, subplot labels, in the plots @visualize @done (15-01-13 11:44)
+ ✔ 'bottommargin' parameter is redundant @bugs @done (15-01-13 11:44)
+ ✔ left col gets squeezed at times @done (15-01-13 11:44)
+ ✔ bottom rows data falls outside view interval at times @done (15-01-13 11:44)
+ ✔ Tick length is in % => horiz. ticks are longer @bugs @done (13-07-18 19:17)
+   
+   --- ✄ -----------------------
+   
+BayProX Documentation:
+    ☐ Setup a doc directory in BayProX
+    ☐ Starting using Sphinx for documentation
+    ☐ Most functions do not have proper doc strings
+    ☐ What are unit tests?
+
+＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿＿
+Archive:
+ ✔ Redo the plot format functions @plotting @formatting @done (13-07-18 17:37) @project(BayProX)
+ ✔ Format top row first, then the bottom rows: start with blank @formatting @done (13-07-18 17:37) @project(BayProX)
+ ✔ Debug the tick drawing commands @formatting @done (13-07-18 15:18) @project(BayProX)

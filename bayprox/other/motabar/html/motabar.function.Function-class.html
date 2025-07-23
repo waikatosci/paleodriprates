@@ -1,0 +1,1386 @@
+<?xml version="1.0" encoding="ascii"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>motabar.function.Function</title>
+  <link rel="stylesheet" href="epydoc.css" type="text/css" />
+  <script type="text/javascript" src="epydoc.js"></script>
+</head>
+
+<body bgcolor="white" text="black" link="blue" vlink="#204080"
+      alink="#204080">
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="motabar-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table width="100%" cellpadding="0" cellspacing="0">
+  <tr valign="top">
+    <td width="100%">
+      <span class="breadcrumbs">
+        <a href="motabar-module.html">Package&nbsp;motabar</a> ::
+        <a href="motabar.function-module.html">Module&nbsp;function</a> ::
+        Class&nbsp;Function
+      </span>
+    </td>
+    <td>
+      <table cellpadding="0" cellspacing="0">
+        <!-- hide/show private -->
+        <tr><td align="right"><span class="options">[<a href="javascript:void(0);" class="privatelink"
+    onclick="toggle_private();">hide&nbsp;private</a>]</span></td></tr>
+        <tr><td align="right"><span class="options"
+            >[<a href="frames.html" target="_top">frames</a
+            >]&nbsp;|&nbsp;<a href="motabar.function.Function-class.html"
+            target="_top">no&nbsp;frames</a>]</span></td></tr>
+      </table>
+    </td>
+  </tr>
+</table>
+<!-- ==================== CLASS DESCRIPTION ==================== -->
+<h1 class="epydoc">Class Function</h1><p class="nomargin-top"><span class="codelink"><a href="motabar.function-pysrc.html#Function">source&nbsp;code</a></span></p>
+<pre class="base-tree">
+object --+
+         |
+        <strong class="uidshort">Function</strong>
+</pre>
+
+<hr />
+<p>A MoTaBar regression/interpolation function for an unknown real-valued
+  function  f  of one or more real-valued arguments.</p>
+
+<!-- ==================== INSTANCE METHODS ==================== -->
+<a name="section-InstanceMethods"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Instance Methods</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-InstanceMethods"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#verbosity" class="summary-sig-name">verbosity</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">verbosity</span>)</span></td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.verbosity">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#d" class="summary-sig-name">d</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, int &gt; 0) Dimension (= number of arguments of  f).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.d">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#p" class="summary-sig-name">p</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, int &gt; 0) Degree (derivatives of smaller order will be 
+      estimated).</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.p">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#m" class="summary-sig-name">m</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, int &gt; 0) Number of individual derivatives that will be
+      estimated.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.m">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#nr" class="summary-sig-name">nr</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, int &gt; 0) Number of remainders in Taylor polynomial.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.nr">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#alphas_phi" class="summary-sig-name">alphas_phi</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(m,d)) Multiindices of derivatives to estimate.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.alphas_phi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#alphas_psi" class="summary-sig-name">alphas_psi</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(nr,d)) Multiindices of remainders.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.alphas_psi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#standard_corr_phi" class="summary-sig-name">standard_corr_phi</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(m,m)) Standard prior correlation matrix for 
+      estimated derivatives.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.standard_corr_phi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#mu_phi" class="summary-sig-name">mu_phi</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(m)) Prior mean for estimated derivatives.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.mu_phi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#mu_psi_i" class="summary-sig-name">mu_psi_i</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(nr)) Mean of p-th order derivatives.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.mu_psi_i">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#Sigma_phi" class="summary-sig-name">Sigma_phi</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, array(m,m)) Prior covariance matrix for estimated 
+      derivatives.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_phi">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#Sigma_psi_i" class="summary-sig-name">Sigma_psi_i</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, csc_matrix(nr,nr)) Covariance matrix for p-th order 
+      derivatives.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_psi_i">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#Sigma_gamma_i" class="summary-sig-name">Sigma_gamma_i</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, csc_matrix(d,d)) Current default covariance matrix of 
+      each observation's argument error.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_gamma_i">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#sigma_eps_i" class="summary-sig-name">sigma_eps_i</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, float &gt;= 0) Current default value error standard 
+      deviation for future added data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.sigma_eps_i">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#corr_gamma_ij" class="summary-sig-name">corr_gamma_ij</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, csc_matrix(d,d)) Current default correlation matrix of 
+      argument errors of different observations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.corr_gamma_ij">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#corr_eps_ij" class="summary-sig-name">corr_eps_ij</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, float) Current default correlation of value errors of 
+      different observations.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.corr_eps_ij">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#preprocessed" class="summary-sig-name">preprocessed</a>(<span class="summary-sig-arg">self</span>)</span><br />
+      (read-only, bool) Whether data has already been preprocessed for 
+      faster calls.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.preprocessed">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#__init__" class="summary-sig-name">__init__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">d</span>=<span class="summary-sig-default">1</span>,
+        <span class="summary-sig-arg">p</span>=<span class="summary-sig-default">2</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">0</span>)</span><br />
+      Initialize a MoTaBar regression/interpolation function.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.__init__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#set_priors" class="summary-sig-name">set_priors</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">mf</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">mr</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">sf</span>=<span class="summary-sig-default">inf</span>,
+        <span class="summary-sig-arg">sr</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">s0</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">omega</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">l</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">corr1</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">corr2</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Set prior distributions for phi and psi</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.set_priors">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#set_default_errors" class="summary-sig-name">set_default_errors</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">sx</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">sy</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">cx</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">cy</span>=<span class="summary-sig-default">0</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Set default error distributions for all subsequently added data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.set_default_errors">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#set_data" class="summary-sig-name">set_data</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x</span>,
+        <span class="summary-sig-arg">y</span>,
+        <span class="summary-sig-arg">**kwargs</span>)</span><br />
+      Set some data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.set_data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#add_data" class="summary-sig-name">add_data</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x</span>,
+        <span class="summary-sig-arg">y</span>,
+        <span class="summary-sig-arg">sx</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">sy</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Add some data.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.add_data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#preprocess" class="summary-sig-name">preprocess</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Preprocess data for faster calls.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.preprocess">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">array, array [, array]</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#__call__" class="summary-sig-name">__call__</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">x</span>,
+        <span class="summary-sig-arg">return_w</span>=<span class="summary-sig-default">False</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">obs</span>=<span class="summary-sig-default">inf</span>,
+        <span class="summary-sig-arg">method</span>=<span class="summary-sig-default">&quot;LUpinv&quot;</span>)</span><br />
+      Return posterior mean and precision matrix of f and its derivatives 
+      of order &lt;p for one or more arguments of interest.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.__call__">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr>
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a href="motabar.function.Function-class.html#clear_data" class="summary-sig-name">clear_data</a>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>)</span><br />
+      Remove all data added earlier.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function.clear_data">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+<tr class="private">
+    <td width="15%" align="right" valign="top" class="summary">
+      <span class="summary-type">&nbsp;</span>
+    </td><td class="summary">
+      <table width="100%" cellpadding="0" cellspacing="0" border="0">
+        <tr>
+          <td><span class="summary-sig"><a name="_verbose"></a><span class="summary-sig-name">_verbose</span>(<span class="summary-sig-arg">self</span>,
+        <span class="summary-sig-arg">text</span>,
+        <span class="summary-sig-arg">verbosity</span>=<span class="summary-sig-default">None</span>,
+        <span class="summary-sig-arg">level</span>=<span class="summary-sig-default">1</span>)</span><br />
+      Print text if verbosity &gt;= level.</td>
+          <td align="right" valign="top">
+            <span class="codelink"><a href="motabar.function-pysrc.html#Function._verbose">source&nbsp;code</a></span>
+            
+          </td>
+        </tr>
+      </table>
+      
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__delattr__</code>,
+      <code>__format__</code>,
+      <code>__getattribute__</code>,
+      <code>__hash__</code>,
+      <code>__new__</code>,
+      <code>__reduce__</code>,
+      <code>__reduce_ex__</code>,
+      <code>__repr__</code>,
+      <code>__setattr__</code>,
+      <code>__sizeof__</code>,
+      <code>__str__</code>,
+      <code>__subclasshook__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== PROPERTIES ==================== -->
+<a name="section-Properties"></a>
+<table class="summary" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Properties</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-Properties"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+  <tr>
+    <td colspan="2" class="summary">
+    <p class="indent-wrapped-lines"><b>Inherited from <code>object</code></b>:
+      <code>__class__</code>
+      </p>
+    </td>
+  </tr>
+</table>
+<!-- ==================== METHOD DETAILS ==================== -->
+<a name="section-MethodDetails"></a>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr bgcolor="#70b0f0" class="table-header">
+  <td colspan="2" class="table-header">
+    <table border="0" cellpadding="0" cellspacing="0" width="100%">
+      <tr valign="top">
+        <td align="left"><span class="table-header">Method Details</span></td>
+        <td align="right" valign="top"
+         ><span class="options">[<a href="#section-MethodDetails"
+         class="privatelink" onclick="toggle_private();"
+         >hide private</a>]</span></td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>
+<a name="verbosity"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">verbosity</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">verbosity</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.verbosity">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@verbosity.setter</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="d"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">d</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.d">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, int &gt; 0) Dimension (= number of arguments of  f). Set 
+  during instantiation.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="p"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">p</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.p">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, int &gt; 0) Degree (derivatives of smaller order will be 
+  estimated). Set during instantiation.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="m"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">m</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.m">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, int &gt; 0) Number of individual derivatives that will be 
+  estimated.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="nr"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">nr</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.nr">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, int &gt; 0) Number of remainders in Taylor polynomial.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="alphas_phi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">alphas_phi</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.alphas_phi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(m,d)) Multiindices of derivatives to estimate.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="alphas_psi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">alphas_psi</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.alphas_psi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(nr,d)) Multiindices of remainders.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="standard_corr_phi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">standard_corr_phi</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.standard_corr_phi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(m,m)) Standard prior correlation matrix for 
+  estimated derivatives.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="mu_phi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">mu_phi</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.mu_phi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(m)) Prior mean for estimated derivatives. Set using 
+  set_priors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="mu_psi_i"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">mu_psi_i</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.mu_psi_i">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(nr)) Mean of p-th order derivatives. Set using 
+  set_priors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="Sigma_phi"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Sigma_phi</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_phi">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, array(m,m)) Prior covariance matrix for estimated 
+  derivatives. Set using set_priors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="Sigma_psi_i"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Sigma_psi_i</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_psi_i">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, csc_matrix(nr,nr)) Covariance matrix for p-th order 
+  derivatives. Set using set_priors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="Sigma_gamma_i"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">Sigma_gamma_i</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.Sigma_gamma_i">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, csc_matrix(d,d)) Current default covariance matrix of each
+  observation's argument error. Set using set_default_errors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="sigma_eps_i"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">sigma_eps_i</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.sigma_eps_i">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, float &gt;= 0) Current default value error standard 
+  deviation for future added data. Set using set_default_errors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="corr_gamma_ij"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">corr_gamma_ij</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.corr_gamma_ij">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, csc_matrix(d,d)) Current default correlation matrix of 
+  argument errors of different observations. Set using 
+  set_default_errors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="corr_eps_ij"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">corr_eps_ij</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.corr_eps_ij">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, float) Current default correlation of value errors of 
+  different observations. Set using set_default_errors().</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="preprocessed"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">preprocessed</span>(<span class="sig-arg">self</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.preprocessed">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>(read-only, bool) Whether data has already been preprocessed for 
+  faster calls. If False, preprocessing is done automatically with the next
+  call.</p>
+  <dl class="fields">
+    <dt>Decorators:</dt>
+    <dd><ul class="nomargin-top">
+        <li><code>@property</code></li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="__init__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__init__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">d</span>=<span class="sig-default">1</span>,
+        <span class="sig-arg">p</span>=<span class="sig-default">2</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">0</span>)</span>
+    <br /><em class="fname">(Constructor)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.__init__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Initialize a MoTaBar regression/interpolation function.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>d</code></strong> (int &gt; 0) - Dimension (= number of arguments of  f). Default: 1.</li>
+        <li><strong class="pname"><code>p</code></strong> (int &gt; 0) - Degree (derivatives of smaller order will be estimated). Default:
+          2.</li>
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Verbosity level. Default: 0.</li>
+    </ul></dd>
+    <dt>Overrides:
+        object.__init__
+    </dt>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_priors"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_priors</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">mf</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">mr</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">sf</span>=<span class="sig-default">inf</span>,
+        <span class="sig-arg">sr</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">s0</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">omega</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">l</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">corr1</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">corr2</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.set_priors">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set prior distributions for phi and psi</p>
+  <p>If covariances are not given, a standard correlation structure is 
+  used: The correlation between the alpha-th and beta-th derivatives is 
+  corr1 * corr2**abs(|alpha|-|beta|-1) if |alpha|-|beta| is odd and     
+  corr2**abs(|alpha|-|beta|)   if it is even.</p>
+  <p>s0 and omega or l can be used to generate standard deviations of the 
+  form  s0 * omega**alpha  or  s0 * (2*pi/l)**alpha</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>mf</code></strong> (1d array or float) - Prior mean of phi. Default: 0.</li>
+        <li><strong class="pname"><code>mr</code></strong> (1d array or float) - Common prior mean of all psi[i]. Default: 0.</li>
+        <li><strong class="pname"><code>sf</code></strong> (1d or 2d array, or inf) - If 1d, prior standard deviations of phi. If 2d, prior covariance 
+          matrix of phi. If inf, a noninformative prior for phi is used. 
+          Default: inf</li>
+        <li><strong class="pname"><code>sr</code></strong> (1d or 2d array, float, or None) - If float, common prior standard devs. of all psi[i,k]. If 1d, 
+          common prior standard devs. of all psi[i]. If 2d, common prior 
+          covariance matrix of all psi[i]. If None, will be estimated from 
+          the data (see article). Default: None</li>
+        <li><strong class="pname"><code>s0</code></strong> (float &gt; 0) - Prior standard deviation of f(x).</li>
+        <li><strong class="pname"><code>omega</code></strong> (1d array or float &gt; 0) - Optional &quot;typical angular frequencies&quot; in each 
+          argument. Default: 2*pi / l</li>
+        <li><strong class="pname"><code>l</code></strong> (1d array or float &gt; 0) - Optional &quot;typical length scale&quot; in each argument.</li>
+        <li><strong class="pname"><code>corr1</code></strong>, <strong class="pname"><code>corr2</code></strong> - Correlation structure. For f(x)=exp(ax), corr1=corr2&gt;0 is 
+          suitable. For f(x)=sin(ax), corr1=0 and corr2&lt;0 is suitable. 
+          Default: corr1=corr2=0 USE WITH CARE!</li>
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+        <li><strong class="pname"><code>corr1,corr2</code></strong> (float in [-1,1])</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_default_errors"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_default_errors</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">sx</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">sy</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">cx</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">cy</span>=<span class="sig-default">0</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.set_default_errors">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set default error distributions for all subsequently added data.</p>
+  <p>Standard deviations, correlations, or covariances not specified are 
+  taken as 0.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>sx</code></strong> (1d or 2d array or float #or function(x_i)) - If 1d, standard deviations of each errx[i]. If 2d, covariance 
+          matrix of each errx[i]. Default: 0</li>
+        <li><strong class="pname"><code>sy</code></strong> (float #or function(x_i)) - Standard deviation of each erry[i]. Default: 0</li>
+        <li><strong class="pname"><code>cx</code></strong> (2d array or float #or function(x_i,x_j)) - Correlation matrix between each pair errx[i],errx[j] (i!=j). 
+          Default: 0</li>
+        <li><strong class="pname"><code>cy</code></strong> (float #or function(x_i,x_j)) - Correlation between each pair erry[i],erry[j] (i!=j). Default: 0</li>
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="set_data"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">set_data</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">x</span>,
+        <span class="sig-arg">y</span>,
+        <span class="sig-arg">**kwargs</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.set_data">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Set some data. Same as clear_data() followed by add_data(...).</p>
+  <dl class="fields">
+  </dl>
+</td></tr></table>
+</div>
+<a name="add_data"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">add_data</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">x</span>,
+        <span class="sig-arg">y</span>,
+        <span class="sig-arg">sx</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">sy</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.add_data">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Add some data.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>x</code></strong> (float or 1d or 2d array) - Argument measurement(s). If d=1 and float, x is one measurement. 
+          If d&gt;1 and 1d, x[:] is one measurement. If d=1 and 1d, each 
+          x[i] is one measurement. If d&gt;1 and 2d, each x[i,:] is one 
+          measurement.</li>
+        <li><strong class="pname"><code>y</code></strong> (float or 1d array) - Corresponding value measurement(s).</li>
+        <li><strong class="pname"><code>sx</code></strong> (1d-4d array or float) - If float, common standard deviation of all errx[i,k]. If 1d, 
+          common list of standard devs. of all errx[i]. If 2d, common 
+          covariance matrix of all errx[i]. If 3d, Sigma_gamma[i,:,:] = 
+          cov. matrix of errx[i]. If 4d, Sigma_gamma[i,j,:,:] = cov.m. of 
+          errx[i],errx[j]. Default: As specified in set_default_errors().</li>
+        <li><strong class="pname"><code>sy</code></strong> (1d or 2d array or float) - If float, common standard deviation of all erry[i]. If 1d, 
+          individual standard devs. for each erry[i], using correlation 
+          from set_default_errors(). If 2d, covariance matrix of the pairs 
+          erry[i],erry[j]. Default: As specified in set_default_errors().</li>
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="preprocess"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">preprocess</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.preprocess">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Preprocess data for faster calls. (Called automatically by calls)</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="__call__"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">__call__</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">x</span>,
+        <span class="sig-arg">return_w</span>=<span class="sig-default">False</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>,
+        <span class="sig-arg">obs</span>=<span class="sig-default">inf</span>,
+        <span class="sig-arg">method</span>=<span class="sig-default">&quot;LUpinv&quot;</span>)</span>
+    <br /><em class="fname">(Call operator)</em>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.__call__">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Return posterior mean and precision matrix of f and its derivatives of
+  order &lt;p for one or more arguments of interest.</p>
+  <p>NOTE: does not consider argument error yet!</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>x</code></strong> (float or 1d or 2d array) - Argument(s) of interest. If d=1 and float, x is one argument of 
+          interest. If d&gt;1 and 1d, x[:] is one argument of interest. If 
+          d=1 and 1d, each x[i] is one argument of interest. If d&gt;1 and 
+          2d, each x[i,:] is one argument of interest.</li>
+        <li><strong class="pname"><code>return_w</code></strong> (bool) - If True, return MoTaBaR coefficient vectors as well. Default: 
+          False</li>
+        <li><strong class="pname"><code>obs</code></strong> (int&gt;0 or float &lt;1) - If int&gt;0, this many observations will be used in the 
+          estimation for each argument of interest. If float&lt;1, as many 
+          observations will be used as are necessary to ensure that the 
+          remaining observations have a total weight &lt;obs. Default: inf 
+          (all observations will be used) USE WITH CARE!</li>
+        <li><strong class="pname"><code>method</code></strong> (&quot;LU&quot;, &quot;LUpinv&quot;, &quot;pinvLU&quot;, 
+          &quot;pinv&quot;, or &quot;lstsq&quot;) - Which numerical method to use for solving the involved linear 
+          systems of equations. See code for details. Default: 
+          &quot;LUpinv&quot;</li>
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+    </ul></dd>
+    <dt>Returns: array, array [, array]</dt>
+        <dd>Posterior mean and precision matrix of phi. If x contains more 
+          than one argument of interest, the first index of each return 
+          array is its index. If return_w=True, (each row of) the third 
+          array contains a the vector of MoTaBaR coefficients used to 
+          derive the posterior mean from the data values.</dd>
+  </dl>
+</td></tr></table>
+</div>
+<a name="clear_data"></a>
+<div>
+<table class="details" border="1" cellpadding="3"
+       cellspacing="0" width="100%" bgcolor="white">
+<tr><td>
+  <table width="100%" cellpadding="0" cellspacing="0" border="0">
+  <tr valign="top"><td>
+  <h3 class="epydoc"><span class="sig"><span class="sig-name">clear_data</span>(<span class="sig-arg">self</span>,
+        <span class="sig-arg">verbosity</span>=<span class="sig-default">None</span>)</span>
+  </h3>
+  </td><td align="right" valign="top"
+    ><span class="codelink"><a href="motabar.function-pysrc.html#Function.clear_data">source&nbsp;code</a></span>&nbsp;
+    </td>
+  </tr></table>
+  
+  <p>Remove all data added earlier.</p>
+  <dl class="fields">
+    <dt>Parameters:</dt>
+    <dd><ul class="nomargin-top">
+        <li><strong class="pname"><code>verbosity</code></strong> (int &gt; 0) - Optional verbosity level. Default: as set by class property 
+          &quot;verbosity&quot;.</li>
+    </ul></dd>
+  </dl>
+</td></tr></table>
+</div>
+<br />
+<!-- ==================== NAVIGATION BAR ==================== -->
+<table class="navbar" border="0" width="100%" cellpadding="0"
+       bgcolor="#a0c0ff" cellspacing="0">
+  <tr valign="middle">
+  <!-- Home link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="motabar-module.html">Home</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Tree link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="module-tree.html">Trees</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Index link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="identifier-index.html">Indices</a>&nbsp;&nbsp;&nbsp;</th>
+
+  <!-- Help link -->
+      <th>&nbsp;&nbsp;&nbsp;<a
+        href="help.html">Help</a>&nbsp;&nbsp;&nbsp;</th>
+
+      <th class="navbar" width="100%"></th>
+  </tr>
+</table>
+<table border="0" cellpadding="0" cellspacing="0" width="100%%">
+  <tr>
+    <td align="left" class="footer">
+    Generated by Epydoc 3.0.1 on Mon Nov  7 16:37:30 2011
+    </td>
+    <td align="right" class="footer">
+      <a target="mainFrame" href="http://epydoc.sourceforge.net"
+        >http://epydoc.sourceforge.net</a>
+    </td>
+  </tr>
+</table>
+
+<script type="text/javascript">
+  <!--
+  // Private objects are initially displayed (because if
+  // javascript is turned off then we want them to be
+  // visible); but by default, we want to hide them.  So hide
+  // them unless we have a cookie that says to show them.
+  checkCookie();
+  // -->
+</script>
+</body>
+</html>
