@@ -39,7 +39,7 @@ Visualization: Generates plots like p_plot.png for Holocene P trends.
 4) Utilities:
 utils.py: Progress bars for long computations.
 Example data: Drip_rate.xlsx, ProxyRecordPlot.xlsx for calibration and sensitivity tests.
-For executable versions integrated with Excel, contact the corresponding author (adam.hartland@lincolnagritech.co.nz). All scripts are self-contained; test with provided snippets in the manuscript supplement.
+For executable versions integrated with Excel, contact the corresponding author (adam.hartland@lincolnagritech.co.nz or waikatoscientific@gmail.com). All scripts are self-contained; test with provided snippets in the manuscript supplement.
 
 Repository Structure
 model.py: Core dissociation kinetics and expectation calculations.
