@@ -35,8 +35,9 @@ Run P_quantification_Holocene.ipynb (Jupyter notebook) for chained regressions a
 Inputs: Drip rate percentiles, temperature estimates (Precip_from_drip_rates.xlsx).
 Outputs: Annual precipitation posteriors (p_reconstruction.csv) with medians and 25–75th percentiles.
 Visualization: Generates plots like p_plot.png for Holocene P trends.
+Supplementary: See readme.txt file in precip_recon directory
 
-4) Utilities:
+5) Utilities:
 utils.py: Progress bars for long computations.
 Example data: Drip_rate.xlsx, ProxyRecordPlot.xlsx for calibration and sensitivity tests.
 For executable versions integrated with Excel, contact the corresponding author (adam.hartland@lincolnagritech.co.nz or waikatoscientific@gmail.com). All scripts are self-contained; test with provided snippets in the manuscript supplement.
