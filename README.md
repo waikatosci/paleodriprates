@@ -60,7 +60,7 @@ Upon publication, an executable Excel-integrated version will be added.
 
 Citation
 If using this code or data, please cite:
-Hartland, A., Goswami, B., Park, J., Höpker, S., Torres Rojas, D., Liao, J., Fox, B. R. S., Marwan, N., Breitenbach, S. F. M., & Hu, C. (2025). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers. Nature Geoscience. DOI: [insert DOI upon publication].
+Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B. R. S., Marwan, N., Breitenbach, S. F. M., & Hu, C. (2025). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers. Nature Geoscience. DOI: [insert DOI upon publication].
 
 For the repository:
 Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
