@@ -1,5 +1,6 @@
 import os
 import scipy as sp
+import numpy as np
 os.chdir('../')
 import motabar.function as motabar
 os.chdir('./calibration')
@@ -17,7 +18,7 @@ verbose = 0
 for zone in pb_zones:
     print('Processing post-bomb zone '+zone+'...')
     file = fpath+fname+zone+'.csv'
-    postbomb = sp.genfromtxt(file, delimiter=',')
+    postbomb = np.genfromtxt(file, delimiter=',')
     postbomb = postbomb[3::,:]
     timeAD = postbomb[:,0]
     timeBP = 1950 - timeAD
@@ -28,12 +29,12 @@ for zone in pb_zones:
     regression.set_data(timeBP, f14C, sy=f14C_err)
     estimate, precision = regression(timeBPend)
     est_mean = estimate[0]
-    est_dev = sp.sqrt(precision[0,0] ** (-1))
-    f14C = sp.hstack((f14C, est_mean))
-    f14C_err = sp.hstack((f14C_err, est_dev))
-    timeBP = sp.hstack((timeBP, timeBPend))
-    C14 = -8033*sp.log(f14C)
+    est_dev = np.sqrt(precision[0,0] ** (-1))
+    f14C = np.hstack((f14C, est_mean))
+    f14C_err = np.hstack((f14C_err, est_dev))
+    timeBP = np.hstack((timeBP, timeBPend))
+    C14 = -8033*np.log(f14C)
     C14_err = -8033*(f14C_err/f14C)
-    X = sp.vstack((timeBP,C14,C14_err)).T
-    sp.savetxt(fout+zone+'.csv',X,delimiter=',')
+    X = np.vstack((timeBP,C14,C14_err)).T
+    np.savetxt(fout+zone+'.csv',X,delimiter=',')
     print('Zone '+zone+' done! CSV file saved to '+fout+zone+'.csv')

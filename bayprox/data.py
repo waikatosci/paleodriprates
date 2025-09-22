@@ -6,6 +6,7 @@
         3.  ProxyDepth
 """
 import scipy as sp
+import numpy as np
 
 class SampleInfo(object):
     """Contains input measurement data from paleo-archives.
@@ -37,9 +38,9 @@ class DatingTable(SampleInfo):
         datingmethod    dating method used: 'U/Th', 'C14', 'Cs', etc.
 
         Usage:
-        >> import scipy as sp
+        >> import numpy as np
         >> import input
-        >> rndtest = sp.rand(10,3) #make dummy array
+        >> rndtest = np.rand(10,3) #make dummy array
         >> X = input.DatingTable(rndtest[:,0], rndtest[:,1], rndtest[:,2],
                                 'U/Th', 'Test123', 'new', 'stalagmite')
         >> Y = [X.depth, X.age, X.ageerror]
@@ -81,16 +82,16 @@ class ProxyDepth(SampleInfo):
                         list [proxymin, proxymax]. Default = [-inf, inf].
 
         Usage:
-        >> import scipy as sp
+        >> import numpy as np
         >> import input
-        >> rndtest = sp.rand(100,3) #make dummy array
+        >> rndtest = np.rand(100,3) #make dummy array
         >> X = input.ProxyDepth(rndtest[:,0], rndtest[:,1], rndtest[:,2],
                                 'U/Th', 'Test123', 'new', 'stalagmite')
         >> Y = [X.depth, X.proxy, X.proxyerror]
         >> print Y
         """
     def __init__(self, depth, proxy, proxyerror,sampleinfo,
-                 proxyrange=[-sp.inf,sp.inf], proxyname="Proxy123"):
+                 proxyrange=[-np.inf,np.inf], proxyname="Proxy123"):
         self.depth = depth
         self.proxy = proxy
         self.proxyerror = proxyerror

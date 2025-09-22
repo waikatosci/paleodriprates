@@ -1,6 +1,6 @@
 from numpy import array, ceil, cumsum, diag, diagonal, double, dot, \
     eye, fromfunction, inf, \
-    ndarray, pi, product, repeat, sort, sqrt, sum, vstack, where, zeros
+    ndarray, pi, prod, repeat, sort, sqrt, sum, vstack, where, zeros
 from numpy.linalg import inv#, pinv
 from scipy.linalg import lstsq, pinv
 from scipy.linalg.matfuncs import sqrtm
@@ -219,7 +219,7 @@ class Function(object):
         self._alphas_psi = array(new_alphas)
         self._abs_alphas_phi = self._alphas_phi.sum(axis=1)
         self._abs_alphas_psi = self._alphas_psi.sum(axis=1)
-        self._alpha_fac_invs = 1. / product(factorial(self._alphas),axis=1)\
+        self._alpha_fac_invs = 1. / prod(factorial(self._alphas),axis=1)\
                                                 .reshape((1,1,m+nr))
 
         # initialize rest:
@@ -328,8 +328,8 @@ class Function(object):
             assert all(omega > 0), \
                 "Typical angular frequencies omega must be positive."
             o = omega.reshape((1,d))
-            Sigma_phi = s0 * product(o**self._alphas_phi,axis=1)
-            Sigma_psi_i = s0 * product(o**self._alphas_psi,axis=1)
+            Sigma_phi = s0 * prod(o**self._alphas_phi,axis=1)
+            Sigma_psi_i = s0 * prod(o**self._alphas_psi,axis=1)
             
         if isinstance(Sigma_phi,float) and Sigma_phi == inf:
             self._verbose(
@@ -714,7 +714,7 @@ class Function(object):
             xi = xis[ind,:]
             self._verbose("x="+str(xi),verbosity=verbosity,level=2)
             # TODO: maybe use scipy's Vandermonde generator instead:
-            Xp = product((x_n1d - xis_nx11d[ind,:,:,:])**ex, axis=2) * fac
+            Xp = prod((x_n1d - xis_nx11d[ind,:,:,:])**ex, axis=2) * fac
             Xr = Xp[:,m:]
             Xr2= Xr**2
             sumXr2 = sum(Xr2, axis=1)

@@ -12,6 +12,7 @@
 """
 
 import scipy as sp
+import numpy as np
 from scipy.interpolate import interp1d
 import numpy.random as rand
 norm = rand.normal
@@ -24,9 +25,9 @@ class Archive():
 	@classmethod
 	def growth(self, num_layers=100, startRate=20, variability=7):
 		"""Returns age-depth relation as a SciPy.Interpolate object"""
-		age = sp.zeros(num_layers)
-		depth_layers = sp.arange(num_layers)
-		growRate = sp.zeros(num_layers)
+		age = np.zeros(num_layers)
+		depth_layers = np.arange(num_layers)
+		growRate = np.zeros(num_layers)
 		for layer in depth_layers[1:]:
 			growRate[layer] = growRate[layer-1] + variability*norm()
 			while growRate[layer] < 0:
@@ -43,11 +44,11 @@ class Archive():
 	def proxy(self, type='sine', params=[0.001, 0.005]):
 		"""Returns proxy-time & proxy-depth as Scipy.Interpolate object."""
 		maxAge = self.maxage
-		age = sp.arange((maxAge)).squeeze()
+		age = np.arange((maxAge)).squeeze()
 		if type == 'sine':
 			self.type = type
 			w1, w2 = params
-			proxy_curve = sp.sin(age*w1*2*sp.pi) + sp.sin(age*w2*2*sp.pi)
+			proxy_curve = np.sin(age*w1*2*np.pi) + np.sin(age*w2*2*np.pi)
 		age_to_depth = self.agemodel_inverse
 		depth = age_to_depth(age) # PRINTS WARNINGS ABOUT DIVISION: depth[0]=nan
 		depth[0] = 0. ## CHECK OUT THIS BUG!! THIS LINE SHOULDN'T BE THERE!
@@ -65,11 +66,11 @@ class Measurements():
 
 	def radiometric(self, Archive, error, num_samples=15, errtype='uniform'):
 		"""Returns a set of error-based radiometric measurements."""
-		measured_depths = sp.linspace(0, Archive.maxdepth, num_samples)
+		measured_depths = np.linspace(0, Archive.maxdepth, num_samples)
 		if type(error) is int:
-			error = error * sp.ones(num_samples)
+			error = error * np.ones(num_samples)
 		if errtype == 'minmax':
-			error = sp.linspace(error[0], error[1], num_samples)
+			error = np.linspace(error[0], error[1], num_samples)
 		measured_ages = Archive.agemodel(measured_depths) + \
 						error * norm(size=(error.shape))
 		self.age_measurements = measured_depths, measured_ages, error
@@ -77,9 +78,9 @@ class Measurements():
 
 	def proxy(self, Archive, error, num_samples=300):
 		"""Returns a set of error-based proxy measurements."""
-		measured_depths = sp.linspace(0, Archive.maxdepth-1, num_samples)
+		measured_depths = np.linspace(0, Archive.maxdepth-1, num_samples)
 		if type(error) is int or float:
-			error = error * sp.ones(num_samples)
+			error = error * np.ones(num_samples)
 		proxy = Archive.proxydepth(measured_depths) + \
 				error * norm(size=(error.shape))
 		self.proxy_measurements = measured_depths, proxy, error

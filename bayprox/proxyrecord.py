@@ -6,6 +6,7 @@
 """
 
 import scipy as sp
+import numpy as np
 from scipy.interpolate import interp1d
 from progressbar import ProgressBar
 
@@ -26,23 +27,23 @@ class ProxyDistributions(agedepth.DWF, data.ProxyDepth):
         self.res = res
         
         # create the distance array --> POI := Point Of Interest
-        span = sp.linspace(limits[0], limits[1], res)
+        span = np.linspace(limits[0], limits[1], res)
         self.proxyspan = span
         pobs = PD.proxy
-        diff = sp.array([span[i] - pobs for i in range(res)])
-        sign = sp.diff(sp.sign(diff), axis=1)
-        indices = [sp.where(row != 0)[0] for row in sign]
+        diff = np.array([span[i] - pobs for i in range(res)])
+        sign = np.diff(np.sign(diff), axis=1)
+        indices = [np.where(row != 0)[0] for row in sign]
 
         # main time loop
         rsw = DWF.get_riemannsum_intervalwidth() # Riemann sum width
         dwf_f = DWF.final
-        rsw_pxy = 0.5 * sp.r_[
+        rsw_pxy = 0.5 * np.r_[
                                 span[1] - span[0],
                                 span[2:] - span[:-2],
                                 span[-1] - span[-2]
                             ]
         
-        pdfmat = sp.zeros((res, DWF.n_timepts))
+        pdfmat = np.zeros((res, DWF.n_timepts))
         if self.verbose == 1:
             print("proxy pdf ...")
             pbar = ProgressBar(maxval=DWF.n_timepts).start()
@@ -51,7 +52,7 @@ class ProxyDistributions(agedepth.DWF, data.ProxyDepth):
             weighted_dwf_t = interp1d(PD.depth, wts)
             # proxy density in depth is Delta function
             if PD.proxyerror == 0:
-                pp = sp.zeros(res)
+                pp = np.zeros(res)
                 k = 0
                 for i in range(res):
                     idx = indices[i]
@@ -75,24 +76,24 @@ class ProxyDistributions(agedepth.DWF, data.ProxyDepth):
     def get_cdf(self, pdfmat):
         """Estimates posterior CDF of proxy given posterior PDF."""
         span = self.proxyspan
-        rsw_pxy = 0.5 * sp.r_[
+        rsw_pxy = 0.5 * np.r_[
                         span[1] - span[0],
                         span[2:] - span[:-2],
                         span[-1] - span[-2]
                 ]
         X = (pdfmat.T * rsw_pxy).T
-        cdfmat = sp.cumsum(X, axis=0)
+        cdfmat = np.cumsum(X, axis=0)
         return cdfmat
 
     def get_limits(self, DWF, PD, sd_mult):
         """Estimate limits of proxy axis within which to estimate PDF & CDF"""
         proxymean = ProxyEstimates.get_mean(DWF, PD)
         proxyvar = ProxyEstimates.get_variance(DWF, PD)
-        upper_lim = max(proxymean + sd_mult*sp.sqrt(proxyvar))
-        lower_lim = min(proxymean - sd_mult*sp.sqrt(proxyvar)) # errors at times
-        if PD.proxyrange[0] != -sp.inf:
+        upper_lim = max(proxymean + sd_mult*np.sqrt(proxyvar))
+        lower_lim = min(proxymean - sd_mult*np.sqrt(proxyvar)) # errors at times
+        if PD.proxyrange[0] != -np.inf:
             lower_lim = PD.proxyrange[0]
-        elif PD.proxyrange[1] != sp.inf:
+        elif PD.proxyrange[1] != np.inf:
             upper_lim = PD.proxyrange[1]
         limits = [lower_lim, upper_lim]
         self.proxyrange = limits
@@ -110,10 +111,10 @@ class ProxyEstimates(object):
         """Gets posterior mean from DWF object & ProxyDepth object (PD)."""
         riemannsum_width = DWF.get_riemannsum_intervalwidth()
         dwf = DWF.final
-        weighted_dwf = sp.tile(riemannsum_width, (dwf.shape[0], 1)) * dwf
-        obs_matrix = sp.tile(PD.proxy, (dwf.shape[0], 1))
-        numer = sp.sum(weighted_dwf * obs_matrix, 1)
-        denom = sp.sum(weighted_dwf, 1)
+        weighted_dwf = np.tile(riemannsum_width, (dwf.shape[0], 1)) * dwf
+        obs_matrix = np.tile(PD.proxy, (dwf.shape[0], 1))
+        numer = np.sum(weighted_dwf * obs_matrix, 1)
+        denom = np.sum(weighted_dwf, 1)
         exp_val = numer/denom
         self.mean_value = exp_val
         return exp_val
@@ -123,17 +124,17 @@ class ProxyEstimates(object):
         """Gets variance from DWF object & ProxyDepth object (PD)."""
         if mean is None:
             mean = self.get_mean(DWF, PD)
-        mean = sp.reshape(mean, (len(mean), 1))
+        mean = np.reshape(mean, (len(mean), 1))
         riemannsum_width = DWF.get_riemannsum_intervalwidth()
         dwf = DWF.final
-        mean_matrix = sp.tile(mean, (1, dwf.shape[1]))
-        obs_matrix = sp.tile(PD.proxy, (dwf.shape[0], 1))
-        var_innate = sp.square(obs_matrix - mean_matrix)
-        err_matrix = sp.tile(PD.proxyerror, (dwf.shape[0], 1))
-        var_instru = sp.square(err_matrix)
-        weighted_dwf = sp.tile(riemannsum_width, (dwf.shape[0], 1)) * dwf
-        numer = sp.sum(weighted_dwf*(var_innate + var_instru), 1)
-        denom = sp.sum(weighted_dwf, 1)
+        mean_matrix = np.tile(mean, (1, dwf.shape[1]))
+        obs_matrix = np.tile(PD.proxy, (dwf.shape[0], 1))
+        var_innate = np.square(obs_matrix - mean_matrix)
+        err_matrix = np.tile(PD.proxyerror, (dwf.shape[0], 1))
+        var_instru = np.square(err_matrix)
+        weighted_dwf = np.tile(riemannsum_width, (dwf.shape[0], 1)) * dwf
+        numer = np.sum(weighted_dwf*(var_innate + var_instru), 1)
+        denom = np.sum(weighted_dwf, 1)
         post_var = numer/denom
         self.variance = post_var
         return post_var
@@ -141,12 +142,12 @@ class ProxyEstimates(object):
     @classmethod
     def get_median(self, cdf, limits, res):
         """Estimates the median based on given CDF."""
-        proxygrid = sp.linspace(limits[0], limits[1], res)
+        proxygrid = np.linspace(limits[0], limits[1], res)
         nT = len(cdf)
-        median_val = sp.empty((1,nT)).squeeze()
+        median_val = np.empty((1,nT)).squeeze()
         for t in range(nT):
             cdf_estimate = cdf[t](proxygrid)
-            temp = sp.where(cdf_estimate <= 0.5)[0][-1]
+            temp = np.where(cdf_estimate <= 0.5)[0][-1]
             median_val[t] = proxygrid[temp]
         self.median_value = median_val
         return median_val
@@ -155,12 +156,12 @@ class ProxyEstimates(object):
     def get_quantiles(self, cdf, limits, res, quantiles):
         """Estimates the specified quantiles based on given CDF."""
         self.quantiles = []
-        proxygrid = sp.linspace(limits[0], limits[1], res)
+        proxygrid = np.linspace(limits[0], limits[1], res)
         nT = len(cdf)
-        [qLo, qHi] = [sp.empty((1,nT)).squeeze(), sp.empty((1,nT)).squeeze()]
+        [qLo, qHi] = [np.empty((1,nT)).squeeze(), np.empty((1,nT)).squeeze()]
         for t in range(nT):
             cdf_estimate = cdf[t](proxygrid)
-            qLo[t] = proxygrid[sp.where(cdf_estimate <= quantiles[0])[0][-1]]
-            qHi[t] = proxygrid[sp.where(cdf_estimate <= quantiles[1])[0][-1]]
+            qLo[t] = proxygrid[np.where(cdf_estimate <= quantiles[0])[0][-1]]
+            qHi[t] = proxygrid[np.where(cdf_estimate <= quantiles[1])[0][-1]]
         self.quantiles.append([qLo, qHi])
         return qLo, qHi

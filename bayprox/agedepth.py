@@ -6,6 +6,7 @@
 """
 
 import scipy as sp
+import numpy as np
 from scipy.interpolate import interp1d
 
 
@@ -50,7 +51,7 @@ class Calibration(object):
         #     ver = self.intcal
         fpath = '/other/calibration/'
         fname = dirpath + fpath + cal_type + ver +'.14c'
-        calcurve = sp.flipud(sp.genfromtxt(fname, delimiter=','))
+        calcurve = np.flipud(np.genfromtxt(fname, delimiter=','))
         return calcurve
 
     @classmethod
@@ -79,7 +80,7 @@ class Calibration(object):
         if zone:
             fpath = '/other/calibration/postbomb/'
             fname = dirpath+fpath+zone+'.csv'
-            postbomb = sp.genfromtxt(fname, delimiter=',')
+            postbomb = np.genfromtxt(fname, delimiter=',')
         else:
             postbomb = None
         return postbomb
@@ -134,7 +135,7 @@ class DWF(data.DatingTable, Calibration):
         estimate, precision = regressionfunc(eval_depth,
                                              method=method,
                                              verbosity=self.verbose)
-        rm_mean, rm_dev = estimate[:,0], sp.sqrt(precision[:,0,0]**(-1))
+        rm_mean, rm_dev = estimate[:,0], np.sqrt(precision[:,0,0]**(-1))
         self.rmagemod = [eval_depth, rm_mean, rm_dev]
         return rm_mean, rm_dev
 
@@ -142,7 +143,7 @@ class DWF(data.DatingTable, Calibration):
         """Estimates size of interval width for Riemann sum used in DWF."""
         depth = self.proxydepth
         width = depth[2:] - depth[:-2]
-        width = sp.hstack((depth[1]-depth[0], width, depth[-1]-depth[-2]))
+        width = np.hstack((depth[1]-depth[0], width, depth[-1]-depth[-2]))
         width = abs(0.5*width)
         return width
 
@@ -150,15 +151,15 @@ class DWF(data.DatingTable, Calibration):
         """Gets calendar age axis for DWF with given RM ages & stepsize."""
         [intcal_curve, postbomb_curve] = self.calib_curves
         if postbomb_curve is not None:
-            turn_pt = sp.where(postbomb_curve[:,1] ==
+            turn_pt = np.where(postbomb_curve[:,1] ==
                                min(postbomb_curve[:,1]))[0]
             postbomb_curve = postbomb_curve[0:turn_pt]
-            calib_dat = sp.vstack((sp.flipud(postbomb_curve), intcal_curve))
+            calib_dat = np.vstack((np.flipud(postbomb_curve), intcal_curve))
         else:
             calib_dat = intcal_curve
         cal_rufly = interp1d(calib_dat[:,1], calib_dat[:,0])
         [cal_min, cal_max] = [cal_rufly(rm_age_top), cal_rufly(rm_age_bott)]
-        cal_axis = sp.arange(cal_min, cal_max, calBP_step)
+        cal_axis = np.arange(cal_min, cal_max, calBP_step)
         return cal_axis
 
     def get_cal_dat(self, cal_ax):
@@ -166,14 +167,14 @@ class DWF(data.DatingTable, Calibration):
         if self.info.cal_reqd == 'Yes':
             [intcal_curve, postbomb_curve] = self.calib_curves
             if postbomb_curve is not None:
-                calib_dat = sp.vstack((sp.flipud(postbomb_curve), intcal_curve))
+                calib_dat = np.vstack((np.flipud(postbomb_curve), intcal_curve))
             else:
                 calib_dat = intcal_curve
             cal_func = interp1d(calib_dat[:,0], calib_dat[:,1])
             cal_errfunc = interp1d(calib_dat[:,0], calib_dat[:,2])
         elif self.info.cal_reqd == 'No':
             cal_func = lambda x: x
-            cal_errfunc = lambda x: sp.zeros(x.shape)
+            cal_errfunc = lambda x: np.zeros(x.shape)
         rm_age, rm_age_err = cal_func(cal_ax), cal_errfunc(cal_ax)
         self.calcurve = [cal_ax, rm_age, rm_age_err]
         return rm_age, rm_age_err
@@ -184,15 +185,15 @@ class DWF(data.DatingTable, Calibration):
                     riemannsum_width):
         """Estimates the initial non-monotonic DWF."""
         self.n_timepts, self.n_depthpts = len(rm_calage), len(rm_pdepth)
-        dwf_pre = sp.zeros((self.n_timepts, self.n_depthpts))
+        dwf_pre = np.zeros((self.n_timepts, self.n_depthpts))
         if self.verbose == 1:
             print("DWF pre...")
             pbar = ProgressBar(maxval=self.n_timepts).start()
         for t in range(self.n_timepts):
-            numer = sp.square(rm_pdepth - rm_calage[t])
-            denom = sp.square(rm_calage_err[t]) + sp.square(rm_pdepth_err)
-            const = 1. / sp.sqrt(denom)
-            dwf_pre[t,:] = const * sp.exp((-.5) * numer/denom)
+            numer = np.square(rm_pdepth - rm_calage[t])
+            denom = np.square(rm_calage_err[t]) + np.square(rm_pdepth_err)
+            const = 1. / np.sqrt(denom)
+            dwf_pre[t,:] = const * np.exp((-.5) * numer/denom)
             denom = sum(riemannsum_width*dwf_pre[t,:])
             dwf_pre[t,:] = dwf_pre[t,:]/denom
             if self.verbose == 1: pbar.update(t)
@@ -204,7 +205,7 @@ class DWF(data.DatingTable, Calibration):
         dwf_pre = dwf_pre * riemannsum_width.reshape((1,-1))
         dwf_pre /= dwf_pre.sum(axis=1).reshape((-1,1))       # normalization
         [nT, nZ] = [self.n_timepts, self.n_depthpts]
-        cdwf_pre = sp.zeros((nT, nZ))
+        cdwf_pre = np.zeros((nT, nZ))
         if self.verbose == 1:
             print("CDWF pre...")
             pbar = ProgressBar(maxval=nZ).start()
@@ -217,7 +218,7 @@ class DWF(data.DatingTable, Calibration):
 
     def initialize_cdwf_post(self, cdwf_pre):
         """Initialize monotonic CDWF with pragmatic min/max choice."""
-        cdwf_mon_ini = sp.zeros(cdwf_pre.shape)
+        cdwf_mon_ini = np.zeros(cdwf_pre.shape)
         if self.verbose == 1:
             print("Initialize CDWF post...")
             pbar = ProgressBar(maxval=cdwf_pre.shape[0]).start()
@@ -231,16 +232,16 @@ class DWF(data.DatingTable, Calibration):
     def workspace_mat(self, cdwf_mon_ini):
         """Get workspace matrix with buffer rows/columns for shifting."""
         [nT, nZ] = [self.n_timepts, self.n_depthpts]
-        vert_buff = sp.inf*sp.ones((nT, 1))
-        hori_buff = sp.inf*sp.ones((1, nZ+2))
-        work = sp.hstack((-vert_buff, cdwf_mon_ini, vert_buff))
-        work = sp.vstack((hori_buff, work, -hori_buff))
+        vert_buff = np.inf*np.ones((nT, 1))
+        hori_buff = np.inf*np.ones((1, nZ+2))
+        work = np.hstack((-vert_buff, cdwf_mon_ini, vert_buff))
+        work = np.vstack((hori_buff, work, -hori_buff))
         return work
 
     def get_cdwf_post(self, cdwf_pre, cdwf_mon_ini, work_mat):
         """Estimates final monotonic CDWF from initial monotonic CDWF."""
-        spmin = sp.minimum
-        spmax = sp.maximum
+        spmin = np.minimum
+        spmax = np.maximum
         [nT, nZ] = [self.n_timepts, self.n_depthpts]
         nsteps = self.relax_dyn_params
         dtau = 10./nsteps 					# 10/steps!
@@ -252,7 +253,7 @@ class DWF(data.DatingTable, Calibration):
             dPhi = dtau*(cdwf_pre - cdwf_post)
             cand = cdwf_post + dPhi
             cdwf_post = work_mat[1:nT+1, 1:nZ+1] \
-                      = sp.where(dPhi > 0,
+                      = np.where(dPhi > 0,
                                  spmin(spmin(cand, work_mat[1:nT+1, 2:]),
                                        work_mat[:nT, 1:nZ+1]
                                        ),
@@ -267,7 +268,7 @@ class DWF(data.DatingTable, Calibration):
     def smooth_cdwf(self, cdwf_post):
         """Final smoothing to repair small errors in CDWF_post estimate."""
         [nT, nZ] = [self.n_timepts, self.n_depthpts]
-        cdwf_smooth = sp.zeros((nT,nZ))
+        cdwf_smooth = np.zeros((nT,nZ))
         if self.verbose == 1:
             print("Smooth CDWF...")
             pbar = ProgressBar(maxval=nT).start()
@@ -281,7 +282,7 @@ class DWF(data.DatingTable, Calibration):
     def get_dwf_post(self, cdwf_post_smooth):
         """Get DWF_post from final smoothened CDWF_post."""
         [nT, nZ] = [self.n_timepts, self.n_depthpts]
-        dwf_post = sp.zeros((nT,nZ))
+        dwf_post = np.zeros((nT,nZ))
         dwf_post[:,0] = cdwf_post_smooth[:,0]
         dwf_post[:,1:] = cdwf_post_smooth[:,1:] - cdwf_post_smooth[:,:-1]
         return dwf_post
@@ -332,7 +333,7 @@ class DWF(data.DatingTable, Calibration):
         if calBP_axis is None:
             if self.info.cal_reqd == 'Yes':
                 if (cal_age_min is not None) and (cal_age_max is not None):
-                    calBP_axis = sp.arange(cal_age_min, cal_age_max, calBP_step)
+                    calBP_axis = np.arange(cal_age_min, cal_age_max, calBP_step)
                 else:
                     # TODO: Fix the error with interpolation out of range
                     #print rm_pdepth[0], rm_pdepth[-1],
@@ -342,11 +343,11 @@ class DWF(data.DatingTable, Calibration):
                                                   calBP_step)
             elif self.info.cal_reqd == 'No':
                 if self.cal_age_lims[0] is None and self.cal_age_lims[1] is None:
-                    calBP_axis = sp.arange(min(self.age - self.ageerror),
+                    calBP_axis = np.arange(min(self.age - self.ageerror),
                                         max(self.age + self.ageerror),
                                         calBP_step)
                 else:
-                    calBP_axis = sp.arange(self.cal_age_lims[0], #calagemin
+                    calBP_axis = np.arange(self.cal_age_lims[0], #calagemin
                                         self.cal_age_lims[1], #calagemax
                                         self.cal_age_lims[2], #calbpstep
                                         )

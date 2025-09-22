@@ -193,25 +193,28 @@ def driprates(Kd_mn, Kd_sd, K_e, ConcAq=1.0, TE=None,
     age, Xs_pdf = model.te_pdfseries(TE)
     Xs_pdf = np.array(Xs_pdf, dtype="object")
 
+
     # if called by the parameter estimation function
     if calib:
+        Yi, Yf = 1953, 2012
         age = (1950. - age).astype("int")
         age = age[::-1]
         Xs_pdf = Xs_pdf[::-1]
         i = (age >= Yi) * (age <= Yf)
         age, Xs_pdf = age[i], Xs_pdf[i]
 
+    inertF = TE['InertF']
     # aqueous concentrations of Ca and trace metal
     # Xa, Ya = model.aqueous_concentrations(TE, "median")
-    # Xa, Ya = model.aqueous_concentrations(TE, "median")
-    Xa, Ya = TE['aq_conc'],TE['ca_conc']
+    Xa, Ya = (1.0-inertF)*TE['aq_conc'],TE['ca_conc']
+    # Convert to molal concentration
     Xa /= (1E6 * TE['mol_wt'])
     Ya /= (1E6 * 40.078)
     # Xa = ConcAq
 
     # slow and fast fractions
-    # etaF = 0.001
-    etaF = 0.001
+    # etaF = 0.01
+    etaF = TE['F']
 
     # get partition coefficient
     Kp = TE['Kp']

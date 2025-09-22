@@ -8,7 +8,7 @@
 	measurement datasets separately.
 """
 
-import scipy as sp
+import numpy as np
 from copy import deepcopy
 from matplotlib.ticker import FixedLocator, FixedFormatter, MaxNLocator
 import matplotlib.pyplot as plt
@@ -235,8 +235,8 @@ class Formatters(object):
 		maxidx = 1.
 		while round(endpt/maxidx) != 0.:
 			maxidx = maxidx * 10.
-		maxidx = sp.log10(maxidx / 10.)
-		for i in sp.arange(1, maxidx+1):
+		maxidx = np.log10(maxidx / 10.)
+		for i in np.arange(1, maxidx+1):
 			nu_endpt = round(endpt / 10**i) * 10**i
 			dist = abs(nu_endpt - endpt)
 			if dist < thres:
@@ -245,11 +245,11 @@ class Formatters(object):
 
 	def get_tiklocs(self, Lo, Hi, num_ticks, decimals=None):
 		step = abs(Hi - Lo)/(num_ticks - 1)
-		tiklocs = sp.arange(Lo, Hi + 0.001, step)
+		tiklocs = np.arange(Lo, Hi + 0.001, step)
 		if decimals:
 			if any(tiklocs  > 1000.):
 				tiklocs = tiklocs/1000.
-			tiklocs = sp.around(tiklocs, decimals=decimals)
+			tiklocs = np.around(tiklocs, decimals=decimals)
 		return tiklocs	
 
 class PlotType(Drawers, Formatters):

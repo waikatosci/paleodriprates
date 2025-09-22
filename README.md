@@ -18,6 +18,9 @@ cd paleodriprates
 Install dependencies (if not already present):
 pip install -r requirements.txt
 
+or just install the following essential components.
+pip install numpy pandas matplotlib scipy openpyxl pillow progressbar
+
 (Note: bayprox is a custom module; it's included in the repo under lib/—add to PYTHONPATH if needed.)
 
 Usage
@@ -25,10 +28,10 @@ Usage
 Run model.py for numerical integration of dissociated fractions (e.g., log-normal distribution of rate constants).
 Example: Compute labile fraction for given residence time (τ).
 
-2) Bayesian Inversion for Drip Rates:
-Use drip_rate_util.py to estimate drip rates from trace metal posteriors.
-Input: Proxy records (Co/Ni concentrations) processed via BayProx for age-depth uncertainties.
-Output: Drip rate PDFs (medians, percentiles) saved as drip_rate_percentiles.xlsx.
+2) Bayesian Inversion for Estimating Drip Rates:
+Use drip_rate_parallel.py (recommended for faster performance) or drip_rate_serial.py (slower) to estimate drip rates from trace metal posteriors.
+Input: Drip_rate.xlsx: Depth-age data, Proxy records (Co/Ni concentrations) processed via BayProx for age-depth uncertainties, and oxygen isotope data.
+Output: Drip rate PDFs (medians, percentiles) saved in the PlotDripRate and PlotDripIsotope sheets of drip_rate.xlsx.
 
 3) Precipitation Reconstruction:
 Run P_quantification_Holocene.ipynb (Jupyter notebook) for chained regressions and Monte Carlo propagation.

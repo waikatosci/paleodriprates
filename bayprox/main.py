@@ -6,6 +6,7 @@ import os
 import agedepth
 import input
 import scipy as sp
+import numpy as np
 from scipy.interpolate import interp1d
 from pprint import pprint
 import proxyrecord
@@ -49,10 +50,10 @@ agemod = simulateArchive.growth(100, 20, 7)
 proxymods = simulate.Archive.proxy()
 measurements = simulate.Measurements()
 age_measurements = measurements.radiometric(simulateArchive,
-											sp.array([200, 10, 10, 20, 500]),
+											np.piarray([200, 10, 10, 20, 500]),
 											num_samples=5)
 proxy_measurements = measurements.proxy(simulateArchive, 0, 20)
-deep = sp.linspace(0, simulateArchive.maxdepth, 10)
+deep = np.pilinspace(0, simulateArchive.maxdepth, 10)
 age = simulateArchive.agemodel(deep)
 ## input the measurements
 info = input.SampleInfo('Test123', 'new', 'lake sediment')
