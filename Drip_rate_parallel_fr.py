@@ -791,10 +791,7 @@ i = prod < 0.               # these are infinitesimally tiny numbers e-300
 prod[i] = 0.
 V_pdf = np.sqrt(prod)
 C = (V_pdf.T * V_rsw).sum(axis=1)
-# Normalize the distribution to make it pdf
-V_pdf = V_pdf / C
-
-# Normalize the distribution to make it pdf
+# Normalize the distribution to make it a proper pdf
 V_pdf = V_pdf / C
 
 # ── Sample realisations from the joint PDF for RQA ──────────────────────
@@ -885,8 +882,9 @@ V_pc90 = np.zeros(len(V_age))
 V_pc95 = np.zeros(len(V_age))
 for i in range(V_pdf.shape[1]):
     cdf = np.cumsum(V_rsw * V_pdf[:, i])
+    cdf /= cdf[-1]                            # ensure CDF reaches exactly 1
     f_ = interp1d(cdf, V_span, kind="linear",
-                    bounds_error=False, fill_value=(0., 1.))
+                    bounds_error=False, fill_value=(V_span[0], V_span[-1]))
     # if idx4==0:
     #     if idx3==0:
     #         outWSs[0].cell(baseRow-1,baseCol+iTarget*(colLen+2)+idx3).value=name2
