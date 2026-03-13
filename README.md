@@ -73,6 +73,7 @@ paleodriprates/
 │   ├── P_quantification_Holocene.ipynb   # Precipitation reconstruction notebook
 │   └── readme.txt                        # Supplementary notes
 │
+├── drip_rate_stationarity_tests.py       # Statistical tests for event significance and stationarity
 ├── figures/                        # Generated plots (sensitivity, reconstructions)
 ├── requirements.txt
 └── LICENSE
@@ -237,6 +238,32 @@ For Co and Ni, the empirical values from Lindeman et al. (2022) are used in pref
 
 ---
 
+## Statistical Tests
+
+`drip_rate_stationarity_tests.py` runs five statistical tests against the Monte Carlo realisation ensemble and the full-posterior summary. Set `CSV_PATH` and `XLSX_PATH` at the top of the script to point to your drip rate outputs, then:
+
+```bash
+python drip_rate_stationarity_tests.py
+```
+
+**Inputs:**
+- `drip_rate_realisations.csv` — full Monte Carlo ensemble (age column + one column per realisation)
+- `Drip_rate_data_HS4.xlsx` — full-posterior summary with age, median, p25, p75 columns
+
+**Tests performed:**
+
+| # | Test | Windows | Method |
+|---|------|---------|--------|
+| 1 | **5.2 ka aridity pulse** | Event 4,500–5,200 BP vs. background 5,500–6,500 BP | IQR non-overlap; pooled MWU + KS; per-realisation MWU |
+| 2 | **8.2 ka anomaly** | Event 8,000–8,500 BP vs. pre-event 9,000–9,500 BP and post-event 7,500–8,000 BP | IQR separation; pooled MWU + KS; per-realisation MWU |
+| 3 | **Post-1820 CE surge** | Modern −400 to 50 BP vs. late-Holocene baseline 500–2,000 BP | Pooled MWU + KS; IQR overlap |
+| 4 | **Holocene trend** | Full series | Mann–Kendall τ + Theil–Sen slope; early vs. late MWU |
+| 5 | **Stationarity** | Full series | Augmented Dickey–Fuller (ADF) unit-root test |
+
+All two-sample tests report rank-biserial effect size and bootstrap 95% CIs on the median difference (10,000 iterations; subsampled to n = 50,000 per group for large pools). Per-realisation MWU loops print progress every 100 realisations. ADF requires `statsmodels` (`pip install statsmodels`).
+
+---
+
 ## Data Availability
 
 Raw proxy data (Co/Ca, Ni/Ca, δ¹⁸O depth series) and U/Th chronology for stalagmite HS4 (Heshang Cave, China) are included in `data/Drip_rate.xlsx`.
@@ -277,55 +304,3 @@ Correspondence: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@linco
 MIT License — see [LICENSE](LICENSE) for details.
 
 
-Usage
-1) Kinetic Model and Dissociation Kinetics:
-Run model.py for numerical integration of dissociated fractions (e.g., log-normal distribution of rate constants).
-Example: Compute labile fraction for given residence time (τ).
-
-2) Bayesian Inversion for Estimating Drip Rates:
-Use drip_rate_parallel.py (recommended for faster performance) or drip_rate_serial.py (slower) to estimate drip rates from trace metal posteriors.
-Input: Drip_rate.xlsx: Depth-age data, Proxy records (Co/Ni concentrations) processed via BayProx for age-depth uncertainties, and oxygen isotope data.
-Output: Drip rate PDFs (medians, percentiles) saved in the PlotDripRate and PlotDripIsotope sheets of drip_rate.xlsx.
-
-3) Precipitation Reconstruction:
-Run P_quantification_Holocene.ipynb (Jupyter notebook) for chained regressions and Monte Carlo propagation.
-Inputs: Drip rate percentiles, temperature estimates (Precip_from_drip_rates.xlsx).
-Outputs: Annual precipitation posteriors (p_reconstruction.csv) with medians and 25–75th percentiles.
-Visualization: Generates plots like p_plot.png for Holocene P trends.
-Supplementary: See readme.txt file in precip_recon directory
-
-5) Utilities:
-utils.py: Progress bars for long computations.
-Example data: Drip_rate.xlsx, ProxyRecordPlot.xlsx for calibration and sensitivity tests.
-For executable versions integrated with Excel, contact the corresponding author (adam.hartland@lincolnagritech.co.nz or waikatoscientific@gmail.com). All scripts are self-contained; test with provided snippets in the manuscript supplement.
-
-Repository Structure
-model.py: Core dissociation kinetics and expectation calculations.
-drip_rate_util.py: Bayesian inversion for drip rates.
-P_quantification_Holocene.ipynb: Notebook for precipitation reconstruction via Monte Carlo.
-utils.py: Helper functions (e.g., progress bars).
-lib/: Custom libraries (e.g., bayprox).
-data/: Excel files for inputs/outputs (e.g., drip_rate_percentiles.xlsx, Precip_from_drip_rates.xlsx).
-figures/: Generated plots (e.g., sensitivity analyses, reconstructions).
-requirements.txt: List of dependencies.
-LICENSE: MIT License (or as specified).
-
-Data Availability
-Raw proxy data and monitoring records are included in Excel files.
-Full archive on Zenodo: DOI: 10.5281/zenodo.16392750.
-Upon publication, an executable Excel-integrated version will be added.
-
-Citation
-If using this code or data, please cite:
-Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B. R. S., Marwan, N., Breitenbach, S. F. M., & Hu, C. (2025). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers. Nature Geoscience. DOI: [insert DOI upon publication].
-
-For the repository:
-Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
-
-License
-This project is licensed under the MIT License—see the LICENSE file for details.
-
-Acknowledgments
-Funded by EU Horizon 2020 Marie Skłodowska-Curie (no. 691037, QUEST), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), Ministry for Business, Innovation and Employment (UOWX2102), and Rutherford Discovery Fellowship (RDF-UOW1601).
-
-For questions or contributions, open an issue or contact the corresponding author.
