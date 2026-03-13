@@ -74,6 +74,7 @@ paleodriprates/
 │   └── readme.txt                        # Supplementary notes
 │
 ├── drip_rate_stationarity_tests.py       # Statistical tests for event significance and stationarity
+├── RQA_HS4_ensemble.py                   # Ensemble RQA for drip rate and δ¹⁸O (Fig. 5)
 ├── figures/                        # Generated plots (sensitivity, reconstructions)
 ├── requirements.txt
 └── LICENSE
@@ -261,6 +262,74 @@ python drip_rate_stationarity_tests.py
 | 5 | **Stationarity** | Full series | Augmented Dickey–Fuller (ADF) unit-root test |
 
 All two-sample tests report rank-biserial effect size and bootstrap 95% CIs on the median difference (10,000 iterations; subsampled to n = 50,000 per group for large pools). Per-realisation MWU loops print progress every 100 realisations. ADF requires `statsmodels` (`pip install statsmodels`).
+
+---
+
+## Recurrence Quantification Analysis (RQA)
+
+`RQA_HS4_ensemble.py` computes windowed ensemble RQA for both the HS4 drip rate and δ¹⁸O Monte Carlo ensembles, producing Fig. 5 and the supplementary recurrence plot figure (FigS1).
+
+```bash
+python RQA_HS4_ensemble.py
+```
+
+**Inputs:**
+
+| File | Description |
+|------|-------------|
+| `drip_rate_realisations.csv` | Age column + r0…r999 drip rate realisations (drips min⁻¹) |
+| `d18O_realisations.csv` | Age column + r0…r999 δ¹⁸O realisations (‰ VPDB) |
+| `Drip_rate.xlsx` sheet `5.OutDripRate` | Drip rate summary: age, pc05–pc95, median |
+| `Drip_rate.xlsx` sheet `6.OutIsotope` | δ¹⁸O summary: age, median |
+
+**Outputs:**
+
+| File | Description |
+|------|-------------|
+| `rqa_ensemble_results.csv` | Per-window DET and TRANS: median, 5th and 95th percentile for both proxies |
+| `rqa_parameters.csv` | Global embedding parameters used in the run (τ, m, Theiler window, RR, l_min, window size/step) |
+| `Fig5_RQA_HS4.pdf/.png/.eps` | Main figure — four stacked panels (Nature Geoscience style, 8.5 × 7 in) |
+| `FigS1_RP_HS4.pdf/.png` | Supplementary full-record recurrence plots for δ¹⁸O and drip rate |
+
+**Figure layout (Fig. 5):**
+- **Panel A** — RQA metrics (DET, TRANS with 5–95th percentile envelopes) for δ¹⁸O
+- **Panel B** — δ¹⁸O ensemble PDF heatmap with median overlay (cividis, inverted y-axis)
+- **Panel C** — RQA metrics for drip rate
+- **Panel D** — Drip rate ensemble PDF heatmap with median and IQR overlays
+
+Dashed vertical markers are drawn automatically on panels A/C and B/D wherever DET falls and stays below `DET_THRESHOLD` (default 0.4) for at least `MIN_SUSTAIN` (default 80) consecutive windows, flagging sustained dynamical regime transitions.
+
+**Method:**
+
+Two RQA measures are computed in a sliding window (100 points, step 5) on each of the 1,000 realisations independently:
+
+- **DET (Determinism)** — fraction of recurrent points forming diagonal lines of length ≥ 2 (Zbilut & Webber 1992). Higher DET indicates more periodic, predictable dynamics.
+- **TRANS (Transitivity)** — recurrence network clustering coefficient (Donner et al. 2010). Reflects the geometric density of the reconstructed attractor; high values indicate constrained, low-dimensional dynamics.
+
+**Embedding parameters** (τ and m) are estimated *once* from the full median series of each proxy, not per window. τ is set by the first minimum of Average Mutual Information (Fraser & Swinney 1986, Phys Rev A 33:1134); m is set by Cao's method (Cao 1997, Physica D 110:43–50), bounded to m ≤ 5. These global estimates are then applied uniformly across all windows and all realisations to ensure a consistent phase-space reconstruction throughout the record.
+
+**Recurrence threshold** is fixed by setting recurrence rate RR = 0.05 (Kraemer et al. 2018, Chaos 28:085720), making DET and TRANS directly comparable across windows and realisations regardless of signal amplitude variation.
+
+**Theiler window** = max(1, τ(m − 1)), excluding autocorrelated neighbours along the line of identity (Theiler 1986; Marwan 2010).
+
+Ensemble median and 5th/95th percentile envelopes across the 1,000 realisations propagate the full age-model uncertainty into both dynamical measures.
+
+**Key configuration options** (top of script):
+
+| Parameter | Default | Notes |
+|-----------|---------|-------|
+| `WINDOW_SIZE` | 100 | Sliding window width (points) |
+| `WINDOW_STEP` | 5 | Step between windows (points) |
+| `TARGET_RR` | 0.05 | Fixed recurrence rate |
+| `MIN_LINE` | 2 | Minimum diagonal line length for DET |
+| `MAX_M` | 5 | Upper bound on embedding dimension (Cao's method) |
+| `SMOOTH_SIGMA` | 2.0 | Gaussian smoothing σ for display curves (points) |
+| `DET_THRESHOLD` | 0.4 | Reference line and threshold for sustained-marker detection |
+| `MIN_SUSTAIN` | 80 | Minimum consecutive windows below threshold to draw a marker |
+| `N_REALISATIONS` | `None` (all 1,000) | Set e.g. `200` for a quick test run |
+| `FORCE_TAU` / `FORCE_M` | `None` | Override AMI/Cao estimates with fixed integers |
+
+A full 1,000-realisation run takes approximately 30–90 minutes depending on hardware.
 
 ---
 
