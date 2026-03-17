@@ -567,7 +567,7 @@ HTML = r'''<!DOCTYPE html>
       <p class="page-desc">Upload your CSV files and map columns to the expected variables. All files should have a header row.</p>
 
       <div class="callout">
-        Expected format: comma-separated CSV with a header row. Depth in <strong>cm</strong>, age in <strong>years BP</strong>. Trace element concentration units are selectable below. Isotope data is <strong>optional</strong>.
+        Expected format: comma-separated CSV with a header row. Depth in <strong>cm</strong>, age in <strong>years BP</strong>. Select the concentration unit your data is in — the unit label is used for parameter hints only; data enters the model unconverted. Isotope data is <strong>optional</strong>.
       </div>
 
       <!-- Depth / Age -->
@@ -895,21 +895,25 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="field">
             <label>Mean ln(K<sub>d</sub>)</label>
-            <input type="number" id="te1_Kd_mn" value="-3.908" step="0.001">
+            <input type="number" id="te1_Kd_mn" value="-3.908" step="0.001"
+                   oninput="updateParamHints('te1')">
+            <div id="te1_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
           </div>
           <div class="field">
             <label>Std dev ln(K<sub>d</sub>)</label>
-            <input type="number" id="te1_Kd_sd" value="1.385" step="0.001">
+            <input type="number" id="te1_Kd_sd" value="1.385" step="0.001"
+                   oninput="updateParamHints('te1')">
+            <div id="te1_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
           </div>
           <div class="field">
             <label>X<sub>F</sub> — Fast fraction</label>
             <input type="number" id="te1_F" value="0.01" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te1')">
+                   oninput="updateLabile('te1');updateParamHints('te1')">
           </div>
           <div class="field">
             <label>X<sub>I</sub> — Inert fraction</label>
             <input type="number" id="te1_InertF" value="0.1" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te1')">
+                   oninput="updateLabile('te1');updateParamHints('te1')">
           </div>
           <div class="field">
             <label>X<sub>L</sub> — Labile fraction (auto)</label>
@@ -918,8 +922,14 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="field fullonly">
             <label>Aqueous concentration</label>
-            <input type="number" id="te1_aq_conc" value="4.370" step="0.001">
-          <select id="te1_aq_unit" style="margin-top:4px;width:100%"><option value="ppb">ppb</option><option value="ppm">ppm</option><option value="ug/g">µg/g</option><option value="mg/kg">mg/kg</option></select>
+            <input type="number" id="te1_aq_conc" value="4.370" step="0.001"
+                   oninput="updateParamHints('te1')">
+            <div id="te1_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          <select id="te1_aq_unit" style="margin-top:4px;width:100%"
+                  onchange="updateParamHints('te1')"><option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
+          </div>
+          <div class="field fullonly" style="grid-column:1/-1">
+            <div id="te1_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div>
           </div>
         </div>
       </div>
@@ -1014,21 +1024,25 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="field">
             <label>Mean ln(K<sub>d</sub>)</label>
-            <input type="number" id="te2_Kd_mn" value="-5.572" step="0.001">
+            <input type="number" id="te2_Kd_mn" value="-5.572" step="0.001"
+                   oninput="updateParamHints('te2')">
+            <div id="te2_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
           </div>
           <div class="field">
             <label>Std dev ln(K<sub>d</sub>)</label>
-            <input type="number" id="te2_Kd_sd" value="1.385" step="0.001">
+            <input type="number" id="te2_Kd_sd" value="1.385" step="0.001"
+                   oninput="updateParamHints('te2')">
+            <div id="te2_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
           </div>
           <div class="field">
             <label>X<sub>F</sub> — Fast fraction</label>
             <input type="number" id="te2_F" value="0.01" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te2')">
+                   oninput="updateLabile('te2');updateParamHints('te2')">
           </div>
           <div class="field">
             <label>X<sub>I</sub> — Inert fraction</label>
             <input type="number" id="te2_InertF" value="0.4" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te2')">
+                   oninput="updateLabile('te2');updateParamHints('te2')">
           </div>
           <div class="field">
             <label>X<sub>L</sub> — Labile fraction (auto)</label>
@@ -1037,8 +1051,14 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="field">
             <label>Aqueous concentration</label>
-            <input type="number" id="te2_aq_conc" value="0.460" step="0.001">
-          <select id="te2_aq_unit" class="fullonly" style="margin-top:4px;width:100%"><option value="ppb">ppb</option><option value="ppm">ppm</option><option value="ug/g">µg/g</option><option value="mg/kg">mg/kg</option></select>
+            <input type="number" id="te2_aq_conc" value="0.460" step="0.001"
+                   oninput="updateParamHints('te2')">
+            <div id="te2_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          <select id="te2_aq_unit" class="fullonly" style="margin-top:4px;width:100%"
+                  onchange="updateParamHints('te2')"><option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
+          </div>
+          <div class="field fullonly" style="grid-column:1/-1">
+            <div id="te2_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div>
           </div>
         </div>
       </div>
@@ -1056,8 +1076,11 @@ HTML = r'''<!DOCTYPE html>
           </div>
           <div class="field fullonly">
             <label>Ca concentration in drip water</label>
-            <input type="number" id="ca_conc" value="62000" step="100">
-          <select id="ca_unit" style="margin-top:4px;width:100%"><option value="ppb">ppb</option><option value="ppm">ppm</option><option value="ug/g">µg/g</option><option value="mg/kg">mg/kg</option></select>
+            <input type="number" id="ca_conc" value="62" step="0.1"
+                   oninput="updateCaHint();updateAllParamHints()">
+            <div id="ca_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          <select id="ca_unit" style="margin-top:4px;width:100%"
+                  onchange="updateCaHint();updateAllParamHints()"><option value="ppb">ppb  (µg/L)</option><option value="ppm" selected>ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
           </div>
         </div>
       </div>
@@ -1078,7 +1101,7 @@ HTML = r'''<!DOCTYPE html>
         <div class="card-title">📊 Realisations (for RQA)</div>
         <div class="field" style="margin-bottom:12px">
           <label style="display:flex;align-items:center;gap:10px;cursor:pointer;color:var(--text)">
-            <input type="checkbox" id="generate_realisations" checked
+            <input type="checkbox" id="generate_realisations"
                    style="accent-color:var(--accent);width:14px;height:14px"
                    onchange="document.getElementById('rqa-options').style.display=this.checked?'':' none'">
             Generate realisations CSV (needed for RQA)
@@ -1394,12 +1417,15 @@ function showPanel(name) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('panel-' + name).classList.add('active');
+  const _main = document.querySelector('main');
+  if (_main) _main.scrollTo({top: 0, behavior: 'smooth'});
   // Find matching nav item safely without template-literal querySelector
   document.querySelectorAll('.nav-item').forEach(n => {
     const oc = n.getAttribute('onclick') || '';
     if (oc.includes("'" + name + "'")) n.classList.add('active');
   });
   if (name === 'run') { buildSummary(); updateRuntimeEstimate(); runSanityChecks(); }
+  if (name === 'params') updateAllParamHints();
   if (name === 'results') loadChart();
   if (name === 'downloads') refreshDownloads();
 }
@@ -1449,8 +1475,8 @@ let teDepthCol = '';  // selected depth column
 let teRowData  = [];  // [{col, unit}, ...]
 
 const UNIT_OPTS = [
-  {v:'ppb', l:'ppb (µg/L or ng/g)'},
-  {v:'ppm', l:'ppm (µg/g or mg/kg)'},
+  {v:'ppb', l:'ppb  (ng/g)'},
+  {v:'ppm', l:'ppm  (µg/g)'},
   {v:'ug/g', l:'µg/g'},
   {v:'mg/kg', l:'mg/kg'},
 ];
@@ -1589,22 +1615,33 @@ function makeTEParamCard(n) {
       <div class="field"><label>Partition coefficient Kp</label>
         <input type="number" id="${p}_Kp" value="-1" step="0.01" oninput="updateTheoKp('${p}')"></div>
       <div class="field"><label>Mean ln(K<sub>d</sub>)</label>
-        <input type="number" id="${p}_Kd_mn" value="-3.908" step="0.001"></div>
+        <input type="number" id="${p}_Kd_mn" value="-3.908" step="0.001"
+               oninput="updateParamHints('${p}')">
+        <div id="${p}_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div></div>
       <div class="field"><label>Std dev ln(K<sub>d</sub>)</label>
-        <input type="number" id="${p}_Kd_sd" value="1.385" step="0.001"></div>
+        <input type="number" id="${p}_Kd_sd" value="1.385" step="0.001"
+               oninput="updateParamHints('${p}')">
+        <div id="${p}_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div></div>
       <div class="field"><label>X<sub>F</sub> — Fast fraction</label>
-        <input type="number" id="${p}_F" value="0.01" step="0.001" min="0" max="1" oninput="updateLabile('${p}')"></div>
+        <input type="number" id="${p}_F" value="0.01" step="0.001" min="0" max="1"
+               oninput="updateLabile('${p}');updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>I</sub> — Inert fraction</label>
-        <input type="number" id="${p}_InertF" value="0.1" step="0.001" min="0" max="1" oninput="updateLabile('${p}')"></div>
+        <input type="number" id="${p}_InertF" value="0.1" step="0.001" min="0" max="1"
+               oninput="updateLabile('${p}');updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>L</sub> — Labile (auto)</label>
         <input type="number" id="${p}_labile" value="0.89" step="0.001" readonly
                style="opacity:0.6;cursor:not-allowed"></div>
       <div class="field fullonly"><label>Aqueous concentration</label>
-        <input type="number" id="${p}_aq_conc" value="4.370" step="0.001">
-        <select id="${p}_aq_unit" style="margin-top:4px;width:100%">
-          <option value="ppb">ppb</option><option value="ppm">ppm</option>
-          <option value="ug/g">µg/g</option><option value="mg/kg">mg/kg</option>
+        <input type="number" id="${p}_aq_conc" value="4.370" step="0.001"
+               oninput="updateParamHints('${p}')">
+        <div id="${p}_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+        <select id="${p}_aq_unit" style="margin-top:4px;width:100%"
+                onchange="updateParamHints('${p}')">
+          <option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option>
+          <option value="ug/g">µg/g  (≈ mg/L)</option><option value="mg/kg">mg/kg  (≈ mg/L)</option>
         </select></div>
+      <div class="field fullonly" style="grid-column:1/-1">
+        <div id="${p}_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div></div>
     </div></div>`;
 }
 
@@ -1626,6 +1663,7 @@ function renderTEParamCards() {
   }
   // Re-apply detection for built-in cards (TE1, TE2) too
   for (let i = 0; i < Math.min(n, 2); i++) applyElemDetection(i);
+  updateAllParamHints();
 }
 
 function populateColSelectors(key, columns) {
@@ -1652,6 +1690,7 @@ function populateColSelectors(key, columns) {
     renderTEParamCards();
     // Auto-detect element for each initial row after cards are in DOM
     teRowData.forEach((_, i) => applyElemDetection(i));
+    updateAllParamHints();
     // Re-init preprocessing now that depth col is known
     if (teRawData && Object.keys(teRawData).length) {
       initPreprocessing(teRawData, teDepthCol, Object.keys(teRawData).length
@@ -1801,15 +1840,33 @@ function renderAgePlot() {
     if (extHiPts.length) extHiPts.unshift(solidPts[solidPts.length-1]);
   }
 
-  // Auto-populate age range from extrapolated endpoints
+  // Youngest and oldest ages in the actual data
+  const ageDataMin = Math.min(...ages);  // youngest — extrapolation must not go below this
+  const ageDataMax = Math.max(...ages);
+
+  // Auto-populate age range from extrapolated endpoints,
+  // clamping ageMin so it never exceeds the shallowest dated age.
   let ageMin, ageMax;
   if (fit) {
-    ageMin = Math.round(Math.min(fit.predict(dExtMin), fit.predict(dExtMax)));
-    ageMax = Math.round(Math.max(fit.predict(dExtMin), fit.predict(dExtMax)));
+    const predLo = fit.predict(dExtMin);
+    const predHi = fit.predict(dExtMax);
+    // Top of record: shallowest depth has smallest (youngest) age.
+    // Clamp the upper end of the visual extrapolation to ageDataMin.
+    ageMin = Math.round(Math.max(Math.min(predLo, predHi), ageDataMin));
+    ageMax = Math.round(Math.max(predLo, predHi));
   } else {
-    ageMin = Math.round(Math.min(...ages));
-    ageMax = Math.round(Math.max(...ages));
+    ageMin = Math.round(ageDataMin);
+    ageMax = Math.round(ageDataMax);
   }
+
+  // Also clip the visual extLoPts curve so it stops at ageDataMin
+  if (fit) {
+    // Remove any extrapolation points that predict age < ageDataMin
+    const extLoFiltered = extLoPts.filter(p => p.y >= ageDataMin);
+    extLoPts.length = 0;
+    extLoFiltered.forEach(p => extLoPts.push(p));
+  }
+
   const extMin = document.getElementById('age-extrap-min');
   const extMax = document.getElementById('age-extrap-max');
   if (extMin && !extMin.dataset.manual) extMin.value = ageMin;
@@ -2120,8 +2177,10 @@ function applyPreprocessing() {
 
 // ── Runtime estimate ─────────────────────────────────────────────────────
 // Empirical: ~0.025 s per (depth point × calage step) on a typical laptop.
-// BayProX dominates; drip rate step is fast (~seconds).
-const BAYPROX_SEC_PER_PT_STEP = 0.000028;
+// Empirical constant: ~900s BayProX for 387pts × 9500yr × 2 passes (depth/age + 1 TE PDist).
+// = 900 / (387 × 9500 × 2) ≈ 0.000122 s per point per year per pass.
+// Hardware varies 2–5×; treat as order-of-magnitude guide.
+const BAYPROX_SEC_PER_PT_YR = 0.000122;
 
 function updateRuntimeEstimate() {
   const el = document.getElementById('runtime-estimate-body');
@@ -2135,7 +2194,9 @@ function updateRuntimeEstimate() {
 
   if (nPts === 0) { el.innerHTML = '<span style="color:var(--muted)">Upload TE data to see estimate.</span>'; return; }
 
-  const bayproxSec = useCached ? 0 : nPts * nAge * BAYPROX_SEC_PER_PT_STEP * nTEs;
+  // depth/age BayProX pass + one PDist pass per TE
+  const nPasses    = 1 + nTEs;
+  const bayproxSec = useCached ? 0 : nPts * nAge * BAYPROX_SEC_PER_PT_YR * nPasses;
   const dripSec    = nPts * nTEs * 0.05;  // fast
   const totalSec   = bayproxSec + dripSec + 60;  // +60s overhead
 
@@ -2238,28 +2299,31 @@ function runSanityChecks() {
       const dataUnit = r.unit || 'ppb';
       const dataCol  = r.col;
 
-      if (aqPPB > 0 && caPPB > 0 && teRawData[dataCol]) {
-        // Predicted speleothem conc (ppb) at median drip rate
-        const kd        = Math.exp(kdMn);
-        const predPPB   = kd * xl * (aqPPB / caPPB) * caPPB;  // Kd×XL×(aq/Ca)×Ca = Kd×XL×aq
-        // Observed median — convert raw data to ppb
-        const rawVals   = (teRawData[dataCol] || []).map(Number).filter(isFinite);
+      if (aqPPB > 0 && teRawData[dataCol]) {
+        // Predicted in data-native units: Kd×XL×aq_ppb, then convert to dataUnit.
+        // Since load() no longer converts solid data, both sides must be in the
+        // same native unit for a meaningful comparison.
+        const kd          = Math.exp(kdMn);
+        const predPPB     = kd * xl * aqPPB;  // ppb
+        const dataFactor  = UNIT_TO_PPB[dataUnit] || 1;
+        const predNative  = predPPB / dataFactor;  // convert pred to data units
+        const rawVals     = (teRawData[dataCol] || []).map(Number).filter(isFinite);
         if (rawVals.length) {
           rawVals.sort((a,b)=>a-b);
-          const obsPPB  = rawVals[Math.floor(rawVals.length/2)] * (UNIT_TO_PPB[dataUnit] || 1);
-          const ratio   = obsPPB / predPPB;
+          const obsNative = rawVals[Math.floor(rawVals.length/2)];
+          const ratio     = obsNative / predNative;
           if (ratio > 50 || ratio < 0.02) {
-            const dir   = ratio > 1 ? 'higher' : 'lower';
-            const hint  = ratio > 50
-              ? 'Check aq_conc units — value may be in ppm but selector set to ppb, or ca_conc may be too high.'
-              : 'Predicted concentration far exceeds data — check Kd, aq_conc, or ca_conc values.';
+            const dir  = ratio > 1 ? 'higher' : 'lower';
+            const hint = ratio > 50
+              ? 'Check aq_conc value and units — or verify Kd is appropriate for this element.'
+              : 'Predicted concentration far exceeds data — check Kd, aq_conc values.';
             warnings.push(
               `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,160,50,0.08);
                            border-left:3px solid #ffa032;border-radius:0 4px 4px 0">
-                <strong style="color:#ffa032">TE${n} (${p}_elem value) — concentration mismatch (${ratio.toFixed(0)}×)</strong><br>
-                Predicted speleothem conc: <code>${predPPB.toFixed(3)} ppb</code> &nbsp;·&nbsp;
-                Observed median: <code>${obsPPB.toFixed(3)} ppb</code> &nbsp;·&nbsp;
-                Observed is ${ratio.toFixed(0)}× ${dir} than predicted.<br>
+                <strong style="color:#ffa032">TE${n} — concentration mismatch (${ratio.toFixed(0)}×)</strong><br>
+                Predicted [TE]<sub>calcite</sub>: <code>${predNative.toFixed(3)} ${dataUnit}</code>
+                &nbsp;·&nbsp; Observed median: <code>${obsNative.toFixed(3)} ${dataUnit}</code>
+                &nbsp;·&nbsp; Observed is ${ratio.toFixed(0)}× ${dir} than predicted.<br>
                 <span style="color:var(--muted)">${hint}</span>
               </div>`
             );
@@ -2280,7 +2344,9 @@ function runSanityChecks() {
                        border-left:3px solid #6495ed;border-radius:0 4px 4px 0">
             <strong style="color:#6495ed">TE${n} — unit mismatch note</strong><br>
             Data column unit is <code>${dataUnit}</code> but aq_conc unit is <code>${aqUnit}</code>.
-            Both are converted to ppb internally — just confirm this is intentional.
+            Note: solid proxy data is <strong>not</strong> unit-converted before entering the model.
+            Aqueous concentration (aq_conc) is converted internally. Confirm both values are
+            on a consistent scale.
           </div>`
         );
       }
@@ -2749,6 +2815,138 @@ function refreshDownloads(files) {
 // the Wang & Xu lattice-strain formula is used.
 const THEO_KP = { 'Co': 4.4, 'Ni': 1.1, 'Cu': 44 };  // Lindeman et al. GCA 2022
 
+// ── Reactive parameter hints ────────────────────────────────────────────
+const UNIT_FACTOR = {ppb:1, ppm:1000, 'ug/g':1000, 'mg/kg':1000};
+
+// Returns the raw median of proxy data in its native units (no conversion).
+// Used for model comparison — the forward model works in data-native units.
+// The unit selector is informational only; the data is NOT converted before
+// entering the PDist / BayProX pipeline.
+function getObsMedianPPB(teIdx) {
+  const row = teRowData[teIdx];
+  if (!row || !teRawData[row.col]) return null;
+  const vals = (teRawData[row.col]||[]).map(v=>parseFloat(v)).filter(isFinite);
+  if (!vals.length) return null;
+  vals.sort((a,b)=>a-b);
+  return vals[Math.floor(vals.length/2)];
+}
+
+function fmtPPB(v) {
+  if (!isFinite(v)||v<=0) return null;
+  if (v>=1000) return (v/1000).toFixed(3)+' ppm';
+  if (v>=1)    return v.toFixed(3)+' ppb';
+  return (v*1000).toFixed(1)+' ppt';
+}
+
+function updateParamHints(prefix) {
+  const idx    = parseInt(prefix.replace(/[^0-9]/g,'')) - 1;
+  const kdMn   = parseFloat(document.getElementById(prefix+'_Kd_mn')?.value);
+  const kdSd   = parseFloat(document.getElementById(prefix+'_Kd_sd')?.value);
+  const xl     = parseFloat(document.getElementById(prefix+'_labile')?.value);
+  const aqVal  = parseFloat(document.getElementById(prefix+'_aq_conc')?.value);
+  const aqUnit = document.getElementById(prefix+'_aq_unit')?.value||'ppb';
+  const aqPPB  = isFinite(aqVal) ? aqVal*(UNIT_FACTOR[aqUnit]||1) : null;
+  const molWt  = parseFloat(document.getElementById(prefix+'_mol_wt')?.value) || 58.693;
+  const kpVal  = parseFloat(document.getElementById(prefix+'_Kp')?.value);
+  // If Kp=-1 use the known lookup value; otherwise use entered value
+  const kp     = (kpVal === -1 || !isFinite(kpVal))
+                 ? (typeof THEO_KP !== 'undefined'
+                    ? (THEO_KP[document.getElementById(prefix+'_elem')?.value] || 1)
+                    : 1)
+                 : kpVal;
+  const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+  const caUnit = document.getElementById('ca_unit')?.value||'ppb';
+  const caPPB  = caVal * (UNIT_FACTOR[caUnit]||1);  // µg/L
+  // Ca in calcite: CaCO3 is ~40% Ca by mass = 400,000 ppm = 400,000,000 ppb
+  const CA_CALCITE_PPM = 400000;
+  const kd     = isFinite(kdMn) ? Math.exp(kdMn) : null;
+  const kdLo   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn-kdSd) : null;
+  const kdHi   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn+kdSd) : null;
+  const obs    = getObsMedianPPB(idx);
+
+  const h = id => document.getElementById(id);
+
+  // Kd_mn: show Kd value + implied ln(Kd) from data
+  const kh = h(prefix+'_Kd_mn_hint');
+  if (kh) {
+    let parts = [];
+    if (kd) parts.push(`Kd = ${kd.toExponential(2)}`);
+    if (kdLo&&kdHi) parts.push(`1σ range: ${kdLo.toExponential(2)}–${kdHi.toExponential(2)}`);
+    if (obs&&xl>0&&aqPPB>0&&caPPB>0) {
+      // implied ln(Kd) from data using full Kp-based formula
+      const aqMol = aqPPB/molWt, caMol = caPPB/40.078;
+      const imp   = Math.log(obs / (xl * (aqMol/caMol) * CA_CALCITE_PPM));
+      parts.push(`implied by data: ln(Kp×XL) ≈ ${imp.toFixed(3)}`);
+    }
+    kh.textContent = parts.join(' · ');
+  }
+
+  // Kd_sd: spread note
+  const sh = h(prefix+'_Kd_sd_hint');
+  if (sh&&isFinite(kdSd))
+    sh.textContent = `±1σ spans ${Math.exp(kdSd).toFixed(2)}× in Kd. Lindeman 2022 default: 1.385.`;
+
+  // aq_conc: show ppb equivalent + implied value from data
+  const ah = h(prefix+'_aq_hint');
+  if (ah) {
+    let parts = [];
+    if (aqPPB>0) parts.push(`= ${fmtPPB(aqPPB)} (in ppb)`);
+    if (obs&&kp>0&&xl>0&&caPPB>0) {
+      const caMol = caPPB/40.078;
+      const impliedAqMol = obs / (kp * xl * CA_CALCITE_PPM);
+      const impliedAqPPB = impliedAqMol * caMol * molWt;
+      parts.push(`implied by data + Kp: ${fmtPPB(impliedAqPPB)}`);
+    }
+    ah.textContent = parts.join(' · ');
+  }
+
+  // Predicted vs observed summary
+  // pred = Kd×XL×aq_conc (ppb). This approximation is valid when ca_conc
+  // matches the calibration conditions. For large Ca deviations the full
+  // model prediction will differ, but the ratio is still useful for
+  // detecting order-of-magnitude unit mismatches.
+  const po = h(prefix+'_pred_obs');
+  if (po&&analysisMode==='full') {
+    // Full forward prediction: Kp × XL × (aq_mol/ca_mol) × Ca_calcite
+    // This properly responds to changes in Ca, Kp, aq_conc, and XL.
+    const canPredict = kp>0 && xl>0 && aqPPB>0 && caPPB>0 && molWt>0;
+    if (canPredict) {
+      const aqMol  = aqPPB / molWt;       // µg/L / (g/mol) = proportional to mol/L
+      const caMol  = caPPB / 40.078;       // same scale
+      const pred   = kp * xl * (aqMol / caMol) * CA_CALCITE_PPM;  // ppm
+      let txt = `Predicted [TE]<sub>calcite</sub> ≈ <strong>${pred.toFixed(3)} ppm</strong>`;
+      if (obs) {
+        const ratio = obs/pred;
+        const col = (ratio>50||ratio<0.02) ? '#ffa032' : 'var(--accent)';
+        txt += ` &nbsp;·&nbsp; Observed median: <strong>${fmtPPB(obs)}</strong>`
+             + ` &nbsp;·&nbsp; Ratio: <strong style="color:${col}">${ratio.toFixed(1)}×</strong>`;
+        if (ratio>50||ratio<0.02)
+          txt += ' <span style="color:#ffa032">⚠ check units / concentrations</span>';
+      } else {
+        txt += ' &nbsp;·&nbsp; <span style="color:var(--muted)">upload TE data to compare</span>';
+      }
+      po.innerHTML = txt; po.style.display = '';
+    } else { po.style.display = 'none'; }
+  } else if (po) { po.style.display = 'none'; }
+}
+
+function updateCaHint() {
+  const val  = parseFloat(document.getElementById('ca_conc')?.value);
+  const unit = document.getElementById('ca_unit')?.value||'ppb';
+  const hint = document.getElementById('ca_hint');
+  if (!hint||!isFinite(val)) return;
+  const mgL  = val*(UNIT_FACTOR[unit]||1)/1000;
+  const flag = mgL>200 ? ' ⚠ unusually high' : mgL<5 ? ' ⚠ unusually low' : '';
+  const col  = flag ? '#ffa032' : 'var(--muted)';
+  hint.innerHTML = `<span style="color:${col}">${mgL.toFixed(1)} mg/L${flag}</span>`
+    +' &nbsp;·&nbsp; typical limestone cave: 20–100 mg/L';
+}
+
+function updateAllParamHints() {
+  for (let i=1; i<=Math.max(teRowData.length,2); i++) updateParamHints(`te${i}`);
+  updateCaHint();
+}
+
 function updateTheoKp(prefix) {
   const kpInput = document.getElementById(prefix + '_Kp');
   const theoField = document.getElementById(prefix + '_Kp_theo');
@@ -2774,6 +2972,7 @@ function updateLabile(prefix) {
   const xI = parseFloat(document.getElementById(prefix + '_InertF').value) || 0;
   const xL = Math.max(0, 1.0 - xI - xF);
   document.getElementById(prefix + '_labile').value = xL.toFixed(4);
+  updateParamHints(prefix);
   // Warn if fractions exceed 1
   const warn = (xI + xF) > 1.0;
   document.getElementById(prefix + '_F').style.borderColor    = warn ? 'var(--danger)' : '';
@@ -2962,6 +3161,15 @@ def _run_model(params):
                             BAYPROX_MAX_DEGREE as max_degree,
                             BAYPROX_SOLVER_METHOD as method)
 
+        def _unit_to_ppb(unit):
+            """Return multiplier to convert data in `unit` to ppb.
+            Defined here (outside cache/no-cache branches) so it is always
+            available to _aq() and make_te() regardless of whether the proxy
+            record is loaded from cache or computed fresh.
+            """
+            return {'ppb': 1.0, 'ppm': 1000.0,
+                    'ug/g': 1000.0, 'mg/kg': 1000.0}.get(str(unit).strip(), 1.0)
+
         # ── Check whether we can use the cached proxy record ────────────────
         proxy_pkl = os.path.join(OUTPUT_FOLDER, 'ProxyRecord.pkl')
         use_cache = params.get('use_cached_proxy') and os.path.exists(proxy_pkl)
@@ -3002,16 +3210,15 @@ def _run_model(params):
             # ── 1. Load data ─────────────────────────────────────────────────
             _set_stage('Loading data', 2)
 
-            def _unit_to_ppb(unit):
-                """Return multiplier to convert data in `unit` to ppb."""
-                return {'ppb': 1.0, 'ppm': 1000.0,
-                        'ug/g': 1000.0, 'mg/kg': 1000.0}.get(str(unit).strip(), 1.0)
 
-            def load(key, col_depth, col_proxy, unit='ppb'):
+            def load(key, col_depth, col_proxy, unit='ppb'):  # unit kept for back-compat only
                 path = os.path.join(UPLOAD_FOLDER, key + '.csv')
                 df = pd.read_csv(path)
                 x = df[col_depth].to_numpy(dtype=float)
-                y = df[col_proxy].to_numpy(dtype=float) * _unit_to_ppb(unit)
+                # Solid proxy data is NOT unit-converted here — model.dr_pdfseries
+                # expects data in the same units as when the model was calibrated.
+                # The unit selector is used only for hints and sanity checks.
+                y = df[col_proxy].to_numpy(dtype=float)
                 mask = ~np.isnan(x) & ~np.isnan(y)
                 return x[mask], y[mask]
 
@@ -3171,9 +3378,44 @@ def _run_model(params):
         _analysis_mode = params.get('analysis_mode', 'full')
         log(f'Analysis mode: {_analysis_mode}')
 
+        # Build a lookup of observed median concentrations (ppb) per TE row key
+        # Used in semi mode to auto-scale aq_conc so the PDF has support in data range.
+        _obs_median_ppb = {}
+        try:
+            _te_csv = os.path.join(UPLOAD_FOLDER, 'trace_elem1.csv')
+            if os.path.isfile(_te_csv):
+                _te_df = pd.read_csv(_te_csv)
+                for _i, _te in enumerate(params.get('te_list', []) or
+                                         [{'col_proxy': params.get('te1_col_proxy',''),
+                                           'unit': params.get('te1_unit','ppb')}]):
+                    _col = _te.get('col_proxy','')
+                    _unt = _te.get('unit','ppb')
+                    if _col and _col in _te_df.columns:
+                        _vals = pd.to_numeric(_te_df[_col], errors='coerce').dropna()
+                        if len(_vals):
+                            _obs_median_ppb[f'te{_i+1}'] = float(_vals.median()) * _unit_to_ppb(_unt)
+        except Exception as _e:
+            log(f'Semi-quant: could not read proxy medians ({_e})')
+
         def _aq(row):
-            """aq_conc converted to ppb — returns 1.0 in semi mode (shape only)."""
+            """aq_conc converted to ppb.
+            In semi mode: auto-scale to observed proxy median / (Kd * XL)
+            so the predicted concentration is centred on the data range and
+            the drip rate PDF has support. The subsequent normalisation to
+            % of max is unaffected by this scaling.
+            """
             if _analysis_mode == 'semi':
+                obs = _obs_median_ppb.get(row)
+                if obs and obs > 0:
+                    kd  = float(np.exp(float(params[row + '_Kd_mn'])))
+                    xl  = max(float(params[row + '_labile']) if params.get(row + '_labile')
+                              else 1.0 - float(params.get(row + '_InertF', 0))
+                                       - float(params.get(row + '_F', 0)), 0.01)
+                    implied = obs / max(kd * xl, 1e-10)
+                    log(f'Semi-quant {row}: obs median={obs:.4f} ppb, '
+                        f'implied aq_conc={implied:.4f} ppb (Kd={kd:.4f}, XL={xl:.4f})')
+                    return implied
+                log(f'Semi-quant {row}: no proxy median available, using aq_conc=1.0')
                 return 1.0
             return float(params[row + '_aq_conc']) * _unit_to_ppb(params.get(row + '_aq_unit', 'ppb'))
 
@@ -3236,7 +3478,7 @@ def _run_model(params):
                 jp[jp < 0] = 0.
                 jp = np.power(jp, 1.0 / n)
             C = (jp.T * rsw).sum(axis=1)
-            C[C == 0] = 1.
+            C[C == 0] = 1.0
             jp = jp / C
             med = np.zeros(jp.shape[1])
             for _i in range(jp.shape[1]):
@@ -3269,19 +3511,28 @@ def _run_model(params):
             _prod[_prod < 0.] = 0.
             V_pdf = np.power(_prod, 1.0 / _n_te_pdf)
         C = (V_pdf.T * V_rsw).sum(axis=1)
+        # Guard against zero-sum columns (PDF collapsed at some timesteps)
+        C[C == 0] = 1.0
         V_pdf = V_pdf / C
 
         # ── 8. Summary statistics ───────────────────────────────────────────
         _set_stage('Extracting percentiles', 88)
         pcs = [5, 10, 25, 50, 75, 90, 95]
         V_pcs = {p: np.zeros(len(V_age)) for p in pcs}
+        _n_zero_cols = 0
         for i in range(V_pdf.shape[1]):
             cdf = np.cumsum(V_rsw * V_pdf[:, i])
+            if cdf[-1] <= 0 or not np.isfinite(cdf[-1]):
+                _n_zero_cols += 1
+                continue  # leave V_pcs[p][i] = 0; flagged below
             cdf /= cdf[-1]
             f_ = interp1d(cdf, V_span, kind='linear',
                           bounds_error=False, fill_value=(V_span[0], V_span[-1]))
             for p in pcs:
                 V_pcs[p][i] = f_(p / 100.)
+        if _n_zero_cols > 0:
+            log(f'Warning: {_n_zero_cols}/{V_pdf.shape[1]} timesteps had zero PDF '
+                f'— drip rate could not be estimated. Check Kd, aq_conc and data units.')
 
         # ── Semi-quant normalisation ─────────────────────────────────────────
         if _analysis_mode == 'semi':
