@@ -204,6 +204,28 @@ The BayProX proxy record computation is the slowest step (progress and ETA are s
 
 The Run page shows a **Configuration Summary** auto-populated from current inputs, reflecting the actual number of configured trace elements, their column names and units, and the selected analysis mode.
 
+#### Pre-run parameter checks
+
+When the Run panel is opened and again when **Start Run** is clicked, a set of sanity checks fires automatically against the current parameters. Any issues are shown in a **Parameter Warnings** card above the progress bar. Three severity levels are used:
+
+| Colour | Meaning | Behaviour |
+|--------|---------|-----------|
+| 🔴 Red | Hard error — run will definitely fail | Blocks start; confirmation required to override |
+| 🟠 Amber | Likely misconfiguration — run will probably produce NaN results | Blocks start with override option |
+| 🔵 Blue | Informational note — worth verifying but not blocking | Run proceeds normally |
+
+**Checks performed (Full Quantification mode only):**
+
+**Concentration mismatch (amber)** — the most common cause of silent NaN outputs. Estimates the predicted median speleothem concentration as `Kd × XL × aq_conc_ppb` and compares it to the actual median of the uploaded proxy data (converted to ppb using the data unit selector). If the ratio exceeds 50× or falls below 0.02×, a warning shows both values and the ratio with a hint pointing to the most likely cause. A ratio >50× typically means aq_conc is in ppm but the unit selector is left on ppb, or ca_conc is unrealistically high. A ratio <0.02× means the reverse.
+
+**Unit scale mismatch (blue)** — if the aq_conc unit selector and the proxy data unit selector are on different scales (e.g. data in ppm, aq_conc in ppb), an informational note appears confirming both are converted to ppb internally and prompting the user to verify this is intentional.
+
+**Missing aq_conc (red)** — if aq_conc is zero or blank, the run is blocked.
+
+**Ca concentration unusually high (amber)** — if ca_conc converts to >200 mg/L, a warning appears. Typical cave drip water Ca is 20–100 mg/L; values above 200 usually indicate a units error (e.g. value entered in mg/L but selector left on ppb).
+
+All checks are skipped in Semi-Quantitative mode as aqueous chemistry inputs are not used.
+
 #### Runtime estimate
 
 Before starting, a **Runtime Estimate** card shows three statistics derived from the current configuration:
