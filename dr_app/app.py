@@ -1149,6 +1149,11 @@ HTML = r'''<!DOCTYPE html>
         <div id="runtime-estimate-body" style="font-size:12px;color:var(--text);line-height:1.9"></div>
       </div>
 
+      <div class="card" id="sanity-card" style="display:none">
+        <div class="card-title">⚠️ Parameter Warnings</div>
+        <div id="sanity-body" style="font-size:11px;line-height:1.8"></div>
+      </div>
+
       <div class="card">
         <div class="card-title">Progress</div>
         <div id="stageLabel" style="font-size:12px; color:var(--text); min-height:18px"></div>
@@ -1394,7 +1399,7 @@ function showPanel(name) {
     const oc = n.getAttribute('onclick') || '';
     if (oc.includes("'" + name + "'")) n.classList.add('active');
   });
-  if (name === 'run') { buildSummary(); updateRuntimeEstimate(); }
+  if (name === 'run') { buildSummary(); updateRuntimeEstimate(); runSanityChecks(); }
   if (name === 'results') loadChart();
   if (name === 'downloads') refreshDownloads();
 }
@@ -2209,7 +2214,132 @@ function buildSummary() {
 function v(id) { return document.getElementById(id)?.value ?? ''; }
 
 // ── Run ──────────────────────────────────────────────────────────────────────
+// ── Pre-run sanity checks ────────────────────────────────────────────────
+const UNIT_TO_PPB = {ppb:1, ppm:1000, 'ug/g':1000, 'mg/kg':1000};
+
+function runSanityChecks() {
+  const warnings = [];
+  const mode = analysisMode;
+
+  teRowData.forEach((r, i) => {
+    const n = i + 1;
+    const p = `te${n}`;
+
+    // 1. Predicted vs observed speleothem concentration
+    if (mode === 'full') {
+      const aqVal    = parseFloat(document.getElementById(`${p}_aq_conc`)?.value) || 0;
+      const aqUnit   = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
+      const aqPPB    = aqVal * (UNIT_TO_PPB[aqUnit] || 1);
+      const caVal    = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+      const caUnit   = document.getElementById('ca_unit')?.value || 'ppb';
+      const caPPB    = caVal * (UNIT_TO_PPB[caUnit] || 1);
+      const kdMn     = parseFloat(document.getElementById(`${p}_Kd_mn`)?.value) || 0;
+      const xl       = parseFloat(document.getElementById(`${p}_labile`)?.value) || 0;
+      const dataUnit = r.unit || 'ppb';
+      const dataCol  = r.col;
+
+      if (aqPPB > 0 && caPPB > 0 && teRawData[dataCol]) {
+        // Predicted speleothem conc (ppb) at median drip rate
+        const kd        = Math.exp(kdMn);
+        const predPPB   = kd * xl * (aqPPB / caPPB) * caPPB;  // Kd×XL×(aq/Ca)×Ca = Kd×XL×aq
+        // Observed median — convert raw data to ppb
+        const rawVals   = (teRawData[dataCol] || []).map(Number).filter(isFinite);
+        if (rawVals.length) {
+          rawVals.sort((a,b)=>a-b);
+          const obsPPB  = rawVals[Math.floor(rawVals.length/2)] * (UNIT_TO_PPB[dataUnit] || 1);
+          const ratio   = obsPPB / predPPB;
+          if (ratio > 50 || ratio < 0.02) {
+            const dir   = ratio > 1 ? 'higher' : 'lower';
+            const hint  = ratio > 50
+              ? 'Check aq_conc units — value may be in ppm but selector set to ppb, or ca_conc may be too high.'
+              : 'Predicted concentration far exceeds data — check Kd, aq_conc, or ca_conc values.';
+            warnings.push(
+              `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,160,50,0.08);
+                           border-left:3px solid #ffa032;border-radius:0 4px 4px 0">
+                <strong style="color:#ffa032">TE${n} (${p}_elem value) — concentration mismatch (${ratio.toFixed(0)}×)</strong><br>
+                Predicted speleothem conc: <code>${predPPB.toFixed(3)} ppb</code> &nbsp;·&nbsp;
+                Observed median: <code>${obsPPB.toFixed(3)} ppb</code> &nbsp;·&nbsp;
+                Observed is ${ratio.toFixed(0)}× ${dir} than predicted.<br>
+                <span style="color:var(--muted)">${hint}</span>
+              </div>`
+            );
+          }
+        }
+      }
+    }
+
+    // 2. aq_conc unit vs data unit mismatch hint
+    if (mode === 'full') {
+      const aqUnit   = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
+      const dataUnit = r.unit || 'ppb';
+      const aqScale  = UNIT_TO_PPB[aqUnit]  || 1;
+      const datScale = UNIT_TO_PPB[dataUnit] || 1;
+      if (aqScale !== datScale) {
+        warnings.push(
+          `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(100,140,255,0.08);
+                       border-left:3px solid #6495ed;border-radius:0 4px 4px 0">
+            <strong style="color:#6495ed">TE${n} — unit mismatch note</strong><br>
+            Data column unit is <code>${dataUnit}</code> but aq_conc unit is <code>${aqUnit}</code>.
+            Both are converted to ppb internally — just confirm this is intentional.
+          </div>`
+        );
+      }
+    }
+
+    // 3. Missing aq_conc in full mode
+    if (mode === 'full') {
+      const aqVal = parseFloat(document.getElementById(`${p}_aq_conc`)?.value);
+      if (!aqVal || aqVal <= 0) {
+        warnings.push(
+          `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,80,80,0.08);
+                       border-left:3px solid #ff5050;border-radius:0 4px 4px 0">
+            <strong style="color:#ff5050">TE${n} — aq_conc is zero or missing</strong><br>
+            Aqueous concentration must be > 0 in Full Quantification mode.
+          </div>`
+        );
+      }
+    }
+  });
+
+  // 4. Ca conc check
+  if (mode === 'full') {
+    const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+    const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
+    const caMgL  = caVal * (UNIT_TO_PPB[caUnit] || 1) / 1000;  // convert ppb → mg/L
+    if (caMgL > 200) {
+      warnings.push(
+        `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,160,50,0.08);
+                     border-left:3px solid #ffa032;border-radius:0 4px 4px 0">
+          <strong style="color:#ffa032">Ca concentration unusually high (${caMgL.toFixed(0)} mg/L)</strong><br>
+          Typical cave drip water Ca is 20–100 mg/L. Check units and value.
+        </div>`
+      );
+    }
+  }
+
+  const card = document.getElementById('sanity-card');
+  const body = document.getElementById('sanity-body');
+  if (!card || !body) return warnings.length === 0;
+  if (warnings.length === 0) {
+    card.style.display = 'none';
+  } else {
+    body.innerHTML = warnings.join('');
+    card.style.display = '';
+  }
+  return warnings.filter(w => w.includes('ff5050') || w.includes('ffa032')).length === 0;
+                          // true = ok to run (only blue info warnings present)
+}
+
 function startRun() {
+  const ok = runSanityChecks();
+  if (!ok) {
+    const proceed = confirm(
+      "Parameter warnings detected (see above).\n\n"
+      + "The run may produce empty or NaN results.\n\n"
+      + "Proceed anyway?"
+    );
+    if (!proceed) return;
+  }
   const params = collectParams();
   if (!params) return;
 
