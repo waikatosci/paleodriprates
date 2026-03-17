@@ -1,43 +1,296 @@
-# PaleodripRates
+# PaleodripRates: Kinetic Proxy for Stalagmite Drip Rate and Precipitation Reconstruction
 
-**Kinetic proxy reconstruction of cave drip rates and Holocene precipitation from stalagmite trace metals**
+This repository contains code, data, and utilities for reconstructing cave drip rates and Holocene precipitation from stalagmite trace metals using a kinetic proxy model based on organic-metal complex dissociation. The methods are detailed in:
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.16392750.svg)](https://doi.org/10.5281/zenodo.16392750)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+> Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M., & Hu, C. (2025). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian Monsoon drivers. *Nature Geoscience*. DOI: [insert upon publication]
 
----
-
-## Overview
-
-This repository contains the full Python codebase, data, and a browser-based web application for reconstructing past cave drip rates — and by extension Holocene precipitation — from stalagmite trace metal concentrations (Co, Ni).
-
-The approach exploits the dissociation kinetics of transition metal–organic complexes (OMC) in cave dripwater. Because the rate at which metals dissociate from dissolved organic ligands is controlled by the residence time of water on the stalagmite surface (i.e., 1/drip rate), the concentration of Co and Ni incorporated into speleothem calcite carries a quantitative signal of past drip rate. Drip rates are inverted probabilistically using Bayesian age-depth modelling (BayProX), then chained to precipitation/temperature regressions and independent temperature proxies for fully uncertainty-bounded precipitation estimates (mm yr⁻¹).
-
-The method is validated and applied to stalagmite HS4 from Heshang Cave, Yangtze region, China, reconstructing Holocene rainfall over the past ~9,500 years and revealing new insights into East Asian Summer Monsoon dynamics.
+The proxy exploits the distributed dissociation kinetics of transition metals (e.g., Co, Ni) bound to organic ligands in dripwater, calibrated against modern data from Heshang Cave, China. Drip rates are inverted probabilistically via Bayesian methods, then chained to precipitation/temperature (P/T) regressions and temperature proxies for quantitative precipitation estimates (mm yr⁻¹) with propagated uncertainties.
 
 ---
 
-## Citation
+## Contents
 
-If you use this code or data, please cite:
+- [Dependencies](#dependencies)
+- [Installation](#installation)
+- [Web Application (app.py)](#web-application-apppy)
+  - [Launching the app](#launching-the-app)
+  - [Data Input](#data-input)
+  - [Model Parameters](#model-parameters)
+  - [Analysis Modes](#analysis-modes)
+  - [Output Options](#output-options)
+  - [Running the model](#running-the-model)
+  - [Output Explorer](#output-explorer)
+- [Script-based Usage](#script-based-usage)
+- [Repository Structure](#repository-structure)
+- [Data Availability](#data-availability)
+- [Citation](#citation)
+- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
-> Hartland, A., Goswami, B., Park, J., Höpker, S., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M., & Hu, C. (submitted). **Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers.** *Nature Geoscience.*
+---
 
-For the repository itself:
+## Dependencies
 
-> Hartland, A. et al. (2025). *PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction.* Zenodo. https://doi.org/10.5281/zenodo.16392750
+- Python 3.8+
+- numpy, pandas, scipy (integrate, optimize, interpolate, stats)
+- flask
+- matplotlib
+- openpyxl, Pillow (PIL), progressbar
+- bayprox (custom Bayesian library included under `lib/`)
 
-The experimental foundation for the partitioning model (inorganic K_d values for Co, Ni, Cu) is:
+---
 
-> Lindeman, I., Hansen, M., Scholz, D., Breitenbach, S.F.M., & Hartland, A. (2022). Effects of organic matter complexation on partitioning of transition metals into calcite: Cave-analogue crystal growth experiments. *Geochimica et Cosmochimica Acta* 317, 118–137. https://doi.org/10.1016/j.gca.2021.10.032
+## Installation
 
-The experimental foundation for the dissociation model (inert fractions for Ni and Co) is: 
+```bash
+git clone https://github.com/waikatosci/paleodriprates.git
+cd paleodriprates
+pip install -r requirements.txt
+```
 
-> Sebastian N. Hopker, Sebastian F.M. Breitenbach, Megan Grainger, Claudine Stirling, Adam Hartland. (2024). Characterising the decay of organic metal complexes in speleothem-forming cave waters. *Geochimica et Cosmochimica Acta* 373, 98-108. https://doi.org/10.1016/j.gca.2024.03.024
+Or install essential components directly:
 
-The conceptual basis for OMC-controlled transition metal availability to speleothems is established in:
+```bash
+pip install numpy pandas matplotlib scipy flask openpyxl pillow progressbar
+```
 
-> Hartland, A. & Zitoun, R. (2018). Transition metal availability to speleothems controlled by organic binding ligands. *Geochemical Perspectives Letters* 8, 22–25. https://doi.org/10.7185/geochemlet.1826
+`bayprox` is a custom module included under `lib/`. Add it to your `PYTHONPATH` if importing outside the repo root.
+
+---
+
+## Web Application (app.py)
+
+`dr_app/app.py` is a self-contained Flask web application providing a browser-based interface to the full reconstruction pipeline. It replaces the legacy Excel-based workflow.
+
+### Launching the app
+
+**macOS / Linux:**
+```bash
+bash launch_mac_linux.sh
+```
+
+**Windows:**
+Double-click `launch_windows.bat` (requires Anaconda or a Python environment with Flask).
+
+Then open your browser at **http://localhost:5000**. A hard-refresh (`Ctrl+Shift+R`) is recommended after updating `app.py` to clear any cached pages.
+
+---
+
+### Data Input
+
+The Data Input panel accepts CSV files with header rows. All depth values should be in **cm**.
+
+#### Depth / Age Model (required)
+
+Upload a CSV containing depth, calibrated age (yrs BP), and age error (2σ) columns. After upload, column selectors appear and an **age–depth plot** is rendered automatically showing:
+
+- Dated control points as scatter markers with tooltips (depth → age).
+- A **fit curve** passing through all dated points, with the portion within the data range drawn as a solid green line and extrapolated portions as dashed grey lines.
+- A shaded band indicating the currently selected calibration age window.
+
+A **Fit** selector in the plot header switches between two models:
+
+| Mode | Behaviour | When to use |
+|------|-----------|-------------|
+| **Monotone spline (PCHIP)** *(default)* | Piecewise Cubic Hermite Interpolating Polynomial (Fritsch-Carlson 1980). Passes exactly through every dated point. Enforces monotonicity — age always increases with depth, no oscillations. Handles kinks in the accumulation rate (e.g. slow-growth intervals) correctly. | Most records, especially those with variable or interrupted accumulation rates. |
+| **Linear regression** | Ordinary least-squares fit through all points. Does not pass through individual points. | Simple records with uniform accumulation; useful as a sanity check. |
+
+Extrapolation beyond the data range uses the end tangents of the spline (linear extension from the first and last knot slopes), avoiding unbounded cubic behaviour outside the dated interval. The curve is sampled at 300 evenly spaced points for a smooth visual.
+
+The **Calibration age min/max** fields in Site Settings are auto-populated from the extrapolated fit endpoints on upload and update when the column selection or fit type changes. They can be overridden at any time by editing the extrap handles below the plot or the fields directly; both stay in sync.
+
+#### Trace Elements (required)
+
+A single CSV upload accepts one or more trace element proxy columns alongside a depth column. After upload:
+
+- A **depth column** selector appears.
+- One or more **proxy rows** are shown, each with a column selector and a concentration unit selector (ppb, ppm, µg/g, mg/kg). The unit selection triggers automatic conversion to ppb in the backend before the model runs.
+- Element identity is **auto-detected** from the column name (e.g. a column named `Co_ppb`, `Cobalt`, or `co` will pre-select Co in the corresponding parameter card). Detection fires on upload, on column change, and when rows are added.
+- The **+ Add trace element** button appends a new row. Rows can be removed with the × button (minimum one row required).
+- Multiple elements are combined via geometric mean of their individual drip rate PDFs.
+
+#### Data Preprocessing (optional but recommended for high-resolution data)
+
+After upload a **Data Preprocessing** panel appears below the proxy row selectors. LA-ICP-MS and other high-resolution datasets (e.g. 1500+ rows at 10–100 µm spacing) can substantially increase BayProX runtime because the unified depth grid scales with the number of depth points. The preprocessing panel provides two tools applied server-side before the model runs, so the saved `trace_elem1.csv` reflects the cleaned data:
+
+**Sigma-clip outlier removal** — each numeric proxy column is inspected independently using a centred rolling window. For each point, the local mean and standard deviation are computed from the surrounding *N* neighbours (default window = 50 points). Points deviating more than *σ* standard deviations from their local mean are flagged as outliers and excluded from the block average. A window of 0 falls back to global sigma-clipping (single mean and SD across the whole record), which is simpler but can be too conservative for long records with a real secular trend — the rolling window approach avoids this by testing each point against its local neighbourhood rather than the record-wide statistics. This is the same algorithm used by the backend `detect_outliers` / `clean()` pipeline, so the preview faithfully represents what the model will see.
+
+A mini scatter plot shows kept points (green) and flagged outliers (red) in real time as the threshold or window size is adjusted, without committing any changes until **Apply & Save** is clicked.
+
+**Block-average downsampling** — the surviving rows are grouped into blocks of size `⌊N_rows / target_N⌋` and each block is replaced by its column-wise mean. This preserves the signal shape while reducing computational cost. The target can be set as an absolute row count. The before/after badge above the chart updates as the target is adjusted.
+
+Clicking **Apply & Save** sends both parameters to the `/preprocess` endpoint, which overwrites `trace_elem1.csv` and returns the new row count. The preprocessing status line confirms the result and the runtime estimate (see below) recalculates automatically.
+
+> **Guidance for LA-ICP-MS data:** typical BayProX runs complete in 20–40 minutes with ~300–500 depth points. If your data are already averaged to 100 µm spacing, block-averaging to ~300 points is generally sufficient to retain all palaeoclimate-relevant variability while keeping runtimes tractable. The default sigma-clip window of 50 points and threshold of 3σ is conservative; for data with known instrumental spikes a window of 20–30 points and threshold of 2.5σ may be more appropriate. Set window size to 0 to use global sigma-clipping if the record lacks a long-term trend.
+
+#### Isotope Data (optional)
+
+Upload a CSV with depth and isotope (e.g. δ¹⁸O in ‰) columns. This dataset is used to build the unified depth grid and proxy record but does not directly enter the drip rate PDF calculation. If omitted, the unified depth grid is built from the trace element depths alone.
+
+---
+
+### Model Parameters
+
+#### Analysis Mode
+
+A toggle at the top of the parameters panel selects between two operational modes. See [Analysis Modes](#analysis-modes) below.
+
+#### Element guidance
+
+Elements exhibiting OMC dissociation kinetics suitable for drip rate reconstruction are primarily d-block transition metals. Redox-active elements (Mn, Fe) are not suitable. Elements beyond Ni, Co, and Cu are not yet characterised in cave systems. Kp = −1 instructs the model to calculate the partition coefficient theoretically from cave temperature using the Wang & Xu (2001) lattice strain model; positive values override this.
+
+#### Per-element parameter cards
+
+One card is shown for each configured trace element row. Parameters include:
+
+| Parameter | Description |
+|-----------|-------------|
+| Element | Selects element and auto-fills molecular weight and default Kp |
+| Kp | Partition coefficient; −1 = theoretical (Wang & Xu 2001) |
+| Mean ln(Kd) | Log-mean of the Kd distribution |
+| Std dev ln(Kd) | Log-standard deviation of Kd |
+| XF — Fast fraction | Labile fraction dissociating too rapidly to fractionate with drip rate |
+| XI — Inert fraction | Fraction not participating in OMC dissociation |
+| XL — Labile fraction | Auto-calculated as 1 − XI − XF |
+| Aqueous concentration | Element concentration in drip water (unit selectable) |
+
+For Ni the recommended defaults are XI = 0.10, XF = 0.01, XL = 0.89 (Kd mean/sd from Lindeman et al., *GCA* 317, 2022).
+
+Cards for TE3 and beyond are generated dynamically when rows are added in Data Input and are hidden when not needed.
+
+#### Cave Conditions
+
+Cave temperature (°C) and Ca concentration in drip water (unit selectable). These are used in full quantification mode only; in semi-quantitative mode they are hidden.
+
+---
+
+### Analysis Modes
+
+#### Full Quantification (default)
+
+Requires aqueous element concentrations, Ca concentration, and calibrated Kd / Kp values. Outputs absolute drip rate reconstructions in **drips min⁻¹** suitable for hydrological quantification and Smart & Friedrich classification.
+
+#### Semi-Quantitative
+
+Aqueous chemistry inputs (element and Ca concentrations) are hidden. Element fractions and Kd values still control the *shape* of the drip rate response and should be set from the literature. Output is normalised to a reference value and expressed as **% of reference drip rate**.
+
+Three normalisation options are available (evaluated in priority order):
+
+1. **Anchor drip rate** — if a single modern monitoring measurement is available (drips min⁻¹), enter it here. This converts the normalised output back to absolute units without requiring full water chemistry.
+2. **Reference period** — specify an age window (yrs BP). The mean of the pc50 time series within that window becomes 100%. Useful when modern calibration data exist for a specific interval.
+3. **Record maximum** (default fallback) — the 95th percentile maximum across the record is set to 100%.
+
+In semi-quantitative mode the realisations ensemble (if generated) is normalised independently per realisation, preserving the full distribution of uncertainty through the normalisation step — so RQA analyses on the realisations remain statistically consistent with the summary percentiles.
+
+The Smart & Friedrich classification tab is disabled in semi-quantitative mode as the absolute mean discharge is not defined.
+
+---
+
+### Output Options
+
+#### Realisations (for RQA)
+
+A toggle controls whether the full ensemble of drip rate realisations is generated and saved. When enabled, `n_realisations` independent draws are sampled from the joint posterior PDF at each time step. The output CSV has shape *(N_timesteps + 1) × N_realisations* and is suitable for direct input to recurrence quantification analysis (RQA) tools. Random seed is configurable for reproducibility.
+
+When disabled, only the summary percentile CSV is written, which substantially reduces computation time for exploratory runs.
+
+#### Proxy Record caching
+
+The BayProX proxy record computation is the slowest step (progress and ETA are shown on the Run page). If you have already run the pipeline once and are only changing model parameters (Kd, Kp, fractions, concentrations), check **Use cached proxy record** to skip straight to the drip rate step using the saved `ProxyRecord.pkl`.
+
+---
+
+### Running the model
+
+The Run page shows a **Configuration Summary** auto-populated from current inputs, reflecting the actual number of configured trace elements, their column names and units, and the selected analysis mode.
+
+#### Runtime estimate
+
+Before starting, a **Runtime Estimate** card shows three statistics derived from the current configuration:
+
+| Stat | Source |
+|------|--------|
+| Depth points | Row count of the (preprocessed) TE CSV |
+| Age range | `calage_max − calage_min` from Site Settings |
+| Est. runtime | `depth_points × age_range × n_TEs × empirical_constant + overhead` |
+
+The empirical constant (`2.8 × 10⁻⁵` s per depth-point per age-step) was calibrated against typical laptop hardware running BayProX. Runtimes on faster machines will be lower; on older hardware they may be higher. The estimate turns amber when the projected runtime exceeds 20 minutes, and a contextual tip suggests either using the preprocessing panel to downsample or enabling **Use cached proxy record** if BayProX has already run for this dataset.
+
+The estimate recalculates automatically whenever the TE CSV is uploaded, preprocessing is applied, the calage range changes, or the Run panel is opened.
+
+#### Progress and ETA
+
+A progress bar and percentage track pipeline stages. The **ETA label** cycles through three states:
+
+- *Starting…* for the first 2 seconds.
+- *Elapsed: X* until 5% progress is reached (insufficient data for a stable estimate).
+- *ETA ~X* from 5% onwards based on linear extrapolation of elapsed time vs progress.
+- *Completed in X* when the run finishes.
+
+The log box streams backend messages in real time. Errors are highlighted in red. On completion the **View Results →** button becomes available.
+
+---
+
+### Output Explorer
+
+The results panel is a tabbed explorer with two views.
+
+#### Time Series
+
+Reconstructed drip rate (or relative drip rate in semi-quantitative mode) over time with a full uncertainty envelope:
+
+- 5–95th percentile shaded outer band.
+- 25–75th percentile (IQR) inner band.
+- Median line.
+- **Kd sensitivity ribbon** — two amber dashed lines showing the median reconstruction at Kd_mn − Kd_sd and Kd_mn + Kd_sd (near-deterministic passes with Kd_sd ≈ 0). The gap between the amber ribbon and the green envelope reflects how much reconstruction uncertainty is attributable to partition coefficient literature uncertainty vs the proxy record itself.
+
+The y-axis label switches between "Drip rate (min⁻¹)" (full mode) and "Relative drip rate (% of reference)" (semi-quantitative mode).
+
+#### Smart & Friedrich (1987) Classification
+
+Available in full quantification mode only. An x-y scatter plot of mean discharge (y, drips min⁻¹) vs coefficient of variation (x, CV = σ/μ of the median time series) with four coloured classification zones:
+
+| Zone | CV | Mean discharge | Interpretation |
+|------|----|----------------|----------------|
+| Seepage / percolation | Low (< 0.5) | Low (< 5 min⁻¹) | Slow matrix flow; highly attenuated signal |
+| Fracture / conduit | High (≥ 0.5) | Low | Episodic fracture recharge; strong seasonal signal |
+| Buffered overflow | Low | High (≥ 5 min⁻¹) | Perched water table; sustained but modulated |
+| Flood / conduit overflow | High | High | Rapid conduit response to recharge events |
+
+The reconstruction point is plotted with IQR error bars on both axes (mean: temporal Q25–Q75 of the pc50 series; CV: propagated from the pc05/pc95 spread). A classification label names the zone.
+
+---
+
+### Output files
+
+| File | Contents |
+|------|----------|
+| `drip_rate_summary.csv` | Percentile columns `age, pc05, pc10, pc25, pc50, pc75, pc90, pc95` at each time step |
+| `drip_rate_realisations.csv` | Full ensemble; shape *(N_timesteps + 1) × N_realisations*; suitable for RQA |
+| `ProxyRecord.pkl` | Cached BayProX proxy distributions; reused if *Use cached proxy record* is checked |
+| `uploads/trace_elem1.csv` | Overwritten in-place when preprocessing is applied; contains the block-averaged, sigma-clipped data that actually enters the pipeline |
+
+---
+
+## Script-based Usage
+
+The original script-based pipeline remains available for batch processing and headless execution.
+
+**1 — Kinetic model and dissociation kinetics**
+
+Run `model.py` for numerical integration of dissociated fractions using a log-normal distribution of rate constants. Example: compute the labile fraction for a given residence time τ.
+
+**2 — Bayesian drip rate inversion**
+
+Use `drip_rate_parallel.py` (recommended) or `drip_rate_serial.py` (slower). Input: `Drip_rate.xlsx` containing depth-age data and proxy records (Co/Ni concentrations) processed via BayProX for age-depth uncertainties. Output: drip rate PDFs (medians, percentiles) written to the `PlotDripRate` and `PlotDripIsotope` sheets.
+
+**3 — Precipitation reconstruction**
+
+Run `P_quantification_Holocene.ipynb` for chained P/T regressions and Monte Carlo propagation. Inputs: drip rate percentiles and temperature estimates (`Precip_from_drip_rates.xlsx`). Outputs: `p_reconstruction.csv` (annual precipitation posteriors with medians and 25–75th percentiles) and `p_plot.png`. See `precip_recon/readme.txt` for supplementary details.
+
+**4 — Utilities**
+
+`utils.py` provides progress bars for long computations. Example data (`Drip_rate.xlsx`, `ProxyRecordPlot.xlsx`) are included for calibration and sensitivity tests.
 
 ---
 
@@ -45,331 +298,60 @@ The conceptual basis for OMC-controlled transition metal availability to speleot
 
 ```
 paleodriprates/
-│
-├── model.py                        # Core dissociation kinetics and dr_pdfseries
-├── drip_rate_util.py               # Bayesian inversion utilities, outlier detection
-├── drip_rate_parallel.py           # Parallelised drip rate pipeline (recommended)
-├── drip_rate_serial.py             # Serial version (for debugging / single-core)
-├── params.py                       # Shared model parameters and constants
-├── utils.py                        # Progress bar helpers
-│
 ├── dr_app/
-│   ├── app.py                      # Flask web application (self-contained)
-│   ├── launch_windows.bat          # Windows one-click launcher
-│   ├── launch_mac_linux.sh         # macOS/Linux one-click launcher
-│   ├── uploads/                    # Uploaded CSV data (created at runtime)
-│   └── outputs/                    # Model outputs and cached proxy records
-│
-├── bayprox/                        # BayProX: Bayesian proxy–age modelling library
-│   ├── data.py
-│   ├── agedepth.py
-│   └── proxyrecord.py
-│
+│   ├── app.py                  # Flask web application (all pipeline stages)
+│   │                           #   Routes: / · /upload · /preprocess · /run
+│   │                           #           /status · /chart_data · /download
+│   ├── drip_rate_util.py       # Bayesian drip rate inversion utilities
+│   ├── params.py               # Outlier detection parameters
+│   ├── launch_mac_linux.sh     # macOS/Linux launcher
+│   ├── launch_windows.bat      # Windows launcher
+│   └── uploads/                # Runtime CSV upload directory (auto-created)
+│   └── outputs/                # Runtime output directory (auto-created)
+├── model.py                    # Core dissociation kinetics and expectation calculations
+├── drip_rate_parallel.py       # Parallel Bayesian drip rate inversion (script)
+├── drip_rate_serial.py         # Serial version
+├── P_quantification_Holocene.ipynb  # Precipitation reconstruction notebook
+├── utils.py                    # Helper functions (progress bars, etc.)
+├── lib/
+│   └── bayprox/                # Custom Bayesian proxy library
 ├── data/
-│   ├── Drip_rate.xlsx              # Reference dataset: depth–age, Co/Ni proxy records
-│   └── Precip_from_drip_rates.xlsx # Precipitation regression inputs
-│
+│   ├── Drip_rate.xlsx          # Depth-age and proxy input data
+│   ├── Precip_from_drip_rates.xlsx
+│   └── ProxyRecordPlot.xlsx    # Calibration and sensitivity data
 ├── precip_recon/
-│   ├── P_quantification_Holocene.ipynb   # Precipitation reconstruction notebook
-│   └── readme.txt                        # Supplementary notes
-│
-├── drip_rate_stationarity_tests.py       # Statistical tests for event significance and stationarity
-├── RQA_HS4_ensemble.py                   # Ensemble RQA for drip rate and δ¹⁸O (Fig. 5)
-├── figures/                        # Generated plots (sensitivity, reconstructions)
+│   └── readme.txt
+├── figures/                    # Generated plots
 ├── requirements.txt
 └── LICENSE
 ```
 
 ---
 
-## Dependencies
-
-**Python 3.12+** is required.
-
-```
-numpy
-pandas
-scipy
-matplotlib
-openpyxl
-Pillow
-progressbar2
-flask                  # web app only
-```
-
-`bayprox` is a custom Bayesian proxy–age modelling library included in this repository. No external installation is required.
-
-Install all dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Or individually:
-
-```bash
-pip install numpy pandas matplotlib scipy openpyxl pillow progressbar2 flask
-```
-
----
-
-## Usage
-
-There are two ways to run the model: via the **web application** (recommended for new users) or directly via the **Python scripts** (recommended for batch processing and customisation).
-
----
-
-### Option 1 — Web Application
-
-The web app provides a complete browser-based interface to the drip rate reconstruction pipeline. No terminal interaction is required after launch.
-
-#### Launch
-
-**Windows:** Double-click `dr_app/launch_windows.bat`
-
-**macOS / Linux:**
-```bash
-cd dr_app
-chmod +x launch_mac_linux.sh
-./launch_mac_linux.sh
-```
-
-Then open your browser at **http://localhost:5000**
-
-#### Workflow
-
-The app guides you through six panels:
-
-| Panel | Description |
-|-------|-------------|
-| **Data Input** | Upload CSV files for depth–age model, trace element 1 (e.g. Ni), trace element 2 (e.g. Co), and isotope record. Skip if using a cached proxy record. |
-| **Model Parameters** | Configure geochemical parameters: element selection (Co, Ni, Cu, and others), molecular weight, Kp (defaults to speleothem-specific values from Lindeman et al. 2022, or −1 for theoretical calculation via Wang & Xu 2001), mean and std dev of ln(K_d), aqueous concentration, and solution fractions X_F (fast), X_I (inert), X_L (labile, auto-calculated). Cave temperature and Ca concentration are also set here. |
-| **Output Options** | Set number of Monte Carlo realisations (default 1000) and enable/disable the cached proxy record. |
-| **Run Model** | Execute the pipeline with real-time progress, ETA, and scrolling log output. |
-| **Results** | Interactive chart showing the drip rate reconstruction with 5th–95th percentile uncertainty envelope. |
-| **Downloads** | Download `drip_rate_summary.csv` (percentiles) and `drip_rate_realisations.csv` (full ensemble for RQA and other nonlinear analyses). |
-
-#### Cached proxy record
-
-The most computationally expensive step is the BayProX proxy–age modelling (~20 min). After the first run, `ProxyRecord.pkl` is saved to `dr_app/outputs/`. On subsequent runs, tick **"Use cached proxy record"** to skip directly to the drip rate calculation (completes in minutes).
-
-To use a proxy record from a prior script-based run, copy `ProxyRecord.pkl` from your working directory into `dr_app/outputs/` before launching the app.
-
----
-
-### Option 2 — Python Scripts
-
-#### Drip rate reconstruction
-
-Run the parallelised version for best performance:
-
-```bash
-python drip_rate_parallel.py
-```
-
-Or the serial version:
-
-```bash
-python drip_rate_serial.py
-```
-
-**Inputs** (configured in `params.py` and read from `Drip_rate.xlsx`):
-- Depth–age control points (U/Th dates) for BayProX age modelling
-- Trace element proxy records (Co/Ca, Ni/Ca) as depth series
-- Stable isotope record (δ¹⁸O) as depth series
-
-**Outputs** (written to `Drip_rate.xlsx`):
-- Drip rate PDFs (median + percentile envelopes) — `PlotDripRate` sheet
-- Isotope comparison — `PlotDripIsotope` sheet
-- `ProxyRecord.pkl` — cached BayProX output for reuse
-- `drip_rate_realisations.csv` — full Monte Carlo ensemble (N_timesteps × N_realisations)
-
-#### Precipitation reconstruction
-
-After obtaining drip rate outputs, open the Jupyter notebook:
-
-```bash
-jupyter notebook precip_recon/P_quantification_Holocene.ipynb
-```
-
-This performs chained Monte Carlo regression linking drip rate → precipitation, propagating uncertainty from drip rate posteriors, monitoring regressions, and independent temperature estimates. Outputs include `p_reconstruction.csv` (annual precipitation posteriors) and `p_plot.png`.
-
----
-
-## Model Description
-
-### Kinetic proxy — organic metal complex dissociation
-
-Transition metals (Co²⁺, Ni²⁺) in cave dripwater are predominantly bound to dissolved natural organic matter (NOM) as metal–ligand complexes (ML). The rate at which free M²⁺ becomes available for incorporation into calcite is governed by first-order dissociation kinetics:
-
-```
-[ML](t) = [ML]₀ · exp(−k · t)
-```
-
-where `k` is the dissociation rate constant and `t` is the thin-film residence time on the stalagmite surface, which is approximately 1/drip rate. Slower drip rates → longer residence → more dissociation → higher M/Ca in calcite. This provides the quantitative link between stalagmite trace metal concentrations and past drip rate.
-
-### Solution fractions
-
-Total aqueous metal is partitioned into:
-- **X_I** — inert fraction: not bioavailable, does not participate in OMC dissociation
-- **X_F** — fast fraction: labile but dissociates too rapidly to fractionate with drip rate
-- **X_L** — labile fraction: undergoes drip-rate-sensitive OMC dissociation (X_L = 1 − X_I − X_F)
-
-### Partition coefficients
-
-Speleothem-specific inorganic K_d values (Lindeman et al. *GCA* 2022, cave-analogue GeoMic experiments):
-
-| Element | K_d (inorganic) | K_d (+ NOM) | Notes |
-|---------|----------------|-------------|-------|
-| Co | 4.4 | 0.41 | PCP-sensitive; NOM strongly suppresses incorporation |
-| Ni | 1.1 | 0.029 | PCP-insensitive (K_d ≈ 1); **recommended primary proxy** |
-| Cu | 44 | 0.92 | Very high inorganic K_d; use with caution |
-
-Ni is the preferred proxy element because its K_d ≈ 1 means prior calcite precipitation (PCP) has negligible effect on Ni/Ca, making it insensitive to aquifer drying artefacts that affect alkaline earth metal proxies (Sr, Mg).
-
-### Theoretical K_p (Wang & Xu 2001)
-
-When Kp = −1, the model calculates the partition coefficient from cave temperature using the lattice strain model:
-
-```
-log Kp = [ a(ΔGn_M − ΔGn_Ca) + b(r_M − r_Ca) − (ΔGf_M − ΔGf_Ca) ] / (−2.303·R·T)
-```
-
-For Co and Ni, the empirical values from Lindeman et al. (2022) are used in preference to the theoretical calculation, as the lattice strain model overestimates K_d for these elements under speleothem conditions.
-
----
-
-## Statistical Tests
-
-`drip_rate_stationarity_tests.py` runs five statistical tests against the Monte Carlo realisation ensemble and the full-posterior summary. Set `CSV_PATH` and `XLSX_PATH` at the top of the script to point to your drip rate outputs, then:
-
-```bash
-python drip_rate_stationarity_tests.py
-```
-
-**Inputs:**
-- `drip_rate_realisations.csv` — full Monte Carlo ensemble (age column + one column per realisation)
-- `Drip_rate_data_HS4.xlsx` — full-posterior summary with age, median, p25, p75 columns
-
-**Tests performed:**
-
-| # | Test | Windows | Method |
-|---|------|---------|--------|
-| 1 | **5.2 ka aridity pulse** | Event 4,500–5,200 BP vs. background 5,500–6,500 BP | IQR non-overlap; pooled MWU + KS; per-realisation MWU |
-| 2 | **8.2 ka anomaly** | Event 8,000–8,500 BP vs. pre-event 9,000–9,500 BP and post-event 7,500–8,000 BP | IQR separation; pooled MWU + KS; per-realisation MWU |
-| 3 | **Post-1820 CE surge** | Modern −400 to 50 BP vs. late-Holocene baseline 500–2,000 BP | Pooled MWU + KS; IQR overlap |
-| 4 | **Holocene trend** | Full series | Mann–Kendall τ + Theil–Sen slope; early vs. late MWU |
-| 5 | **Stationarity** | Full series | Augmented Dickey–Fuller (ADF) unit-root test |
-
-All two-sample tests report rank-biserial effect size and bootstrap 95% CIs on the median difference (10,000 iterations; subsampled to n = 50,000 per group for large pools). Per-realisation MWU loops print progress every 100 realisations. ADF requires `statsmodels` (`pip install statsmodels`).
-
----
-
-## Recurrence Quantification Analysis (RQA)
-
-`RQA_HS4_ensemble.py` computes windowed ensemble RQA for both the HS4 drip rate and δ¹⁸O Monte Carlo ensembles, producing Fig. 5 and the supplementary recurrence plot figure (FigS1).
-
-```bash
-python RQA_HS4_ensemble.py
-```
-
-**Inputs:**
-
-| File | Description |
-|------|-------------|
-| `drip_rate_realisations.csv` | Age column + r0…r999 drip rate realisations (drips min⁻¹) |
-| `d18O_realisations.csv` | Age column + r0…r999 δ¹⁸O realisations (‰ VPDB) |
-| `Drip_rate.xlsx` sheet `5.OutDripRate` | Drip rate summary: age, pc05–pc95, median |
-| `Drip_rate.xlsx` sheet `6.OutIsotope` | δ¹⁸O summary: age, median |
-
-**Outputs:**
-
-| File | Description |
-|------|-------------|
-| `rqa_ensemble_results.csv` | Per-window DET and TRANS: median, 5th and 95th percentile for both proxies |
-| `rqa_parameters.csv` | Global embedding parameters used in the run (τ, m, Theiler window, RR, l_min, window size/step) |
-| `Fig5_RQA_HS4.pdf/.png/.eps` | Main figure — four stacked panels (Nature Geoscience style, 8.5 × 7 in) |
-| `FigS1_RP_HS4.pdf/.png` | Supplementary full-record recurrence plots for δ¹⁸O and drip rate |
-
-**Figure layout (Fig. 5):**
-- **Panel A** — RQA metrics (DET, TRANS with 5–95th percentile envelopes) for δ¹⁸O
-- **Panel B** — δ¹⁸O ensemble PDF heatmap with median overlay (cividis, inverted y-axis)
-- **Panel C** — RQA metrics for drip rate
-- **Panel D** — Drip rate ensemble PDF heatmap with median and IQR overlays
-
-Dashed vertical markers are drawn automatically on panels A/C and B/D wherever DET falls and stays below `DET_THRESHOLD` (default 0.4) for at least `MIN_SUSTAIN` (default 80) consecutive windows, flagging sustained dynamical regime transitions.
-
-**Method:**
-
-Two RQA measures are computed in a sliding window (100 points, step 5) on each of the 1,000 realisations independently:
-
-- **DET (Determinism)** — fraction of recurrent points forming diagonal lines of length ≥ 2 (Zbilut & Webber 1992). Higher DET indicates more periodic, predictable dynamics.
-- **TRANS (Transitivity)** — recurrence network clustering coefficient (Donner et al. 2010). Reflects the geometric density of the reconstructed attractor; high values indicate constrained, low-dimensional dynamics.
-
-**Embedding parameters** (τ and m) are estimated *once* from the full median series of each proxy, not per window. τ is set by the first minimum of Average Mutual Information (Fraser & Swinney 1986, Phys Rev A 33:1134); m is set by Cao's method (Cao 1997, Physica D 110:43–50), bounded to m ≤ 5. These global estimates are then applied uniformly across all windows and all realisations to ensure a consistent phase-space reconstruction throughout the record.
-
-**Recurrence threshold** is fixed by setting recurrence rate RR = 0.05 (Kraemer et al. 2018, Chaos 28:085720), making DET and TRANS directly comparable across windows and realisations regardless of signal amplitude variation.
-
-**Theiler window** = max(1, τ(m − 1)), excluding autocorrelated neighbours along the line of identity (Theiler 1986; Marwan 2010).
-
-Ensemble median and 5th/95th percentile envelopes across the 1,000 realisations propagate the full age-model uncertainty into both dynamical measures.
-
-**Key configuration options** (top of script):
-
-| Parameter | Default | Notes |
-|-----------|---------|-------|
-| `WINDOW_SIZE` | 100 | Sliding window width (points) |
-| `WINDOW_STEP` | 5 | Step between windows (points) |
-| `TARGET_RR` | 0.05 | Fixed recurrence rate |
-| `MIN_LINE` | 2 | Minimum diagonal line length for DET |
-| `MAX_M` | 5 | Upper bound on embedding dimension (Cao's method) |
-| `SMOOTH_SIGMA` | 2.0 | Gaussian smoothing σ for display curves (points) |
-| `DET_THRESHOLD` | 0.4 | Reference line and threshold for sustained-marker detection |
-| `MIN_SUSTAIN` | 80 | Minimum consecutive windows below threshold to draw a marker |
-| `N_REALISATIONS` | `None` (all 1,000) | Set e.g. `200` for a quick test run |
-| `FORCE_TAU` / `FORCE_M` | `None` | Override AMI/Cao estimates with fixed integers |
-
-A full 1,000-realisation run takes approximately 30–90 minutes depending on hardware.
-
----
-
 ## Data Availability
 
-Raw proxy data (Co/Ca, Ni/Ca, δ¹⁸O depth series) and U/Th chronology for stalagmite HS4 (Heshang Cave, China) are included in `data/Drip_rate.xlsx`.
-
-Full archive (data + outputs): [Zenodo DOI 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750)
+Raw proxy data and monitoring records are included in the Excel files in `data/`. Full archive (including all calibration datasets): **Zenodo DOI: 10.5281/zenodo.16392750**.
 
 ---
 
-## Funding and Acknowledgements
+## Citation
 
-This research was supported by:
+**Manuscript:**
+> Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M., & Hu, C. (2025). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian Monsoon drivers. *Nature Geoscience*. DOI: [insert upon publication]
 
-- **EU Horizon 2020** — Marie Skłodowska-Curie Actions, grant no. 691037 ([QUEST: QUantitative paleoEnvironments from SpeleoThems](https://quest.pik-potsdam.de/))
-- **Te Apārangi — Royal Society of New Zealand**, grants RIS-UOW1501 and Rutherford Discovery Fellowship RDF-UOW1601
-- **Ministry for Business, Innovation and Employment (MBIE)**, grant UOWX2102
-
-Splash photograph © Garry Smith, from Hartland & Zitoun (2018), *Geochemical Perspectives Letters*.
-
----
-
-## Authors and Affiliations
-
-Adam Hartland¹², Bedartha Goswami³, Jungho Park¹, Sebastian Höpker², Dorisel Torres Rojas², Jin Liao⁴, Bethany R.S. Fox⁵, Norbert Marwan³, Sebastian F.M. Breitenbach⁶, Chaoyong Hu⁴
-
-¹ Lincoln Agritech Ltd, Ruakura, Hamilton, Aotearoa New Zealand  
-² Te Aka Mātuatua, School of Science, University of Waikato, Hamilton, Aotearoa New Zealand  
-³ Potsdam Institute for Climate Impact Research, Potsdam, Germany  
-⁴ China University of Geosciences, Wuhan, China  
-⁵ School of Applied Sciences, University of Huddersfield, UK  
-⁶ Department of Geography and Environmental Sciences, Northumbria University, UK  
-
-Correspondence: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
+**Repository:**
+> Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE) for details.
+MIT License — see `LICENSE` for details.
 
+---
 
+## Acknowledgments
+
+Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), Ministry for Business, Innovation and Employment (UOWX2102), and a Rutherford Discovery Fellowship (RDF-UOW1601).
+
+For questions or contributions, open an issue on GitHub or contact the corresponding author: adam.hartland@lincolnagritech.co.nz
