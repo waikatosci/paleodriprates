@@ -97,14 +97,14 @@ A **Fit** selector in the plot header switches between two models:
 
 Extrapolation beyond the data range uses the end tangents of the spline (linear extension from the first and last knot slopes), avoiding unbounded cubic behaviour outside the dated interval. The curve is sampled at 300 evenly spaced points for a smooth visual.
 
-The **Calibration age min/max** fields in Site Settings are auto-populated from the extrapolated fit endpoints on upload and update when the column selection or fit type changes. They can be overridden at any time by editing the extrap handles below the plot or the fields directly; both stay in sync.
+The **Calibration age min/max** fields in Site Settings are auto-populated from the extrapolated fit endpoints on upload and update when the column selection or fit type changes. The minimum age is clamped so it never goes younger than the shallowest dated point in the record (extrapolation toward younger ages beyond the data is suppressed). They can be overridden at any time by editing the extrap handles below the plot or the fields directly; both stay in sync.
 
 #### Trace Elements (required)
 
 A single CSV upload accepts one or more trace element proxy columns alongside a depth column. After upload:
 
 - A **depth column** selector appears.
-- One or more **proxy rows** are shown, each with a column selector and a concentration unit selector (ppb, ppm, µg/g, mg/kg). The unit selection triggers automatic conversion to ppb in the backend before the model runs.
+- One or more **proxy rows** are shown, each with a column selector and a concentration unit selector (ppb, ppm, µg/g, mg/kg). **The unit selector is informational only — solid proxy data enters the model unconverted.** The selector is used for parameter hints and the predicted vs observed comparison on the Model Parameters page.
 - Element identity is **auto-detected** from the column name (e.g. a column named `Co_ppb`, `Cobalt`, or `co` will pre-select Co in the corresponding parameter card). Detection fires on upload, on column change, and when rows are added.
 - The **+ Add trace element** button appends a new row. Rows can be removed with the × button (minimum one row required).
 - Multiple elements are combined via geometric mean of their individual drip rate PDFs.
@@ -158,6 +158,35 @@ For Ni the recommended defaults are XI = 0.10, XF = 0.01, XL = 0.89 (Kd mean/sd 
 
 Cards for TE3 and beyond are generated dynamically when rows are added in Data Input and are hidden when not needed.
 
+#### Reactive parameter hints
+
+Each parameter card displays live hint lines beneath key fields, updated on every keystroke and whenever TE data is uploaded or the parameters panel is opened. These are designed to assist parameterisation without requiring complete data — particularly useful when aqueous chemistry measurements are unavailable or uncertain.
+
+**Mean ln(Kd) hint** shows three pieces of information simultaneously:
+- The actual Kd value in linear space (e.g. `Kd = 3.8×10⁻²`)
+- The 1σ range in Kd space from the entered standard deviation
+- **If TE proxy data is uploaded:** the implied `ln(Kp×XL)` back-calculated from the observed median, the full Kp-based forward model, aq_conc, and ca_conc. If this differs substantially from the entered value, the Kp, aq_conc, ca_conc, or units are likely misconfigured.
+
+**Std dev ln(Kd) hint** shows the ±1σ spread expressed as a fold-change in Kd space (`±1σ spans 4.0× in Kd`), making the distributional width concrete.
+
+**Aqueous concentration hint** shows:
+- The entered value converted to ppb for reference
+- **If TE data is uploaded:** the implied aq_conc back-calculated from the observed median using the full Kp-based formula: `implied by data + Kp: 300 ppb`. A large discrepancy is the primary diagnostic for a concentration or unit mismatch.
+
+**Predicted vs observed row** — a full-width summary at the bottom of each TE card using the complete forward model:
+
+```
+Predicted [TE]calcite ≈ X ppm  ·  Observed median: Y ppm  ·  Ratio: Z×
+```
+
+The prediction uses `Kp × XL × (aq_mol / Ca_mol) × Ca_calcite_ppm`, where molar concentrations are derived from the entered mass/volume values and molecular weights, and Ca in calcite is taken as 400,000 ppm (CaCO3 ≈ 40% Ca by mass). This means the prediction correctly responds to changes in Kp, Ca concentration, aqueous TE concentration, and molecular weight. Turns amber when the ratio exceeds 50× or falls below 0.02×.
+
+> **Important:** solid proxy data enters the model **unconverted** — the unit selector on TE data rows is for display and hint calculations only. Aqueous concentrations (aq_conc, ca_conc) are converted to ppb internally before the molar calculation.
+
+**Ca concentration hint** displays the entered value in mg/L regardless of input unit, with a typical range note (20–100 mg/L for limestone caves) and flags values outside 5–200 mg/L.
+
+All hints are purely informational — they never block input or prevent running the model.
+
 #### Cave Conditions
 
 Cave temperature (°C) and Ca concentration in drip water (unit selectable). These are used in full quantification mode only; in semi-quantitative mode they are hidden.
@@ -190,9 +219,7 @@ The Smart & Friedrich classification tab is disabled in semi-quantitative mode a
 
 #### Realisations (for RQA)
 
-A toggle controls whether the full ensemble of drip rate realisations is generated and saved. When enabled, `n_realisations` independent draws are sampled from the joint posterior PDF at each time step. The output CSV has shape *(N_timesteps + 1) × N_realisations* and is suitable for direct input to recurrence quantification analysis (RQA) tools. Random seed is configurable for reproducibility.
-
-When disabled, only the summary percentile CSV is written, which substantially reduces computation time for exploratory runs.
+A toggle controls whether the full ensemble of drip rate realisations is generated and saved. **Disabled by default** — enable only when RQA or other ensemble analyses are needed, as it adds significant computation time and file size. When enabled, `n_realisations` independent draws are sampled from the joint posterior PDF at each time step. The output CSV has shape *(N_timesteps + 1) × N_realisations* and is suitable for direct input to recurrence quantification analysis (RQA) tools. Random seed is configurable for reproducibility.
 
 #### Proxy Record caching
 
@@ -216,7 +243,7 @@ When the Run panel is opened and again when **Start Run** is clicked, a set of s
 
 **Checks performed (Full Quantification mode only):**
 
-**Concentration mismatch (amber)** — the most common cause of silent NaN outputs. Estimates the predicted median speleothem concentration as `Kd × XL × aq_conc_ppb` and compares it to the actual median of the uploaded proxy data (converted to ppb using the data unit selector). If the ratio exceeds 50× or falls below 0.02×, a warning shows both values and the ratio with a hint pointing to the most likely cause. A ratio >50× typically means aq_conc is in ppm but the unit selector is left on ppb, or ca_conc is unrealistically high. A ratio <0.02× means the reverse.
+**Concentration mismatch (amber)** — the most common cause of silent NaN outputs. Estimates the predicted median speleothem concentration using the full forward model: `Kp × XL × (aq_mol / Ca_mol) × Ca_calcite_ppm`, where molar values are computed from entered mass/volume concentrations and molecular weights. Compares this to the observed median of the uploaded proxy data in the data's native units. If the ratio exceeds 50× or falls below 0.02×, a warning shows both values and the ratio. Unlike the simplified `Kd×XL×aq` approximation, this formula responds correctly to changes in Ca concentration and Kp.
 
 **Unit scale mismatch (blue)** — if the aq_conc unit selector and the proxy data unit selector are on different scales (e.g. data in ppm, aq_conc in ppb), an informational note appears confirming both are converted to ppb internally and prompting the user to verify this is intentional.
 
@@ -234,9 +261,9 @@ Before starting, a **Runtime Estimate** card shows three statistics derived from
 |------|--------|
 | Depth points | Row count of the (preprocessed) TE CSV |
 | Age range | `calage_max − calage_min` from Site Settings |
-| Est. runtime | `depth_points × age_range × n_TEs × empirical_constant + overhead` |
+| Est. runtime | `depth_points × age_range × (1 + n_TEs) × empirical_constant + overhead` |
 
-The empirical constant (`2.8 × 10⁻⁵` s per depth-point per age-step) was calibrated against typical laptop hardware running BayProX. Runtimes on faster machines will be lower; on older hardware they may be higher. The estimate turns amber when the projected runtime exceeds 20 minutes, and a contextual tip suggests either using the preprocessing panel to downsample or enabling **Use cached proxy record** if BayProX has already run for this dataset.
+The formula accounts for BayProX running once for the depth/age model and once per TE proxy distribution (`1 + n_TEs` passes total). The empirical constant (`1.22 × 10⁻⁴` s per depth-point per year per pass) was calibrated from an observed run of 387 depth points over a 9,500 yr range with one trace element, which completed in ~15 minutes of BayProX work. Hardware varies 2–5×; treat the estimate as an order-of-magnitude guide. The estimate turns amber when the projected runtime exceeds 20 minutes, and a contextual tip suggests either using the preprocessing panel to downsample or enabling **Use cached proxy record** if BayProX has already run for this dataset.
 
 The estimate recalculates automatically whenever the TE CSV is uploaded, preprocessing is applied, the calage range changes, or the Run panel is opened.
 
