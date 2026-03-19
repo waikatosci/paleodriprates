@@ -487,6 +487,21 @@ HTML = r'''<!DOCTYPE html>
     transition: filter 0.3s;
   }
   .nav-image-wrap:hover img { filter: brightness(0.95) saturate(1.1); }
+
+  /* ── Drip animation (active during model run) ── */
+  .nav-image-wrap.running img {
+    animation: dripPulse 2.2s ease-in-out infinite;
+  }
+  @keyframes dripPulse {
+    0%   { filter: brightness(0.75) saturate(0.9); }
+    50%  { filter: brightness(1.1)  saturate(1.3); }
+    100% { filter: brightness(0.75) saturate(0.9); }
+  }
+  .nav-image-wrap.running .nav-image-caption {
+    border-bottom: 2px solid var(--accent);
+    transition: border-color 0.3s;
+  }
+
   .nav-image-caption {
     position: absolute;
     bottom: 0; left: 0; right: 0;
@@ -524,8 +539,8 @@ HTML = r'''<!DOCTYPE html>
       <div class="nav-image-caption">
         © Garry Smith<br>
         <a href="https://www.geochemicalperspectivesletters.org/article1824/"
-           target="_blank" title="Hartland et al., Geochemical Perspectives Letters">
-          Hartland et al., Geochem. Persp. Lett.
+           target="_blank" title="Hartland & Zitoun, Geochemical Perspectives Letters">
+          Hartland &amp; Zitoun, Geochem. Persp. Lett.
         </a>
       </div>
     </div>
@@ -805,267 +820,6 @@ HTML = r'''<!DOCTYPE html>
         X<sub>F</sub> = 0.01, X<sub>L</sub> = 0.89.
       </div>
 
-      <!-- TE1 -->
-      <div class="card" id="te-param-card-1">
-        <div class="card-title">⚗️ Trace Element 1 — Ni (default)</div>
-        <div class="form-grid">
-          <div class="field">
-            <label>Element</label>
-            <select id="te1_elem" onchange="updateMolWt('te1', this.value)">
-              <optgroup label="d-block (well characterised)">
-                <option value="Ni" selected>Ni — Nickel</option>
-                <option value="Co">Co — Cobalt</option>
-                <option value="Cu">Cu — Copper (high Kd, use with caution)</option>
-              </optgroup>
-              <optgroup label="d-block (limited characterisation)">
-                <option value="V">V — Vanadium</option>
-                <option value="Zn">Zn — Zinc</option>
-                <option value="Cd">Cd — Cadmium</option>
-              </optgroup>
-              <optgroup label="p-block">
-                <option value="Al">Al — Aluminium</option>
-                <option value="Pb">Pb — Lead</option>
-              </optgroup>
-              <optgroup label="REE">
-                <option value="La">La — Lanthanum</option>
-                <option value="Ce">Ce — Cerium</option>
-              </optgroup>
-              <option value="other">Other (set mol. weight manually)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Molecular weight (g/mol)</label>
-            <input type="number" id="te1_mol_wt" value="58.693" step="0.001">
-          </div>
-          <div class="field has-tip">
-            <div class="tip-label">
-              <label>Partition coefficient Kp</label>
-              <span class="tip-icon">?</span>
-            </div>
-            <div class="tooltip-box">
-              <div class="tb-title">Theoretical Kp — Wang &amp; Xu (2001)</div>
-              Setting Kp = −1 calculates the partition coefficient from cave temperature
-              using the lattice strain model:<br><br>
-              <code>log Kp = [ a(ΔGn_M − ΔGn_Ca) + b(r_M − r_Ca) − (ΔGf_M − ΔGf_Ca) ] / (−2.303·R·T)</code>
-              where <em>r</em> is ionic radius relative to Ca²⁺, <em>ΔG<sub>f</sub></em> and
-              <em>ΔG<sub>n</sub></em> are free energies of formation and hydration,
-              <em>a</em> = 0.968 and <em>b</em> = 75.168 kcal/mol/Å are empirical constants,
-              and <em>T</em> is cave temperature in Kelvin.<br><br>
-              <strong style="color:var(--accent)">Speleothem-specific inorganic K<sub>d</sub> values</strong>
-              (Lindeman et al., <em>GCA</em> 317, 2022 — cave-analogue crystal growth experiments
-              under controlled pCO₂, temperature and humidity):
-              <table style="width:100%; margin:6px 0; border-collapse:collapse; font-size:10px;">
-                <tr style="color:var(--muted); border-bottom:1px solid var(--border)">
-                  <th style="text-align:left; padding:3px 6px">Element</th>
-                  <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (inorganic)</th>
-                  <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (+ NOM)</th>
-                  <th style="text-align:left; padding:3px 6px">Notes</th>
-                </tr>
-                <tr>
-                  <td style="padding:3px 6px; color:var(--texthi)">Co</td>
-                  <td style="text-align:right; padding:3px 6px">4.4</td>
-                  <td style="text-align:right; padding:3px 6px">0.41</td>
-                  <td style="padding:3px 6px; color:var(--muted)">PCP effect; NOM strongly suppresses</td>
-                </tr>
-                <tr style="background:rgba(255,255,255,0.03)">
-                  <td style="padding:3px 6px; color:var(--texthi)">Ni</td>
-                  <td style="text-align:right; padding:3px 6px">1.1</td>
-                  <td style="text-align:right; padding:3px 6px">0.029</td>
-                  <td style="padding:3px 6px; color:var(--muted)">PCP-insensitive (K<sub>d</sub> ≈ 1); recommended</td>
-                </tr>
-                <tr>
-                  <td style="padding:3px 6px; color:var(--texthi)">Cu</td>
-                  <td style="text-align:right; padding:3px 6px">44</td>
-                  <td style="text-align:right; padding:3px 6px">0.92</td>
-                  <td style="padding:3px 6px; color:var(--muted)">Very high K<sub>d</sub>; use with caution</td>
-                </tr>
-              </table>
-              These Kp values are used internally by the model when Kp = −1. To override,
-              enter a positive value directly. Note that in the presence of NOM, apparent K<sub>d</sub>
-              values are far below the inorganic values — the model accounts for this via the
-              X<sub>L</sub>, X<sub>F</sub>, and X<sub>I</sub> fractions.
-            </div>
-            <div style="display:flex; gap:6px; align-items:center">
-              <input type="number" id="te1_Kp" value="1.1" step="0.01" style="flex:1"
-                     oninput="updateTheoKp('te1')">
-              <input type="text" id="te1_Kp_theo" readonly placeholder="theo. Kp"
-                     title="Theoretical Kp from Wang & Xu (2001), calculated when Kp = −1"
-                     style="flex:1; opacity:0.55; cursor:not-allowed; font-size:10px; text-align:center">
-            </div>
-          </div>
-          <div class="field">
-            <label>Mean ln(K<sub>d</sub>)</label>
-            <input type="number" id="te1_Kd_mn" value="-3.908" step="0.001"
-                   oninput="updateParamHints('te1')">
-            <div id="te1_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          </div>
-          <div class="field">
-            <label>Std dev ln(K<sub>d</sub>)</label>
-            <input type="number" id="te1_Kd_sd" value="1.385" step="0.001"
-                   oninput="updateParamHints('te1')">
-            <div id="te1_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          </div>
-          <div class="field">
-            <label>X<sub>F</sub> — Fast fraction</label>
-            <input type="number" id="te1_F" value="0.01" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te1');updateParamHints('te1')">
-          </div>
-          <div class="field">
-            <label>X<sub>I</sub> — Inert fraction</label>
-            <input type="number" id="te1_InertF" value="0.1" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te1');updateParamHints('te1')">
-          </div>
-          <div class="field">
-            <label>X<sub>L</sub> — Labile fraction (auto)</label>
-            <input type="number" id="te1_labile" value="0.89" step="0.001" readonly
-                   style="opacity:0.6; cursor:not-allowed">
-          </div>
-          <div class="field fullonly">
-            <label>Aqueous concentration</label>
-            <input type="number" id="te1_aq_conc" value="4.370" step="0.001"
-                   oninput="updateParamHints('te1')">
-            <div id="te1_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          <select id="te1_aq_unit" style="margin-top:4px;width:100%"
-                  onchange="updateParamHints('te1')"><option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
-          </div>
-          <div class="field fullonly" style="grid-column:1/-1">
-            <div id="te1_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- TE2 -->
-      <div class="card" id="te-param-card-2">
-        <div class="card-title">⚗️ Trace Element 2 — Co (default)</div>
-        <div class="form-grid">
-          <div class="field">
-            <label>Element</label>
-            <select id="te2_elem" onchange="updateMolWt('te2', this.value)">
-              <optgroup label="d-block (well characterised)">
-                <option value="Ni">Ni — Nickel</option>
-                <option value="Co" selected>Co — Cobalt</option>
-                <option value="Cu">Cu — Copper (high Kd, use with caution)</option>
-              </optgroup>
-              <optgroup label="d-block (limited characterisation)">
-                <option value="V">V — Vanadium</option>
-                <option value="Zn">Zn — Zinc</option>
-                <option value="Cd">Cd — Cadmium</option>
-              </optgroup>
-              <optgroup label="p-block">
-                <option value="Al">Al — Aluminium</option>
-                <option value="Pb">Pb — Lead</option>
-              </optgroup>
-              <optgroup label="REE">
-                <option value="La">La — Lanthanum</option>
-                <option value="Ce">Ce — Cerium</option>
-              </optgroup>
-              <option value="other">Other (set mol. weight manually)</option>
-            </select>
-          </div>
-          <div class="field">
-            <label>Molecular weight (g/mol)</label>
-            <input type="number" id="te2_mol_wt" value="58.933" step="0.001">
-          </div>
-          <div class="field has-tip">
-            <div class="tip-label">
-              <label>Partition coefficient Kp</label>
-              <span class="tip-icon">?</span>
-            </div>
-            <div class="tooltip-box">
-              <div class="tb-title">Theoretical Kp — Wang &amp; Xu (2001)</div>
-              Setting Kp = −1 calculates the partition coefficient from cave temperature
-              using the lattice strain model:<br><br>
-              <code>log Kp = [ a(ΔGn_M − ΔGn_Ca) + b(r_M − r_Ca) − (ΔGf_M − ΔGf_Ca) ] / (−2.303·R·T)</code>
-              where <em>r</em> is ionic radius relative to Ca²⁺, <em>ΔG<sub>f</sub></em> and
-              <em>ΔG<sub>n</sub></em> are free energies of formation and hydration,
-              <em>a</em> = 0.968 and <em>b</em> = 75.168 kcal/mol/Å are empirical constants,
-              and <em>T</em> is cave temperature in Kelvin.<br><br>
-              <strong style="color:var(--accent)">Speleothem-specific inorganic K<sub>d</sub> values</strong>
-              (Lindeman et al., <em>GCA</em> 317, 2022 — cave-analogue crystal growth experiments
-              under controlled pCO₂, temperature and humidity):
-              <table style="width:100%; margin:6px 0; border-collapse:collapse; font-size:10px;">
-                <tr style="color:var(--muted); border-bottom:1px solid var(--border)">
-                  <th style="text-align:left; padding:3px 6px">Element</th>
-                  <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (inorganic)</th>
-                  <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (+ NOM)</th>
-                  <th style="text-align:left; padding:3px 6px">Notes</th>
-                </tr>
-                <tr>
-                  <td style="padding:3px 6px; color:var(--texthi)">Co</td>
-                  <td style="text-align:right; padding:3px 6px">4.4</td>
-                  <td style="text-align:right; padding:3px 6px">0.41</td>
-                  <td style="padding:3px 6px; color:var(--muted)">PCP effect; NOM strongly suppresses</td>
-                </tr>
-                <tr style="background:rgba(255,255,255,0.03)">
-                  <td style="padding:3px 6px; color:var(--texthi)">Ni</td>
-                  <td style="text-align:right; padding:3px 6px">1.1</td>
-                  <td style="text-align:right; padding:3px 6px">0.029</td>
-                  <td style="padding:3px 6px; color:var(--muted)">PCP-insensitive (K<sub>d</sub> ≈ 1); recommended</td>
-                </tr>
-                <tr>
-                  <td style="padding:3px 6px; color:var(--texthi)">Cu</td>
-                  <td style="text-align:right; padding:3px 6px">44</td>
-                  <td style="text-align:right; padding:3px 6px">0.92</td>
-                  <td style="padding:3px 6px; color:var(--muted)">Very high K<sub>d</sub>; use with caution</td>
-                </tr>
-              </table>
-              These Kp values are used internally by the model when Kp = −1. To override,
-              enter a positive value directly. Note that in the presence of NOM, apparent K<sub>d</sub>
-              values are far below the inorganic values — the model accounts for this via the
-              X<sub>L</sub>, X<sub>F</sub>, and X<sub>I</sub> fractions.
-            </div>
-            <div style="display:flex; gap:6px; align-items:center">
-              <input type="number" id="te2_Kp" value="4.4" step="0.01" style="flex:1"
-                     oninput="updateTheoKp('te2')">
-              <input type="text" id="te2_Kp_theo" readonly placeholder="theo. Kp"
-                     title="Theoretical Kp from Wang & Xu (2001), calculated when Kp = −1"
-                     style="flex:1; opacity:0.55; cursor:not-allowed; font-size:10px; text-align:center">
-            </div>
-          </div>
-          <div class="field">
-            <label>Mean ln(K<sub>d</sub>)</label>
-            <input type="number" id="te2_Kd_mn" value="-5.572" step="0.001"
-                   oninput="updateParamHints('te2')">
-            <div id="te2_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          </div>
-          <div class="field">
-            <label>Std dev ln(K<sub>d</sub>)</label>
-            <input type="number" id="te2_Kd_sd" value="1.385" step="0.001"
-                   oninput="updateParamHints('te2')">
-            <div id="te2_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          </div>
-          <div class="field">
-            <label>X<sub>F</sub> — Fast fraction</label>
-            <input type="number" id="te2_F" value="0.01" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te2');updateParamHints('te2')">
-          </div>
-          <div class="field">
-            <label>X<sub>I</sub> — Inert fraction</label>
-            <input type="number" id="te2_InertF" value="0.4" step="0.001" min="0" max="1"
-                   oninput="updateLabile('te2');updateParamHints('te2')">
-          </div>
-          <div class="field">
-            <label>X<sub>L</sub> — Labile fraction (auto)</label>
-            <input type="number" id="te2_labile" value="0.59" step="0.001" readonly
-                   style="opacity:0.6; cursor:not-allowed">
-          </div>
-          <div class="field">
-            <label>Aqueous concentration</label>
-            <input type="number" id="te2_aq_conc" value="0.460" step="0.001"
-                   oninput="updateParamHints('te2')">
-            <div id="te2_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          <select id="te2_aq_unit" class="fullonly" style="margin-top:4px;width:100%"
-                  onchange="updateParamHints('te2')"><option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
-          </div>
-          <div class="field fullonly" style="grid-column:1/-1">
-            <div id="te2_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Dynamic TE3+ param cards -->
-      <div id="te-extra-param-cards"></div>
-
       <!-- Cave conditions -->
       <div class="card">
         <div class="card-title">🌡 Cave Conditions</div>
@@ -1083,6 +837,20 @@ HTML = r'''<!DOCTYPE html>
                   onchange="updateCaHint();updateAllParamHints()"><option value="ppb">ppb  (µg/L)</option><option value="ppm" selected>ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
           </div>
         </div>
+        <div class="callout" style="margin-top:12px;font-size:11px;line-height:1.75">
+          <strong style="color:var(--accent)">K<sub>d</sub> estimation</strong><br>
+          Each trace element card below offers two modes for setting ln(K<sub>d</sub>):<br>
+          <strong>From drip rate</strong> — for monitored sites: enter the measured drip rate and K<sub>d</sub>
+          is back-calculated from the observed calcite concentration using OMC dissociation kinetics
+          (<code style="display:inline;padding:2px 4px;margin:0">f = 1 − e<sup>−K<sub>e</sub>·τ</sup></code>,
+          τ = 60/V).<br>
+          <strong>Literature / manual</strong> — for unmonitored sites: enter ln(K<sub>d</sub>) directly
+          from literature values or your own calibration.
+        </div>
+
+      <!-- TE parameter cards (dynamically generated) -->
+      <div id="te-all-param-cards"></div>
+
       </div>
 
       <div style="display:flex; gap:10px;">
@@ -1472,7 +1240,7 @@ function uploadFile(key, file, el) {
 // ── TE row state ─────────────────────────────────────────────────────────
 let teColumns = [];   // all columns from uploaded TE CSV
 let teDepthCol = '';  // selected depth column
-let teRowData  = [];  // [{col, unit}, ...]
+let teRowData  = [{col: '', unit: 'ppm'}];  // [{col, unit}, ...] — default TE1
 
 const UNIT_OPTS = [
   {v:'ppb', l:'ppb  (ng/g)'},
@@ -1553,7 +1321,7 @@ function addTERow() {
   const nonDepth = teColumns.filter(c => c !== teDepthCol);
   const used = teRowData.map(r => r.col);
   const next = nonDepth.find(c => !used.includes(c)) || nonDepth[0] || '';
-  teRowData.push({col: next, unit: 'ppb'});
+  teRowData.push({col: next, unit: 'ppm'});
   renderTERows();
   renderTEParamCards();
   applyElemDetection(teRowData.length - 1);
@@ -1603,36 +1371,163 @@ function renderTERows() {
     </div>`).join('');
 }
 
+// ── Element-specific default parameters ───────────────────────────────
+// Kd values from Lindeman et al. GCA 2022 (cave-analogue, +NOM conditions).
+// Kd_mn = ln(Kd_NOM); users refine using the "implied ln(Kd)" hint.
+// aq_conc are order-of-magnitude starting points — cave-specific.
+const ELEM_DEFAULTS = {
+  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 4.370, K_e: 1.0 },
+  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.01, InertF: 0.40, aq_conc: 0.300, K_e: 1.0 },
+  'Cu': { Kd_mn: -0.083, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
+};
+const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };
+
+// Which element goes in which slot by default (before auto-detection)
+const TE_POSITION_ELEM = { 1: 'Ni', 2: 'Co' };
+const TE_POSITION_FALLBACK = 'Ni';
+
+// Kp tooltip HTML — shown on first TE card as reference
+const KP_TOOLTIP_HTML = `
+  <div class="tooltip-box">
+    <div class="tb-title">Theoretical Kp — Wang &amp; Xu (2001)</div>
+    Setting Kp = −1 calculates the partition coefficient from cave temperature
+    using the lattice strain model:<br><br>
+    <code>log Kp = [ a(ΔGn_M − ΔGn_Ca) + b(r_M − r_Ca) − (ΔGf_M − ΔGf_Ca) ] / (−2.303·R·T)</code>
+    where <em>r</em> is ionic radius relative to Ca²⁺, <em>ΔG<sub>f</sub></em> and
+    <em>ΔG<sub>n</sub></em> are free energies of formation and hydration,
+    <em>a</em> = 0.968 and <em>b</em> = 75.168 kcal/mol/Å are empirical constants,
+    and <em>T</em> is cave temperature in Kelvin.<br><br>
+    <strong style="color:var(--accent)">Speleothem-specific inorganic K<sub>d</sub> values</strong>
+    (Lindeman et al., <em>GCA</em> 317, 2022 — cave-analogue crystal growth experiments
+    under controlled pCO₂, temperature and humidity):
+    <table style="width:100%; margin:6px 0; border-collapse:collapse; font-size:10px;">
+      <tr style="color:var(--muted); border-bottom:1px solid var(--border)">
+        <th style="text-align:left; padding:3px 6px">Element</th>
+        <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (inorganic)</th>
+        <th style="text-align:right; padding:3px 6px">K<sub>d</sub> (+ NOM)</th>
+        <th style="text-align:left; padding:3px 6px">Notes</th>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px; color:var(--texthi)">Co</td>
+        <td style="text-align:right; padding:3px 6px">4.4</td>
+        <td style="text-align:right; padding:3px 6px">0.41</td>
+        <td style="padding:3px 6px; color:var(--muted)">PCP effect; NOM strongly suppresses</td>
+      </tr>
+      <tr style="background:rgba(255,255,255,0.03)">
+        <td style="padding:3px 6px; color:var(--texthi)">Ni</td>
+        <td style="text-align:right; padding:3px 6px">1.1</td>
+        <td style="text-align:right; padding:3px 6px">0.029</td>
+        <td style="padding:3px 6px; color:var(--muted)">PCP-insensitive (K<sub>d</sub> ≈ 1); recommended</td>
+      </tr>
+      <tr>
+        <td style="padding:3px 6px; color:var(--texthi)">Cu</td>
+        <td style="text-align:right; padding:3px 6px">44</td>
+        <td style="text-align:right; padding:3px 6px">0.92</td>
+        <td style="padding:3px 6px; color:var(--muted)">Very high K<sub>d</sub>; use with caution</td>
+      </tr>
+    </table>
+    These Kp values are used internally by the model when Kp = −1. To override,
+    enter a positive value directly. Note that in the presence of NOM, apparent K<sub>d</sub>
+    values are far below the inorganic values — the model accounts for this via the
+    X<sub>L</sub>, X<sub>F</sub>, and X<sub>I</sub> fractions.
+  </div>`;
+
 function makeTEParamCard(n) {
   const p = `te${n}`;
+  // Resolve element for this position, then look up element-specific defaults
+  const elem = TE_POSITION_ELEM[n] || TE_POSITION_FALLBACK;
+  const d = ELEM_DEFAULTS[elem] || ELEM_DEFAULT_FALLBACK;
+  const mw = MOL_WT[elem] || 58.693;
+  const kp = KP_DEFAULT[elem] !== undefined ? KP_DEFAULT[elem] : -1;
+  const labile = Math.max(0, 1 - d.F - d.InertF);
+
+  // Build element selector with correct default selected
+  const elemOpts = ELEM_OPTS.replace(
+    `value="${elem}"`, `value="${elem}" selected`);
+  // Kp field: include tooltip on TE1, Kp_theo display on all
+  const showTooltip = (n === 1);
+  const kpField = showTooltip
+    ? `<div class="field has-tip">
+        <div class="tip-label">
+          <label>Partition coefficient Kp</label>
+          <span class="tip-icon">?</span>
+        </div>
+        ${KP_TOOLTIP_HTML}
+        <div style="display:flex; gap:6px; align-items:center">
+          <input type="number" id="${p}_Kp" value="${kp}" step="0.01" style="flex:1"
+                 oninput="updateTheoKp('${p}')">
+          <input type="text" id="${p}_Kp_theo" readonly placeholder="theo. Kp"
+                 title="Theoretical Kp from Wang &amp; Xu (2001), calculated when Kp = −1"
+                 style="flex:1; opacity:0.55; cursor:not-allowed; font-size:10px; text-align:center">
+        </div>
+      </div>`
+    : `<div class="field"><label>Partition coefficient Kp</label>
+        <div style="display:flex; gap:6px; align-items:center">
+          <input type="number" id="${p}_Kp" value="${kp}" step="0.01" style="flex:1"
+                 oninput="updateTheoKp('${p}')">
+          <input type="text" id="${p}_Kp_theo" readonly placeholder="theo. Kp"
+                 title="Theoretical Kp from Wang &amp; Xu (2001), calculated when Kp = −1"
+                 style="flex:1; opacity:0.55; cursor:not-allowed; font-size:10px; text-align:center">
+        </div>
+      </div>`;
+
   return `<div class="card" id="te-param-card-${n}">
     <div class="card-title">⚗️ Trace Element ${n}</div>
     <div class="form-grid">
       <div class="field"><label>Element</label>
-        <select id="${p}_elem" onchange="updateMolWt('${p}', this.value)">${ELEM_OPTS}</select></div>
+        <select id="${p}_elem" onchange="updateMolWt('${p}', this.value)">${elemOpts}</select></div>
       <div class="field"><label>Molecular weight (g/mol)</label>
-        <input type="number" id="${p}_mol_wt" value="58.693" step="0.001"></div>
-      <div class="field"><label>Partition coefficient Kp</label>
-        <input type="number" id="${p}_Kp" value="-1" step="0.01" oninput="updateTheoKp('${p}')"></div>
-      <div class="field"><label>Mean ln(K<sub>d</sub>)</label>
-        <input type="number" id="${p}_Kd_mn" value="-3.908" step="0.001"
-               oninput="updateParamHints('${p}')">
-        <div id="${p}_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div></div>
-      <div class="field"><label>Std dev ln(K<sub>d</sub>)</label>
-        <input type="number" id="${p}_Kd_sd" value="1.385" step="0.001"
-               oninput="updateParamHints('${p}')">
-        <div id="${p}_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div></div>
+        <input type="number" id="${p}_mol_wt" value="${mw}" step="0.001"></div>
+      ${kpField}
+      <div class="field" style="grid-column:1/-1">
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="${p}_kd_mode_dr" onclick="setKdMode('${p}','driprate')"
+                  class="btn btn-primary"
+                  style="flex:1;padding:7px 10px;font-size:10px;height:auto">
+            💧 From drip rate
+          </button>
+          <button id="${p}_kd_mode_lit" onclick="setKdMode('${p}','manual')"
+                  class="btn btn-ghost"
+                  style="flex:1;padding:7px 10px;font-size:10px;height:auto">
+            📖 Literature / manual
+          </button>
+        </div>
+        <div id="${p}_dr_wrap" style="margin-bottom:8px">
+          <label style="font-size:11px;color:var(--muted)">Measured drip rate (drips min⁻¹)</label>
+          <input type="number" id="${p}_drip_rate" value="10" step="0.5" min="0.1"
+                 oninput="updateParamHints('${p}')" style="width:100%">
+          <div id="${p}_dr_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label style="font-size:11px;color:var(--muted)">Mean ln(K<sub>d</sub>)</label>
+            <input type="number" id="${p}_Kd_mn" value="${d.Kd_mn}" step="0.001"
+                   oninput="updateParamHints('${p}')"
+                   readonly style="opacity:0.6;cursor:not-allowed">
+            <div id="${p}_Kd_mn_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          </div>
+          <div>
+            <label style="font-size:11px;color:var(--muted)">Std dev ln(K<sub>d</sub>)</label>
+            <input type="number" id="${p}_Kd_sd" value="${d.Kd_sd}" step="0.001"
+                   oninput="updateParamHints('${p}')">
+            <div id="${p}_Kd_sd_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>K<sub>e</sub> — OMC dissociation rate (s⁻¹)</label>
+        <input type="number" id="${p}_K_e" value="${d.K_e}" step="0.1" min="0.001"
+               oninput="updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>F</sub> — Fast fraction</label>
-        <input type="number" id="${p}_F" value="0.01" step="0.001" min="0" max="1"
+        <input type="number" id="${p}_F" value="${d.F}" step="0.001" min="0" max="1"
                oninput="updateLabile('${p}');updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>I</sub> — Inert fraction</label>
-        <input type="number" id="${p}_InertF" value="0.1" step="0.001" min="0" max="1"
+        <input type="number" id="${p}_InertF" value="${d.InertF}" step="0.001" min="0" max="1"
                oninput="updateLabile('${p}');updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>L</sub> — Labile (auto)</label>
-        <input type="number" id="${p}_labile" value="0.89" step="0.001" readonly
+        <input type="number" id="${p}_labile" value="${labile.toFixed(4)}" step="0.001" readonly
                style="opacity:0.6;cursor:not-allowed"></div>
       <div class="field fullonly"><label>Aqueous concentration</label>
-        <input type="number" id="${p}_aq_conc" value="4.370" step="0.001"
+        <input type="number" id="${p}_aq_conc" value="${d.aq_conc}" step="0.001"
                oninput="updateParamHints('${p}')">
         <div id="${p}_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
         <select id="${p}_aq_unit" style="margin-top:4px;width:100%"
@@ -1647,23 +1542,21 @@ function makeTEParamCard(n) {
 
 function renderTEParamCards() {
   const n = teRowData.length;
-  // TE2 built-in card: show only when ≥2 TEs
-  const c2 = document.getElementById('te-param-card-2');
-  if (c2) c2.style.display = n >= 2 ? '' : 'none';
-  // TE3+ dynamic cards
-  const container = document.getElementById('te-extra-param-cards');
+  const container = document.getElementById('te-all-param-cards');
   if (!container) return;
   container.innerHTML = '';
-  for (let i = 2; i < n; i++) {
+  for (let i = 0; i < n; i++) {
     container.insertAdjacentHTML('beforeend', makeTEParamCard(i + 1));
-    // initialise mol wt / Kp — detect from column name, fallback to Ni
-    const detectedElem = detectElemFromCol(teRowData[i]?.col) || 'Ni';
+    // Detect element from column name, fallback to position default
+    const fallbackElem = TE_POSITION_ELEM[i + 1] || TE_POSITION_FALLBACK;
+    const detectedElem = detectElemFromCol(teRowData[i]?.col) || fallbackElem;
     updateMolWt(`te${i+1}`, detectedElem);
     updateLabile(`te${i+1}`);
+    updateTheoKp(`te${i+1}`);
   }
-  // Re-apply detection for built-in cards (TE1, TE2) too
-  for (let i = 0; i < Math.min(n, 2); i++) applyElemDetection(i);
   updateAllParamHints();
+  // Re-apply analysis mode to show/hide .fullonly elements in new cards
+  setAnalysisMode(analysisMode);
 }
 
 function populateColSelectors(key, columns) {
@@ -1685,7 +1578,7 @@ function populateColSelectors(key, columns) {
     if (cfg) cfg.style.display = '';
     // Initialise with one row
     const nonDepth = columns.filter(c => c !== teDepthCol);
-    teRowData = [{col: nonDepth[0] || columns[0], unit: 'ppb'}];
+    teRowData = [{col: nonDepth[0] || columns[0], unit: 'ppm'}];
     renderTERows();
     renderTEParamCards();
     // Auto-detect element for each initial row after cards are in DOM
@@ -1987,14 +1880,14 @@ function renderAgePlot() {
       },
       scales: {
         x: {
-          title: {display:true, text:'Depth (cm)', color:'var(--muted)', font:{size:10}},
+          title: {display:true, text:'Depth (cm)', color:'#6e7f8d', font:{size:10}},
           grid: {color:'rgba(255,255,255,0.05)'},
-          ticks: {color:'var(--muted)', font:{size:10}},
+          ticks: {color:'#6e7f8d', font:{size:10}},
         },
         y: {
-          title: {display:true, text:'Age (yrs BP)', color:'var(--muted)', font:{size:10}},
+          title: {display:true, text:'Age (yrs BP)', color:'#6e7f8d', font:{size:10}},
           grid: {color:'rgba(255,255,255,0.05)'},
-          ticks: {color:'var(--muted)', font:{size:10}},
+          ticks: {color:'#6e7f8d', font:{size:10}},
         }
       }
     },
@@ -2136,11 +2029,11 @@ function updatePreviewChart() {
     ]},
     options: {
       animation: false, responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color:'var(--muted)', font:{size:9} } } },
+      plugins: { legend: { labels: { color:'#6e7f8d', font:{size:9} } } },
       scales: {
-        x: { ticks:{color:'var(--muted)',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'},
-             title:{display:true,text:'Depth (cm)',color:'var(--muted)',font:{size:9}} },
-        y: { ticks:{color:'var(--muted)',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'} }
+        x: { ticks:{color:'#6e7f8d',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'},
+             title:{display:true,text:'Depth (cm)',color:'#6e7f8d',font:{size:9}} },
+        y: { ticks:{color:'#6e7f8d',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'} }
       }
     }
   });
@@ -2275,94 +2168,92 @@ function buildSummary() {
 function v(id) { return document.getElementById(id)?.value ?? ''; }
 
 // ── Run ──────────────────────────────────────────────────────────────────────
+// ── Shared constants ────────────────────────────────────────────────────
+const UNIT_FACTOR = {ppb:1, ppm:1000, 'ug/g':1000, 'mg/kg':1000};
+// Ca fraction in CaCO₃ by mass: 40.078/100.087 ≈ 40% = 400,000 ppm
+const CA_CALCITE_PPM = 400000;
+
 // ── Pre-run sanity checks ────────────────────────────────────────────────
-const UNIT_TO_PPB = {ppb:1, ppm:1000, 'ug/g':1000, 'mg/kg':1000};
 
 function runSanityChecks() {
+  // Each warning: {level: 'error'|'warn', html: '...'}
   const warnings = [];
   const mode = analysisMode;
+
+  const WARN_STYLE = {
+    error: { bg: 'rgba(255,80,80,0.08)',   border: '#ff5050', color: '#ff5050' },
+    warn:  { bg: 'rgba(255,160,50,0.08)',  border: '#ffa032', color: '#ffa032' },
+  };
+  function warnHtml(level, title, body) {
+    const s = WARN_STYLE[level];
+    return `<div style="margin-bottom:10px;padding:8px 10px;background:${s.bg};
+                 border-left:3px solid ${s.border};border-radius:0 4px 4px 0">
+              <strong style="color:${s.color}">${title}</strong><br>${body}
+            </div>`;
+  }
 
   teRowData.forEach((r, i) => {
     const n = i + 1;
     const p = `te${n}`;
 
-    // 1. Predicted vs observed speleothem concentration
+    // 1. Predicted vs observed speleothem concentration (model-correct)
     if (mode === 'full') {
       const aqVal    = parseFloat(document.getElementById(`${p}_aq_conc`)?.value) || 0;
       const aqUnit   = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
-      const aqPPB    = aqVal * (UNIT_TO_PPB[aqUnit] || 1);
+      const aqPPB    = aqVal * (UNIT_FACTOR[aqUnit] || 1);
       const caVal    = parseFloat(document.getElementById('ca_conc')?.value) || 0;
       const caUnit   = document.getElementById('ca_unit')?.value || 'ppb';
-      const caPPB    = caVal * (UNIT_TO_PPB[caUnit] || 1);
+      const caPPB    = caVal * (UNIT_FACTOR[caUnit] || 1);
       const kdMn     = parseFloat(document.getElementById(`${p}_Kd_mn`)?.value) || 0;
+      const xf       = parseFloat(document.getElementById(`${p}_F`)?.value) || 0;
       const xl       = parseFloat(document.getElementById(`${p}_labile`)?.value) || 0;
+      const keVal    = parseFloat(document.getElementById(`${p}_K_e`)?.value) || 1;
+      const kpVal    = parseFloat(document.getElementById(`${p}_Kp`)?.value);
+      const kpEff    = (kpVal === -1 || !isFinite(kpVal))
+                       ? (THEO_KP[document.getElementById(`${p}_elem`)?.value] || 1) : kpVal;
+      const vRef     = getVRef(p);
+      const tau      = 60.0 / vRef;
+      const nS       = 1.0 - xf;
+      const kd       = Math.exp(kdMn);
+      const E1       = Math.exp(-kd * tau);
+      const K0_ppm   = kpEff * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
+      const predPpm  = K0_ppm * (1 - nS * E1);
       const dataUnit = r.unit || 'ppb';
       const dataCol  = r.col;
 
-      if (aqPPB > 0 && teRawData[dataCol]) {
-        // Predicted in data-native units: Kd×XL×aq_ppb, then convert to dataUnit.
-        // Since load() no longer converts solid data, both sides must be in the
-        // same native unit for a meaningful comparison.
-        const kd          = Math.exp(kdMn);
-        const predPPB     = kd * xl * aqPPB;  // ppb
-        const dataFactor  = UNIT_TO_PPB[dataUnit] || 1;
-        const predNative  = predPPB / dataFactor;  // convert pred to data units
-        const rawVals     = (teRawData[dataCol] || []).map(Number).filter(isFinite);
+      if (predPpm > 0 && teRawData[dataCol]) {
+        const dataFactor = UNIT_FACTOR[dataUnit] || 1;
+        const predNative = predPpm / (dataFactor / 1000);
+        const rawVals    = (teRawData[dataCol] || []).map(Number).filter(isFinite);
         if (rawVals.length) {
           rawVals.sort((a,b)=>a-b);
           const obsNative = rawVals[Math.floor(rawVals.length/2)];
           const ratio     = obsNative / predNative;
-          if (ratio > 50 || ratio < 0.02) {
+          if (ratio > 5 || ratio < 0.2) {
             const dir  = ratio > 1 ? 'higher' : 'lower';
-            const hint = ratio > 50
-              ? 'Check aq_conc value and units — or verify Kd is appropriate for this element.'
-              : 'Predicted concentration far exceeds data — check Kd, aq_conc values.';
-            warnings.push(
-              `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,160,50,0.08);
-                           border-left:3px solid #ffa032;border-radius:0 4px 4px 0">
-                <strong style="color:#ffa032">TE${n} — concentration mismatch (${ratio.toFixed(0)}×)</strong><br>
-                Predicted [TE]<sub>calcite</sub>: <code>${predNative.toFixed(3)} ${dataUnit}</code>
-                &nbsp;·&nbsp; Observed median: <code>${obsNative.toFixed(3)} ${dataUnit}</code>
-                &nbsp;·&nbsp; Observed is ${ratio.toFixed(0)}× ${dir} than predicted.<br>
-                <span style="color:var(--muted)">${hint}</span>
-              </div>`
-            );
+            warnings.push({ level: 'warn', html: warnHtml('warn',
+              `TE${n} — prediction mismatch (${ratio.toFixed(1)}×) at ${vRef} drips/min`,
+              `Kinetic prediction: <code>${predNative.toFixed(3)} ${dataUnit}</code>
+               &nbsp;·&nbsp; Observed median: <code>${obsNative.toFixed(3)} ${dataUnit}</code>
+               &nbsp;·&nbsp; ${ratio.toFixed(1)}× ${dir}.<br>
+               <span style="color:var(--muted)">Adjust drip rate, Kd, or solution chemistry.</span>`)
+            });
           }
         }
       }
     }
 
-    // 2. aq_conc unit vs data unit mismatch hint
-    if (mode === 'full') {
-      const aqUnit   = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
-      const dataUnit = r.unit || 'ppb';
-      const aqScale  = UNIT_TO_PPB[aqUnit]  || 1;
-      const datScale = UNIT_TO_PPB[dataUnit] || 1;
-      if (aqScale !== datScale) {
-        warnings.push(
-          `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(100,140,255,0.08);
-                       border-left:3px solid #6495ed;border-radius:0 4px 4px 0">
-            <strong style="color:#6495ed">TE${n} — unit mismatch note</strong><br>
-            Data column unit is <code>${dataUnit}</code> but aq_conc unit is <code>${aqUnit}</code>.
-            Note: solid proxy data is <strong>not</strong> unit-converted before entering the model.
-            Aqueous concentration (aq_conc) is converted internally. Confirm both values are
-            on a consistent scale.
-          </div>`
-        );
-      }
-    }
+    // Note: aq_conc in ppb and data in ppm is normal (different physical units:
+    // µg/L aqueous vs µg/g solid). No warning needed for this case.
 
     // 3. Missing aq_conc in full mode
     if (mode === 'full') {
       const aqVal = parseFloat(document.getElementById(`${p}_aq_conc`)?.value);
       if (!aqVal || aqVal <= 0) {
-        warnings.push(
-          `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,80,80,0.08);
-                       border-left:3px solid #ff5050;border-radius:0 4px 4px 0">
-            <strong style="color:#ff5050">TE${n} — aq_conc is zero or missing</strong><br>
-            Aqueous concentration must be > 0 in Full Quantification mode.
-          </div>`
-        );
+        warnings.push({ level: 'error', html: warnHtml('error',
+          `TE${n} — aq_conc is zero or missing`,
+          `Aqueous concentration must be > 0 in Full Quantification mode.`)
+        });
       }
     }
   });
@@ -2371,15 +2262,12 @@ function runSanityChecks() {
   if (mode === 'full') {
     const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
     const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
-    const caMgL  = caVal * (UNIT_TO_PPB[caUnit] || 1) / 1000;  // convert ppb → mg/L
+    const caMgL  = caVal * (UNIT_FACTOR[caUnit] || 1) / 1000;  // convert ppb → mg/L
     if (caMgL > 200) {
-      warnings.push(
-        `<div style="margin-bottom:10px;padding:8px 10px;background:rgba(255,160,50,0.08);
-                     border-left:3px solid #ffa032;border-radius:0 4px 4px 0">
-          <strong style="color:#ffa032">Ca concentration unusually high (${caMgL.toFixed(0)} mg/L)</strong><br>
-          Typical cave drip water Ca is 20–100 mg/L. Check units and value.
-        </div>`
-      );
+      warnings.push({ level: 'warn', html: warnHtml('warn',
+        `Ca concentration unusually high (${caMgL.toFixed(0)} mg/L)`,
+        `Typical cave drip water Ca is 20–100 mg/L. Check units and value.`)
+      });
     }
   }
 
@@ -2389,11 +2277,11 @@ function runSanityChecks() {
   if (warnings.length === 0) {
     card.style.display = 'none';
   } else {
-    body.innerHTML = warnings.join('');
+    body.innerHTML = warnings.map(w => w.html).join('');
     card.style.display = '';
   }
-  return warnings.filter(w => w.includes('ff5050') || w.includes('ffa032')).length === 0;
-                          // true = ok to run (only blue info warnings present)
+  // true = ok to run (no error or warn-level warnings present)
+  return warnings.filter(w => w.level === 'error' || w.level === 'warn').length === 0;
 }
 
 function startRun() {
@@ -2442,9 +2330,9 @@ function collectParams() {
     // TE param cards (te1_, te2_, te3_, ... collected dynamically)
     ...(() => {
       const out = {};
-      for (let i = 1; i <= Math.max(teRowData.length, 2); i++) {
+      for (let i = 1; i <= teRowData.length; i++) {
         const p = `te${i}`;
-        ['elem','mol_wt','Kp','Kd_mn','Kd_sd','F','InertF','aq_conc','aq_unit'].forEach(f => {
+        ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','drip_rate','F','InertF','labile','aq_conc','aq_unit'].forEach(f => {
           const el = document.getElementById(`${p}_${f}`);
           if (el) out[`${p}_${f}`] = el.value;
         });
@@ -2531,6 +2419,12 @@ function setStatus(state, label) {
   const dot = pill.querySelector('.dot');
   dot.className = 'dot' + (state === 'running' ? ' pulse' : '');
   pill.innerHTML = `<span class="dot${state==='running'?' pulse':''}"></span> ${label}`;
+  // Toggle drip animation on sidebar image
+  const navImg = document.querySelector('.nav-image-wrap');
+  if (navImg) {
+    if (state === 'running') navImg.classList.add('running');
+    else navImg.classList.remove('running');
+  }
 }
 
 // ── Chart ────────────────────────────────────────────────────────────────────
@@ -2553,7 +2447,7 @@ function loadSFChart() {
       const ctx = document.getElementById('sfChart').getContext('2d');
       if (sfChart) sfChart.destroy();
       ctx.font = '13px DM Mono, monospace';
-      ctx.fillStyle = 'var(--muted)';
+      ctx.fillStyle = '#6e7f8d';
       ctx.textAlign = 'center';
       const h = ctx.canvas.height;
       ctx.fillText('Smart & Friedrich classification requires Full Quantification mode.',
@@ -2639,15 +2533,15 @@ function loadSFChart() {
           x: {
             min: 0, max: 3,
             title: {display:true, text:'Coefficient of Variation (CV = σ/μ)',
-                    color:'var(--muted)', font:{size:11}},
-            ticks: {color:'var(--muted)', font:{size:10}},
+                    color:'#6e7f8d', font:{size:11}},
+            ticks: {color:'#6e7f8d', font:{size:10}},
             grid:  {color:'rgba(255,255,255,0.05)'},
           },
           y: {
             min: 0, max: 60,
             title: {display:true, text:'Mean drip rate (drips min⁻¹)',
-                    color:'var(--muted)', font:{size:11}},
-            ticks: {color:'var(--muted)', font:{size:10}},
+                    color:'#6e7f8d', font:{size:11}},
+            ticks: {color:'#6e7f8d', font:{size:10}},
             grid:  {color:'rgba(255,255,255,0.05)'},
           }
         }
@@ -2816,13 +2710,12 @@ function refreshDownloads(files) {
 const THEO_KP = { 'Co': 4.4, 'Ni': 1.1, 'Cu': 44 };  // Lindeman et al. GCA 2022
 
 // ── Reactive parameter hints ────────────────────────────────────────────
-const UNIT_FACTOR = {ppb:1, ppm:1000, 'ug/g':1000, 'mg/kg':1000};
 
 // Returns the raw median of proxy data in its native units (no conversion).
 // Used for model comparison — the forward model works in data-native units.
 // The unit selector is informational only; the data is NOT converted before
 // entering the PDist / BayProX pipeline.
-function getObsMedianPPB(teIdx) {
+function getObsMedianNative(teIdx) {
   const row = teRowData[teIdx];
   if (!row || !teRawData[row.col]) return null;
   const vals = (teRawData[row.col]||[]).map(v=>parseFloat(v)).filter(isFinite);
@@ -2838,11 +2731,105 @@ function fmtPPB(v) {
   return (v*1000).toFixed(1)+' ppt';
 }
 
+// ── Kd mode toggle: drip rate vs manual ──────────────────────────────────
+function setKdMode(prefix, mode) {
+  const input  = document.getElementById(prefix + '_Kd_mn');
+  const drWrap = document.getElementById(prefix + '_dr_wrap');
+  const btnDr  = document.getElementById(prefix + '_kd_mode_dr');
+  const btnLit = document.getElementById(prefix + '_kd_mode_lit');
+  if (!input) return;
+
+  // Store mode on the input element for other functions to read
+  input.dataset.kdMode = mode;
+
+  if (mode === 'driprate') {
+    input.readOnly = true;
+    input.style.opacity = '0.6';
+    input.style.cursor = 'not-allowed';
+    if (drWrap) drWrap.style.display = '';
+    if (btnDr)  { btnDr.className  = 'btn btn-primary'; btnDr.style.flex  = '1'; }
+    if (btnLit) { btnLit.className = 'btn btn-ghost';   btnLit.style.flex = '1'; }
+    autoCalcKd(prefix);
+  } else {
+    input.readOnly = false;
+    input.style.opacity = '1';
+    input.style.cursor = '';
+    if (drWrap) drWrap.style.display = 'none';
+    if (btnDr)  { btnDr.className  = 'btn btn-ghost';   btnDr.style.flex  = '1'; }
+    if (btnLit) { btnLit.className = 'btn btn-primary';  btnLit.style.flex = '1'; }
+  }
+  updateParamHints(prefix);
+}
+
+function getKdMode(prefix) {
+  const input = document.getElementById(prefix + '_Kd_mn');
+  return input?.dataset?.kdMode || 'driprate';
+}
+
+function getVRef(prefix) {
+  // Per-TE drip rate if available; fallback 10 for hints in manual mode
+  const el = document.getElementById(prefix + '_drip_rate');
+  return el ? (parseFloat(el.value) || 10) : 10;
+}
+
+function autoCalcKd(prefix) {
+  if (getKdMode(prefix) !== 'driprate') return;
+
+  const idx    = parseInt(prefix.replace(/[^0-9]/g, '')) - 1;
+  const obs    = getObsMedianNative(idx);
+  if (obs === null || obs <= 0) return;
+
+  const xf     = parseFloat(document.getElementById(prefix + '_F')?.value) || 0;
+  const xl     = parseFloat(document.getElementById(prefix + '_labile')?.value) || 0;
+  const keVal  = parseFloat(document.getElementById(prefix + '_K_e')?.value) || 1;
+  const kpVal  = parseFloat(document.getElementById(prefix + '_Kp')?.value);
+  const kp     = (kpVal === -1 || !isFinite(kpVal))
+                 ? (THEO_KP[document.getElementById(prefix+'_elem')?.value] || 1)
+                 : kpVal;
+  const aqVal  = parseFloat(document.getElementById(prefix + '_aq_conc')?.value);
+  const aqUnit = document.getElementById(prefix + '_aq_unit')?.value || 'ppb';
+  const aqPPB  = isFinite(aqVal) ? aqVal * (UNIT_FACTOR[aqUnit] || 1) : 0;
+  const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+  const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
+  const caPPB  = caVal * (UNIT_FACTOR[caUnit] || 1);
+  const vRef   = getVRef(prefix);
+  const tau    = 60.0 / vRef;  // seconds per drip
+
+  if (aqPPB <= 0 || caPPB <= 0 || kp <= 0) return;
+
+  // K_0 = equilibrium [TE]_calcite using Kp (NOT Kd)
+  // Matches model.py: K_0 = Kp * Y_s * (Xa/Ya) * K_e
+  const nS     = 1.0 - xf;
+  const K0_ppm = kp * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
+  if (K0_ppm <= 0) return;
+
+  const dataUnit = teRowData[idx]?.unit || 'ppm';
+  const obsPpm   = obs * ((UNIT_FACTOR[dataUnit] || 1) / 1000);
+  const ratio    = obsPpm / K0_ppm;
+
+  // h(V) = K_0 * (1 - nS * E1)  →  E1 = (1 - ratio) / nS
+  const E1 = (1 - ratio) / nS;
+  if (E1 <= 0 || E1 >= 1 || !isFinite(E1)) return;
+
+  // Narrow-Gaussian approximation: E1 ≈ exp(-exp(k_mu) * tau)
+  // → exp(k_mu) = -ln(E1) / tau
+  // → k_mu = ln(-ln(E1) / tau)
+  const expKmu = -Math.log(E1) / tau;
+  if (expKmu <= 0 || !isFinite(expKmu)) return;
+
+  const kdMn = Math.log(expKmu);
+  document.getElementById(prefix + '_Kd_mn').value = kdMn.toFixed(3);
+}
+
 function updateParamHints(prefix) {
+  // Auto-calculate Kd first if enabled (before reading Kd_mn for hints)
+  autoCalcKd(prefix);
   const idx    = parseInt(prefix.replace(/[^0-9]/g,'')) - 1;
   const kdMn   = parseFloat(document.getElementById(prefix+'_Kd_mn')?.value);
   const kdSd   = parseFloat(document.getElementById(prefix+'_Kd_sd')?.value);
+  const xf     = parseFloat(document.getElementById(prefix+'_F')?.value) || 0;
   const xl     = parseFloat(document.getElementById(prefix+'_labile')?.value);
+  const keVal  = parseFloat(document.getElementById(prefix+'_K_e')?.value) || 1;
   const aqVal  = parseFloat(document.getElementById(prefix+'_aq_conc')?.value);
   const aqUnit = document.getElementById(prefix+'_aq_unit')?.value||'ppb';
   const aqPPB  = isFinite(aqVal) ? aqVal*(UNIT_FACTOR[aqUnit]||1) : null;
@@ -2857,26 +2844,52 @@ function updateParamHints(prefix) {
   const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
   const caUnit = document.getElementById('ca_unit')?.value||'ppb';
   const caPPB  = caVal * (UNIT_FACTOR[caUnit]||1);  // µg/L
-  // Ca in calcite: CaCO3 is ~40% Ca by mass = 400,000 ppm = 400,000,000 ppb
-  const CA_CALCITE_PPM = 400000;
   const kd     = isFinite(kdMn) ? Math.exp(kdMn) : null;
   const kdLo   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn-kdSd) : null;
   const kdHi   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn+kdSd) : null;
-  const obs    = getObsMedianPPB(idx);
+  const obs    = getObsMedianNative(idx);
+
+  // Per-TE drip rate → residence time
+  const vRef   = getVRef(prefix);
+  const kdMode = getKdMode(prefix);
+  const tau    = 60.0 / vRef;                        // seconds per drip
+
+  // Model physics (matching model.py dr_pdfseries):
+  //   K_0 = Kp × (XF+XL) × (aq/ca) × 400000 × K_e     [equilibrium, ppm]
+  //   h(V) = K_0 × (1 − nS × E1)                        [at drip rate V]
+  //   E1 ≈ exp(−exp(Kd_mn) × τ)                          [narrow-Gaussian approx]
+  //   nS = 1 − XF
+  // Kp = partition coefficient; Kd = exp(Kd_mn) = OMC dissociation rate (s⁻¹)
+  const nS     = 1.0 - xf;
+  const K0_ppm = kp * (xf + xl) * (aqPPB > 0 && caPPB > 0 ? aqPPB / caPPB : 0) * CA_CALCITE_PPM * keVal;
+  const E1     = kd ? Math.exp(-kd * tau) : null;     // kd = exp(Kd_mn)
+  const predEq = K0_ppm;                               // V → 0
+  const predKin = (E1 !== null) ? K0_ppm * (1 - nS * E1) : null; // at V_ref
 
   const h = id => document.getElementById(id);
 
-  // Kd_mn: show Kd value + implied ln(Kd) from data
+  // Update per-TE drip rate hint
+  const rdh = h(prefix+'_dr_hint');
+  if (rdh && kd) {
+    const fDiss = 1 - (E1 || 0);
+    rdh.textContent = `τ = ${tau.toFixed(2)}s · E₁ = ${(E1||0).toFixed(4)} · ${(fDiss*100).toFixed(1)}% of XL dissociates`;
+  }
+
+  // Kd_mn: show Kd value and range
   const kh = h(prefix+'_Kd_mn_hint');
   if (kh) {
     let parts = [];
-    if (kd) parts.push(`Kd = ${kd.toExponential(2)}`);
-    if (kdLo&&kdHi) parts.push(`1σ range: ${kdLo.toExponential(2)}–${kdHi.toExponential(2)}`);
-    if (obs&&xl>0&&aqPPB>0&&caPPB>0) {
-      // implied ln(Kd) from data using full Kp-based formula
-      const aqMol = aqPPB/molWt, caMol = caPPB/40.078;
-      const imp   = Math.log(obs / (xl * (aqMol/caMol) * CA_CALCITE_PPM));
-      parts.push(`implied by data: ln(Kp×XL) ≈ ${imp.toFixed(3)}`);
+    if (kd) parts.push(`Kd = ${kd.toExponential(2)} s⁻¹`);
+    if (kdLo&&kdHi) parts.push(`1σ: ${kdLo.toExponential(2)}–${kdHi.toExponential(2)}`);
+    // In manual mode, show implied Kd_mn from data via kinetic inversion
+    if (kdMode === 'manual' && obs && K0_ppm > 0 && nS > 0) {
+      const obsPpm = obs * ((UNIT_FACTOR[teRowData[idx]?.unit||'ppm']||1) / 1000);
+      const _ratio = obsPpm / K0_ppm;
+      const _E1 = (1 - _ratio) / nS;
+      if (_E1 > 0 && _E1 < 1) {
+        const _impKdMn = Math.log(-Math.log(_E1) / tau);
+        parts.push(`implied ln(Kd) @ ${vRef} min⁻¹: ${_impKdMn.toFixed(3)}`);
+      }
     }
     kh.textContent = parts.join(' · ');
   }
@@ -2886,45 +2899,51 @@ function updateParamHints(prefix) {
   if (sh&&isFinite(kdSd))
     sh.textContent = `±1σ spans ${Math.exp(kdSd).toFixed(2)}× in Kd. Lindeman 2022 default: 1.385.`;
 
-  // aq_conc: show ppb equivalent + implied value from data
+  // aq_conc: show ppb equivalent
   const ah = h(prefix+'_aq_hint');
   if (ah) {
     let parts = [];
     if (aqPPB>0) parts.push(`= ${fmtPPB(aqPPB)} (in ppb)`);
-    if (obs&&kp>0&&xl>0&&caPPB>0) {
-      const caMol = caPPB/40.078;
-      const impliedAqMol = obs / (kp * xl * CA_CALCITE_PPM);
-      const impliedAqPPB = impliedAqMol * caMol * molWt;
-      parts.push(`implied by data + Kp: ${fmtPPB(impliedAqPPB)}`);
-    }
     ah.textContent = parts.join(' · ');
   }
 
-  // Predicted vs observed summary
-  // pred = Kd×XL×aq_conc (ppb). This approximation is valid when ca_conc
-  // matches the calibration conditions. For large Ca deviations the full
-  // model prediction will differ, but the ratio is still useful for
-  // detecting order-of-magnitude unit mismatches.
+  // Predicted vs observed — using correct model physics
+  //   Equilibrium:  K_0 = Kp × (XF+XL) × (aq/ca) × 400000 × K_e
+  //   Kinetic:      K_0 × (1 − nS × exp(−Kd×τ))
   const po = h(prefix+'_pred_obs');
   if (po&&analysisMode==='full') {
-    // Full forward prediction: Kp × XL × (aq_mol/ca_mol) × Ca_calcite
-    // This properly responds to changes in Ca, Kp, aq_conc, and XL.
-    const canPredict = kp>0 && xl>0 && aqPPB>0 && caPPB>0 && molWt>0;
+    const canPredict = K0_ppm > 0 && predKin !== null;
     if (canPredict) {
-      const aqMol  = aqPPB / molWt;       // µg/L / (g/mol) = proportional to mol/L
-      const caMol  = caPPB / 40.078;       // same scale
-      const pred   = kp * xl * (aqMol / caMol) * CA_CALCITE_PPM;  // ppm
-      let txt = `Predicted [TE]<sub>calcite</sub> ≈ <strong>${pred.toFixed(3)} ppm</strong>`;
-      if (obs) {
-        const ratio = obs/pred;
-        const col = (ratio>50||ratio<0.02) ? '#ffa032' : 'var(--accent)';
-        txt += ` &nbsp;·&nbsp; Observed median: <strong>${fmtPPB(obs)}</strong>`
-             + ` &nbsp;·&nbsp; Ratio: <strong style="color:${col}">${ratio.toFixed(1)}×</strong>`;
-        if (ratio>50||ratio<0.02)
-          txt += ' <span style="color:#ffa032">⚠ check units / concentrations</span>';
+      const dataUnitNative = teRowData[idx]?.unit || 'ppm';
+      const obsPpm = (obs !== null)
+        ? obs * ((UNIT_FACTOR[dataUnitNative]||1) / 1000)
+        : null;
+
+      let txt = `<div style="display:grid;grid-template-columns:auto 1fr;gap:2px 10px;align-items:baseline">`;
+      txt += `<span style="color:var(--muted)">K₀ equilibrium (V→0):</span>`;
+      txt += `<span>${predEq.toFixed(3)} ppm</span>`;
+      txt += `<span style="color:var(--accent)">Kinetic @ ${vRef} min⁻¹ (τ=${tau.toFixed(1)}s):</span>`;
+      txt += `<strong>${predKin.toFixed(3)} ppm</strong>`;
+      txt += `<span style="color:var(--muted)">Fast-only limit (V→∞):</span>`;
+      txt += `<span>${(K0_ppm * xf).toFixed(4)} ppm</span>`;
+
+      if (obsPpm !== null) {
+        const ratioKin = obsPpm / predKin;
+        const col  = (ratioKin>5||ratioKin<0.2) ? '#ffa032' : 'var(--accent)';
+        txt += `<span style="color:var(--muted)">Observed median:</span>`;
+        txt += `<strong>${(obs||0).toFixed(3)} ${dataUnitNative}</strong>`;
+        txt += `<span style="color:var(--muted)">Ratio (kinetic):</span>`;
+        txt += `<strong style="color:${col}">${ratioKin.toFixed(2)}×</strong>`;
+        if (obsPpm > predEq)
+          txt += `<span style="grid-column:1/-1;color:#ffa032;margin-top:4px">⚠ Observed exceeds K₀ equilibrium — check Kp, aq_conc, or data units.</span>`;
+        else if (obsPpm < K0_ppm * xf)
+          txt += `<span style="grid-column:1/-1;color:#ffa032;margin-top:4px">⚠ Observed below fast-only limit — check XF, aq_conc, or data units.</span>`;
+        if (ratioKin>5||ratioKin<0.2)
+          txt += `<span style="grid-column:1/-1;color:#ffa032">⚠ check units / concentrations</span>`;
       } else {
-        txt += ' &nbsp;·&nbsp; <span style="color:var(--muted)">upload TE data to compare</span>';
+        txt += `<span style="grid-column:1/-1;color:var(--muted)">Upload TE data to compare</span>`;
       }
+      txt += `</div>`;
       po.innerHTML = txt; po.style.display = '';
     } else { po.style.display = 'none'; }
   } else if (po) { po.style.display = 'none'; }
@@ -2943,7 +2962,7 @@ function updateCaHint() {
 }
 
 function updateAllParamHints() {
-  for (let i=1; i<=Math.max(teRowData.length,2); i++) updateParamHints(`te${i}`);
+  for (let i=1; i<=teRowData.length; i++) updateParamHints(`te${i}`);
   updateCaHint();
 }
 
@@ -3000,6 +3019,15 @@ function updateMolWt(prefix, elem) {
   const kp = KP_DEFAULT[elem] !== undefined ? KP_DEFAULT[elem] : -1;
   document.getElementById(prefix + '_Kp').value = kp;
   updateTheoKp(prefix);
+  // Propagate element-specific kinetic defaults (Kd, fractions, aq_conc)
+  const d = ELEM_DEFAULTS[elem] || ELEM_DEFAULT_FALLBACK;
+  const fields = {Kd_mn: d.Kd_mn, Kd_sd: d.Kd_sd, K_e: d.K_e, F: d.F, InertF: d.InertF, aq_conc: d.aq_conc};
+  for (const [f, v] of Object.entries(fields)) {
+    const el = document.getElementById(prefix + '_' + f);
+    if (el) el.value = v;
+  }
+  updateLabile(prefix);
+  updateParamHints(prefix);
 }
 
 // ── Utilities ────────────────────────────────────────────────────────────────
@@ -3010,6 +3038,12 @@ function fmtTime(s) {
 function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// ── Initialise on page load ───────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderTEParamCards();
+  setAnalysisMode(analysisMode);
+});
 </script>
 </body>
 </html>
@@ -3088,7 +3122,7 @@ def preprocess():
         if target_n < len(df) and target_n >= 10:
             block = max(1, len(df) // target_n)
             groups = df.groupby(df.index // block)
-            df = groups.mean(numeric_only=False).reset_index(drop=True)
+            df = groups.mean(numeric_only=True).reset_index(drop=True)
 
         df.to_csv(path, index=False)
         return jsonify({'rows': len(df), 'original_rows': orig,
@@ -3132,7 +3166,7 @@ def download(filename):
     safe = os.path.basename(filename)
     path = os.path.join(OUTPUT_FOLDER, safe)
     if not os.path.exists(path):
-        return 'File not found', 404
+        return jsonify({'error': 'File not found'}), 404
     return send_file(path, as_attachment=True)
 
 
@@ -3169,6 +3203,9 @@ def _run_model(params):
             """
             return {'ppb': 1.0, 'ppm': 1000.0,
                     'ug/g': 1000.0, 'mg/kg': 1000.0}.get(str(unit).strip(), 1.0)
+
+        # Ca fraction in CaCO₃ by mass: 40.078/100.087 ≈ 40% = 400,000 ppm
+        CA_CALCITE_PPM = 400000
 
         # ── Check whether we can use the cached proxy record ────────────────
         proxy_pkl = os.path.join(OUTPUT_FOLDER, 'ProxyRecord.pkl')
@@ -3339,10 +3376,15 @@ def _run_model(params):
                     pre_remvar=pre_remvar, method=method, verbose=0)
                 PDist = prx.ProxyDistributions(DWF)
                 if limits_mode == 'te':
-                    p25, p50, p75 = np.percentile(PD.proxy, [25, 50, 75])
+                    _y_valid = PD.proxy[np.isfinite(PD.proxy)]
+                    p25, p50, p75 = np.percentile(_y_valid, [25, 50, 75])
                     limits = [0., p50 + 10. * (p75 - p25)]
+                    log(f'  PDist limits ({dtype}): p25={p25:.4f} p50={p50:.4f} p75={p75:.4f} '
+                        f'→ [{limits[0]:.4f}, {limits[1]:.4f}]  '
+                        f'data range: [{np.nanmin(_y_valid):.4f}, {np.nanmax(_y_valid):.4f}]')
                 else:
                     limits = PDist.get_limits(DWF, PD, 3.)
+                    log(f'  PDist limits ({dtype}): auto → [{limits[0]:.4f}, {limits[1]:.4f}]')
                 PDist.get_pdf(DWF, PD, res=500, limits=limits)
                 return PDist
 
@@ -3375,51 +3417,168 @@ def _run_model(params):
 
         from drip_rate_util import driprates
 
+        # ── Monkeypatch te_pdfseries to prevent proxyspan in-place mutation ──
+        # model.te_pdfseries does X_s = PDist.proxyspan; X_s /= (1E3 * mol_wt)
+        # which mutates PDist.proxyspan in place. Without deepcopy (which
+        # corrupts BayProX objects), subsequent calls divide again → collapse.
+        # Fix: wrap with a lightweight PDist copy that isolates proxyspan.
+        _orig_te_pdfseries = model.te_pdfseries
+
+        class _PDist_Wrap:
+            """Lightweight proxy for ProxyDistributions with isolated proxyspan."""
+            pass
+
+        def _safe_te_pdfseries(TE):
+            _w = _PDist_Wrap()
+            _w.calbp      = TE['PDist'].calbp
+            _w.proxyspan  = TE['PDist'].proxyspan.copy()  # isolated copy
+            _w.pdfmat     = TE['PDist'].pdfmat
+            _TE2 = dict(TE)
+            _TE2['PDist'] = _w
+            return _orig_te_pdfseries(_TE2)
+
+        model.te_pdfseries = _safe_te_pdfseries
+        log('Monkeypatched model.te_pdfseries (proxyspan copy isolation)')
+
+        # ── Inline mini-test: reproduce dr_pdfseries for 1 timestep ──────
+        # This bypasses model.py entirely to pinpoint NaN source.
+        def _inline_test(pd_obj, te_dict, kd_mn, kd_sd, k_e):
+            from params import VMIN, VMAX, VRES, KRES, KLIM
+            _ps = pd_obj.proxyspan.copy()
+            _pm = pd_obj.pdfmat
+            _mw = te_dict['mol_wt']
+            log(f'  [TEST] proxyspan raw: [{_ps[0]:.6g}, {_ps[-1]:.6g}], len={len(_ps)}')
+            _ps_mol = _ps / (1E3 * _mw)
+            log(f'  [TEST] proxyspan mol/kg: [{_ps_mol[0]:.6g}, {_ps_mol[-1]:.6g}]')
+            # Build interp1d for timestep 0
+            from scipy.interpolate import interp1d as _i1d
+            _f0 = _i1d(_ps_mol, _pm[:, 0], bounds_error=False, fill_value=0.)
+            # Aqueous
+            _inertF = te_dict['InertF']
+            _Xa = (1.0 - _inertF) * te_dict['aq_conc'] / (1E6 * _mw)
+            _Ya = te_dict['ca_conc'] / (1E6 * 40.078)
+            _Ys = 400. / 40.078
+            _Kp = te_dict['Kp']
+            _K0 = _Kp * _Ys * (_Xa / _Ya) * k_e
+            _nF = te_dict['F']
+            _nS = 1. - _nF
+            _k_mu, _k_sd = kd_mn, kd_sd
+            log(f'  [TEST] Xa={_Xa:.6e} Ya={_Ya:.6e} K0={_K0:.6e} nS={_nS}')
+            # V span
+            _V = np.linspace(VMIN, VMAX, VRES) / 60.  # drips/sec
+            # k span
+            _k = np.linspace(_k_mu - KLIM*_k_sd, _k_mu + KLIM*_k_sd, KRES)
+            _k_rsw = 0.5 * np.r_[_k[1]-_k[0], _k[2:]-_k[:-2], _k[-1]-_k[-2]]
+            log(f'  [TEST] V range: [{_V[0]:.6e}, {_V[-1]:.6e}] drips/s  k range: [{_k[0]:.2f}, {_k[-1]:.2f}]')
+            # Compute E_1 and h(v) for 5 test V values
+            _test_idxs = [0, VRES//4, VRES//2, 3*VRES//4, VRES-1]
+            for _vi in _test_idxs:
+                _v = _V[_vi]
+                # E_1 = integral of gaussian(k)*exp(-exp(k)/v) dk
+                _ik = np.exp(- np.exp(_k) / _v)   # exp(-K_d/v)
+                _gk = np.exp(-(_k - _k_mu)**2 / (2*_k_sd**2)) / (_k_sd * np.sqrt(2*np.pi))
+                _E1 = (_ik * _gk * _k_rsw).sum()
+                _hv = _K0 * (1. - _nS * _E1)
+                # E_2 for h'(v)
+                _ik2 = _ik * np.exp(_k) / _v**2
+                _E2 = (_ik2 * _gk * _k_rsw).sum()
+                _hp = -_K0 * _nS * _E2
+                _pdf_val = _f0(_hv)
+                _raw_pdf = - _pdf_val * _hp
+                _vpm = _v * 60.
+                log(f'  [TEST] V={_vpm:.1f}/min: E1={_E1:.6f} h={_hv:.6e} hp={_hp:.6e} '
+                    f'pdf(h)={_pdf_val:.4f} raw_pdf={_raw_pdf:.6e} '
+                    f'{"✓ in range" if 0 < _hv < _ps_mol[-1] else "✗ OUT OF RANGE"}')
+            # Full V computation
+            _nk, _nv = len(_k), len(_V)
+            _ka = _k.repeat(_nv).reshape(_nk, _nv).T
+            _va = _V.repeat(_nk).reshape(_nv, _nk)
+            _t0 = -np.exp(_ka) / _va
+            _t1 = np.exp(_t0)
+            _t2 = np.exp(-(_ka - _k_mu)**2 / (2*_k_sd**2)) / (_k_sd*np.sqrt(2*np.pi))
+            _fk = _t1 * _t2
+            _E1_all = (_fk * _k_rsw).sum(axis=1)
+            _h_all = _K0 * (1. - _nS * _E1_all)
+            _t3 = np.exp(_ka) / _va**2
+            _fk2 = _t1 * _t2 * _t3
+            _E2_all = (_fk2 * _k_rsw).sum(axis=1)
+            _hp_all = -_K0 * _nS * _E2_all
+            log(f'  [TEST] h_all: min={np.nanmin(_h_all):.6e} max={np.nanmax(_h_all):.6e} '
+                f'NaN={np.isnan(_h_all).sum()} inf={np.isinf(_h_all).sum()}')
+            log(f'  [TEST] hp_all: min={np.nanmin(_hp_all):.6e} max={np.nanmax(_hp_all):.6e} '
+                f'NaN={np.isnan(_hp_all).sum()} inf={np.isinf(_hp_all).sum()}')
+            _pdf0 = _f0(_h_all)
+            log(f'  [TEST] pdf0(h): min={np.nanmin(_pdf0):.6e} max={np.nanmax(_pdf0):.6e} '
+                f'NaN={np.isnan(_pdf0).sum()} nonzero={np.count_nonzero(_pdf0)}')
+            _raw = -_pdf0 * _hp_all
+            _raw_sum = np.nansum(_raw * (0.5 * np.r_[_V[1]-_V[0], _V[2:]-_V[:-2], _V[-1]-_V[-2]]))
+            log(f'  [TEST] raw_pdf: min={np.nanmin(_raw):.6e} max={np.nanmax(_raw):.6e} '
+                f'NaN={np.isnan(_raw).sum()} sum={_raw_sum:.6e}')
+            if _raw_sum > 0:
+                log(f'  [TEST] ✓ INLINE COMPUTATION PRODUCES VALID PDF — model.py issue suspected')
+            else:
+                log(f'  [TEST] ✗ Inline also fails — check K0, proxyspan, or unit mismatch')
         _analysis_mode = params.get('analysis_mode', 'full')
         log(f'Analysis mode: {_analysis_mode}')
 
+        # ── Diagnostic: dump raw TE params as received from UI ────────────
+        for _di in range(len(params.get('te_list') or [{'col_proxy':'?'}])):
+            _dp = f'te{_di+1}'
+            _dkeys = ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','drip_rate','F','InertF','labile','aq_conc','aq_unit']
+            _dvals = {k: params.get(f'{_dp}_{k}', '?') for k in _dkeys}
+            log(f'Raw params {_dp}: {_dvals}')
+        log(f'Raw params ca_conc={params.get("ca_conc","?")} ca_unit={params.get("ca_unit","?")}')
+
         # Build a lookup of observed median concentrations (ppb) per TE row key
         # Used in semi mode to auto-scale aq_conc so the PDF has support in data range.
-        _obs_median_ppb = {}
+        # Load proxy medians (native units, unconverted) for semi-quant auto-scaling
+        _obs_median_native = {}
         try:
             _te_csv = os.path.join(UPLOAD_FOLDER, 'trace_elem1.csv')
             if os.path.isfile(_te_csv):
                 _te_df = pd.read_csv(_te_csv)
                 for _i, _te in enumerate(params.get('te_list', []) or
                                          [{'col_proxy': params.get('te1_col_proxy',''),
-                                           'unit': params.get('te1_unit','ppb')}]):
+                                           'unit': params.get('te1_unit','ppm')}]):
                     _col = _te.get('col_proxy','')
-                    _unt = _te.get('unit','ppb')
                     if _col and _col in _te_df.columns:
                         _vals = pd.to_numeric(_te_df[_col], errors='coerce').dropna()
                         if len(_vals):
-                            _obs_median_ppb[f'te{_i+1}'] = float(_vals.median()) * _unit_to_ppb(_unt)
+                            _obs_median_native[f'te{_i+1}'] = float(_vals.median())
         except Exception as _e:
             log(f'Semi-quant: could not read proxy medians ({_e})')
 
-        def _aq(row):
-            """aq_conc converted to ppb.
-            In semi mode: auto-scale to observed proxy median / (Kd * XL)
-            so the predicted concentration is centred on the data range and
-            the drip rate PDF has support. The subsequent normalisation to
-            % of max is unaffected by this scaling.
+        def _aq(row, idx):
+            """aq_conc in ppb for driprates().
+            In semi mode: back-calculate aq_conc (ppb) from the observed proxy median
+            using the correct formula: pred = Kd*XL*(aq_ppb/ca_ppb)*CA_CALCITE_PPM
+            => aq_ppb = obs_ppm * ca_ppb / (Kd * XL * CA_CALCITE_PPM)
+            This centres the forward model on the data range so the PDF has
+            support. The subsequent normalisation to % of max is unaffected.
             """
             if _analysis_mode == 'semi':
-                obs = _obs_median_ppb.get(row)
-                if obs and obs > 0:
-                    kd  = float(np.exp(float(params[row + '_Kd_mn'])))
-                    xl  = max(float(params[row + '_labile']) if params.get(row + '_labile')
-                              else 1.0 - float(params.get(row + '_InertF', 0))
-                                       - float(params.get(row + '_F', 0)), 0.01)
-                    implied = obs / max(kd * xl, 1e-10)
-                    log(f'Semi-quant {row}: obs median={obs:.4f} ppb, '
-                        f'implied aq_conc={implied:.4f} ppb (Kd={kd:.4f}, XL={xl:.4f})')
+                obs_native = _obs_median_native.get(row)
+                if obs_native and obs_native > 0:
+                    kd_  = float(np.exp(float(params[row + '_Kd_mn'])))
+                    xl_  = max(float(params[row + '_labile']) if params.get(row + '_labile')
+                               else 1.0 - float(params.get(row + '_InertF', 0))
+                                        - float(params.get(row + '_F', 0)), 0.01)
+                    # Convert obs to ppm (model prediction axis is ppm)
+                    _te_entries = params.get('te_list') or []
+                    _unt = _te_entries[idx].get('unit', 'ppm') \
+                           if idx < len(_te_entries) else params.get(row + '_unit', 'ppm')
+                    obs_ppm  = obs_native * _unit_to_ppb(_unt) / 1000.0
+                    ca_ppb_  = float(params['ca_conc']) * _unit_to_ppb(params.get('ca_unit','ppb'))
+                    implied  = obs_ppm * ca_ppb_ / max(kd_ * xl_ * CA_CALCITE_PPM, 1e-20)
+                    log(f'Semi-quant {row}: obs={obs_native:.4f} (native), '
+                        f'obs_ppm={obs_ppm:.4f}, ca_ppb={ca_ppb_:.1f}, '
+                        f'implied aq_conc={implied:.4f} ppb')
                     return implied
-                log(f'Semi-quant {row}: no proxy median available, using aq_conc=1.0')
-                return 1.0
+                log(f'Semi-quant {row}: no proxy median — using entered aq_conc')
+                return float(params[row + '_aq_conc']) * _unit_to_ppb(params.get(row + '_aq_unit', 'ppb'))
             return float(params[row + '_aq_conc']) * _unit_to_ppb(params.get(row + '_aq_unit', 'ppb'))
 
-        def make_te(pdist, row):
+        def make_te(pdist, row, idx):
             return {
                 'elem':    params[row + '_elem'],
                 'mol_wt':  float(params[row + '_mol_wt']),
@@ -3427,13 +3586,23 @@ def _run_model(params):
                 'Temp_C':  float(params['temp_C']),
                 'F':       float(params[row + '_F']),
                 'InertF':  float(params[row + '_InertF']),
-                'aq_conc': np.float64(_aq(row)),
+                'aq_conc': np.float64(_aq(row, idx)),
                 'ca_conc': np.float64(
-                    1.0 if _analysis_mode == 'semi'
-                    else float(params['ca_conc']) * _unit_to_ppb(params.get('ca_unit', 'ppb'))
+                    # Pass real ca_conc in both modes so Xa/Ya molar ratio is correct.
+                    float(params['ca_conc']) * _unit_to_ppb(params.get('ca_unit', 'ppb'))
                 ),
-                'PDist':   copy.deepcopy(pdist),
+                'PDist':   pdist,
             }
+
+        # ── Run inline diagnostic test before the real driprates call ─────
+        try:
+            _test_te = make_te(PDist_TEs[0], 'te1', 0)
+            _inline_test(PDist_TEs[0], _test_te,
+                         float(params['te1_Kd_mn']), float(params['te1_Kd_sd']),
+                         float(params.get('te1_K_e', 1)))
+        except Exception as _e:
+            log(f'  [TEST] Exception: {_e}')
+            import traceback; log(traceback.format_exc())
 
         # Loop over all TE PDists
         V_pdf_list = []
@@ -3442,12 +3611,79 @@ def _run_model(params):
             _pct = 65 + int(15 * _i / len(PDist_TEs))
             _set_stage(f'Computing drip rate PDF ({_rk.upper()})', _pct)
             log(f'Computing drip rate PDF for {_rk.upper()} …')
-            _TE = make_te(_pd, _rk)
-            _Ke = float(params.get(f'K_e{_i+1}', 1))
+            _TE = make_te(_pd, _rk, _i)
+            _Ke = float(params.get(f'{_rk}_K_e', params.get(f'K_e{_i+1}', 1)))
+
+            # ── Diagnostic: log every parameter entering driprates() ──────
+            _diag_kd_mn = float(params[f'{_rk}_Kd_mn'])
+            _diag_kd_sd = float(params[f'{_rk}_Kd_sd'])
+            _diag_kd    = float(np.exp(_diag_kd_mn))
+            _diag_xl    = 1.0 - _TE['F'] - _TE['InertF']
+            _diag_xf    = _TE['F']
+            _diag_aq    = _TE['aq_conc']  # ppb
+            _diag_ca    = _TE['ca_conc']  # ppb
+            _diag_kp    = _TE['Kp']
+            _diag_nS    = 1.0 - _diag_xf
+            _diag_K0    = _diag_kp * (_diag_xf + _diag_xl) * (_diag_aq / _diag_ca) * CA_CALCITE_PPM * _Ke
+            _diag_tau   = 6.0  # 10 drips/min reference
+            _diag_E1    = float(np.exp(-_diag_kd * _diag_tau))
+            _diag_kin   = _diag_K0 * (1 - _diag_nS * _diag_E1)
+            log(f'  ├─ elem={_TE["elem"]}  mol_wt={_TE["mol_wt"]}  Kp={_diag_kp}  T={_TE["Temp_C"]}°C')
+            log(f'  ├─ Kd_mn={_diag_kd_mn:.4f}  Kd_sd={_diag_kd_sd:.4f}  Kd={_diag_kd:.6f}  K_e={_Ke}')
+            log(f'  ├─ XF={_diag_xf}  XI={_TE["InertF"]}  XL={_diag_xl:.4f}  nS={_diag_nS}')
+            log(f'  ├─ aq_conc={_diag_aq:.4f} ppb  ca_conc={_diag_ca:.1f} ppb')
+            log(f'  ├─ aq/ca ratio = {_diag_aq/_diag_ca:.6e}')
+            log(f'  ├─ K0_equilibrium = {_diag_K0:.6f} ppm (using Kp={_diag_kp})')
+            log(f'  ├─ pred_kinetic @10/min = {_diag_kin:.6f} ppm (E1={_diag_E1:.6f})')
+            # PDist diagnostics — dump actual attributes since BayProX naming is unknown
+            try:
+                _pd_attrs = [a for a in dir(_pd) if not a.startswith('_')]
+                log(f'  ├─ PDist type={type(_pd).__name__}, attrs={_pd_attrs}')
+                for _attr in _pd_attrs:
+                    try:
+                        _val = getattr(_pd, _attr)
+                        if callable(_val):
+                            continue
+                        if isinstance(_val, np.ndarray):
+                            log(f'  ├─ PDist.{_attr}: ndarray shape={_val.shape}, '
+                                f'dtype={_val.dtype}, range=[{np.nanmin(_val):.6g}, {np.nanmax(_val):.6g}], '
+                                f'finite={np.count_nonzero(np.isfinite(_val))}/{_val.size}')
+                        elif isinstance(_val, (int, float, str, bool)):
+                            log(f'  ├─ PDist.{_attr} = {_val}')
+                        elif isinstance(_val, (list, tuple)) and len(_val) < 10:
+                            log(f'  ├─ PDist.{_attr} = {_val}')
+                    except Exception:
+                        pass
+            except Exception as _de:
+                log(f'  ├─ PDist inspection failed: {_de}')
+            log(f'  └─ Calling driprates(Kd_mn={_diag_kd_mn}, Kd_sd={_diag_kd_sd}, K_e={_Ke})')
+
             _vpdf, V_age, V_span = driprates(
-                float(params[f'{_rk}_Kd_mn']), float(params[f'{_rk}_Kd_sd']),
+                _diag_kd_mn, _diag_kd_sd,
                 _Ke, TE=_TE, calib=False)
-            V_pdf_list.append(_vpdf)
+
+            # ── Diagnostic: inspect output ────────────────────────────────
+            _vpdf_nz  = np.count_nonzero(_vpdf)
+            _vpdf_fin = np.count_nonzero(np.isfinite(_vpdf))
+            _vpdf_nan = np.count_nonzero(np.isnan(_vpdf))
+            log(f'  driprates() returned: V_pdf shape={_vpdf.shape}, '
+                f'nonzero={_vpdf_nz}/{_vpdf.size}, '
+                f'NaN={_vpdf_nan}, finite={_vpdf_fin}')
+            log(f'  V_span: [{V_span[0]:.4f}, {V_span[-1]:.4f}] ({len(V_span)} pts)')
+            log(f'  V_age:  [{V_age[0]:.1f}, {V_age[-1]:.1f}] ({len(V_age)} pts)')
+            # Per-column diagnostics: how many timesteps have any finite signal?
+            _col_sums = np.nansum(_vpdf, axis=0)
+            _col_finite = np.count_nonzero(np.isfinite(_col_sums) & (_col_sums > 0))
+            log(f'  Timesteps with finite nonzero PDF: {_col_finite}/{_vpdf.shape[1]}')
+            if _col_finite == 0:
+                # Extra debug: check if the model can predict anything in the PDist range
+                log(f'  ⚠ ALL TIMESTEPS ZERO/NaN — diagnosing forward model vs PDist mismatch:')
+                # K_0 uses Kp; kinetic range is [K_0*XF, K_0]
+                log(f'    K0 = {_diag_K0:.6f} ppm (Kp={_diag_kp}, equilibrium)')
+                log(f'    Model h(v) range: [{_diag_K0*_diag_xf:.6f}, {_diag_K0:.6f}] ppm')
+                log(f'    (fast-only limit to full equilibrium)')
+
+            V_pdf_list.append(np.nan_to_num(_vpdf, nan=0.0))
         V_pdf_TE1 = V_pdf_list[0]
         V_pdf_TE2 = V_pdf_list[1] if len(V_pdf_list) > 1 else None
 
@@ -3456,33 +3692,38 @@ def _run_model(params):
         _kd_sens_hi_pdfs = []
         for _i, _pd in enumerate(PDist_TEs):
             _rk = f'te{_i+1}'
-            _TE_s = make_te(_pd, _rk)
-            _Ke   = float(params.get(f'K_e{_i+1}', 1))
+            _TE_s = make_te(_pd, _rk, _i)
+            _Ke   = float(params.get(f'{_rk}_K_e', params.get(f'K_e{_i+1}', 1)))
             _kmn  = float(params[f'{_rk}_Kd_mn'])
             _ksd  = float(params[f'{_rk}_Kd_sd'])
             _eps  = 0.001  # near-zero sd → near-deterministic
             _vlo, _, _ = driprates(_kmn - _ksd, _eps, _Ke, TE=_TE_s, calib=False)
             _vhi, _, _ = driprates(_kmn + _ksd, _eps, _Ke, TE=_TE_s, calib=False)
-            _kd_sens_lo_pdfs.append(_vlo)
-            _kd_sens_hi_pdfs.append(_vhi)
+            _kd_sens_lo_pdfs.append(np.nan_to_num(_vlo, nan=0.0))
+            _kd_sens_hi_pdfs.append(np.nan_to_num(_vhi, nan=0.0))
         log('Kd sensitivity passes complete')
 
         # ── Kd sensitivity joint PDFs ───────────────────────────────────────
         def _joint_and_median(pdf_list, rsw):
             n = len(pdf_list)
             if n == 1:
-                jp = pdf_list[0].copy(); jp[jp < 0] = 0.
+                jp = pdf_list[0].copy()
+                jp[~np.isfinite(jp) | (jp < 0)] = 0.
             else:
                 jp = pdf_list[0].copy()
                 for _v in pdf_list[1:]: jp = jp * _v
-                jp[jp < 0] = 0.
+                jp[~np.isfinite(jp) | (jp < 0)] = 0.
                 jp = np.power(jp, 1.0 / n)
+            jp = np.nan_to_num(jp, nan=0.0)
             C = (jp.T * rsw).sum(axis=1)
-            C[C == 0] = 1.0
+            C[(C == 0) | ~np.isfinite(C)] = 1.0
             jp = jp / C
             med = np.zeros(jp.shape[1])
             for _i in range(jp.shape[1]):
-                cdf = np.cumsum(rsw * jp[:, _i]); cdf /= cdf[-1]
+                cdf = np.cumsum(rsw * jp[:, _i])
+                if cdf[-1] <= 0 or not np.isfinite(cdf[-1]):
+                    continue  # leave med[_i] = 0
+                cdf /= cdf[-1]
                 med[_i] = float(interp1d(cdf, V_span, kind='linear',
                     bounds_error=False, fill_value=(V_span[0], V_span[-1]))(0.5))
             return med
@@ -3502,17 +3743,18 @@ def _run_model(params):
         if _n_te_pdf == 1:
             log('Joint PDF uses single TE')
             V_pdf = V_pdf_list[0].copy()
-            V_pdf[V_pdf < 0.] = 0.
+            V_pdf[~np.isfinite(V_pdf) | (V_pdf < 0.)] = 0.
         else:
             log(f'Joint PDF: geometric mean of {_n_te_pdf} TEs')
             _prod = V_pdf_list[0].copy()
             for _v in V_pdf_list[1:]:
                 _prod = _prod * _v
-            _prod[_prod < 0.] = 0.
+            _prod[~np.isfinite(_prod) | (_prod < 0.)] = 0.
             V_pdf = np.power(_prod, 1.0 / _n_te_pdf)
+        V_pdf = np.nan_to_num(V_pdf, nan=0.0)
         C = (V_pdf.T * V_rsw).sum(axis=1)
-        # Guard against zero-sum columns (PDF collapsed at some timesteps)
-        C[C == 0] = 1.0
+        # Guard against zero-sum or NaN columns (PDF collapsed at some timesteps)
+        C[(C == 0) | ~np.isfinite(C)] = 1.0
         V_pdf = V_pdf / C
 
         # ── 8. Summary statistics ───────────────────────────────────────────
