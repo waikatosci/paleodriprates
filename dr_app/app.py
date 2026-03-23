@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v40)</title>
+<title>Drip Rate Estimator (v41)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -1216,10 +1216,20 @@ HTML = r'''<!DOCTYPE html>
                        border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">📐 Age Model</button>
       </div>
 
+      <!-- Y-axis mode toggle -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;padding:6px 10px;
+                  background:var(--surface);border:1px solid var(--border);border-radius:6px">
+        <label style="font-size:11px;color:var(--texthi);font-weight:600">Y-axis:</label>
+        <button id="ymode-drip" class="mode-btn active" onclick="setYMode('drip')">Drip rate (min⁻¹)</button>
+        <button id="ymode-tau" class="mode-btn" onclick="setYMode('tau')">τ (s)</button>
+        <span style="color:var(--muted);font-size:9px;cursor:help;margin-left:4px"
+              title="Drip rates assume replacement of the thin-film by each subsequent drop on a stalagmite apex. For stalactites, flowstones or sub-aqueous samples, use τ (s), where τ = 60/d. τ represents the thin-film residence time and generalises the kinetic window to deposits where drip-replenishment doesn't cleanly define the accumulation interval.">(?)</span>
+      </div>
+
       <!-- Time series panel -->
       <div id="rtab-ts">
         <div class="card">
-          <div class="card-title">📈 Drip Rate vs Time</div>
+          <div class="card-title" id="ts-card-title">📈 Drip Rate vs Time</div>
           <div class="chart-wrap">
             <canvas id="dripChart"></canvas>
           </div>
@@ -1267,12 +1277,19 @@ HTML = r'''<!DOCTYPE html>
             <label style="font-size:10px;color:var(--muted)">Colour map:</label>
             <select id="pdf-cmap" onchange="renderPdfHeatmap()"
                     style="font-size:11px;padding:3px 8px">
-              <option value="viridis" selected>Viridis</option>
-              <option value="inferno">Inferno</option>
-              <option value="plasma">Plasma</option>
-              <option value="magma">Magma</option>
-              <option value="cividis">Cividis</option>
-              <option value="turbo">Turbo</option>
+              <optgroup label="Sequential">
+                <option value="greens">Greens</option>
+                <option value="blues">Blues</option>
+                <option value="reds">Reds</option>
+              </optgroup>
+              <optgroup label="Perceptual">
+                <option value="viridis" selected>Viridis</option>
+                <option value="inferno">Inferno</option>
+                <option value="plasma">Plasma</option>
+                <option value="magma">Magma</option>
+                <option value="cividis">Cividis</option>
+                <option value="turbo">Turbo</option>
+              </optgroup>
             </select>
             <label style="font-size:10px;color:var(--muted);margin-left:10px">Log density:</label>
             <input type="checkbox" id="pdf-log" onchange="renderPdfHeatmap()"
@@ -1412,7 +1429,27 @@ HTML = r'''<!DOCTYPE html>
           into East Asian Summer Monsoon dynamics over the past 9,500 years. The probabilistic
           reconstruction framework — including the full ensemble of drip rate realisations
           available for download — enables recurrence quantification analysis (RQA) and other
-          nonlinear time series methods.
+          nonlinear time series methods.<br><br>
+          <strong>Generalisation to thin-film residence time (τ)</strong><br>
+          While the default output is expressed as drip rate (drips min⁻¹), the fundamental
+          quantity recovered by the model is the thin-film residence time, τ = 60/<em>d</em> (s).
+          For stalagmites, τ maps directly to drip rate because each drop replaces the thin
+          film on the apex. However, the method generalises to other carbonate deposit types
+          where the kinetic accumulation window is not cleanly defined by direct
+          drip-replenishment:<br>
+          <div style="margin:8px 0 8px 12px;padding:8px 12px;border-left:2px solid var(--border);font-size:11.5px;line-height:1.8">
+            <strong>Flowstones &amp; stalactites</strong> — τ represents the fluid residence time
+            on the mineral surface. The kinetic window is set by film thickness, flow velocity,
+            and surface geometry rather than discrete drip events.<br>
+            <strong>Sub-aqueous deposits</strong> — τ represents the equilibration timescale of
+            the thin boundary layer with bulk solution via diffusion.<br>
+            <strong>Long integration periods</strong> — where the kinetic accumulation window
+            <em>M</em> exceeds the reservoir mixing time, τ approximates bulk fluid residence
+            time. In this regime, calibration to volumetric flow requires reservoir volume:
+            <em>Q</em> = <em>V</em><sub>reservoir</sub> / τ (m³ s⁻¹).
+          </div>
+          Use the τ (s) toggle in the Output Explorer to display results as residence time
+          instead of drip rate.
         </div>
       </div>
 
@@ -1511,7 +1548,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v40</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v41</div>
   </div>
 
 </div>
@@ -3501,6 +3538,26 @@ function drawSFErrorBars(chart, sf) {
   c.restore();
 }
 
+// ── Y-axis mode: 'drip' (drips/min) or 'tau' (seconds) ──────────────────
+let yAxisMode = 'drip';
+
+function setYMode(mode) {
+  yAxisMode = mode;
+  document.getElementById('ymode-drip').classList.toggle('active', mode === 'drip');
+  document.getElementById('ymode-tau').classList.toggle('active', mode === 'tau');
+  const title = document.getElementById('ts-card-title');
+  if (title) title.textContent = mode === 'drip' ? '📈 Drip Rate vs Time' : '📈 Residence Time (τ) vs Time';
+  // Re-render both charts
+  loadChart();
+  if (window._pdfHeatmapData) renderPdfHeatmap();
+}
+
+// Convert drip rate (drips/min) to τ (seconds): τ = 60/d
+function dripToTau(v) {
+  if (v === null || v === undefined || !isFinite(v) || v <= 0) return null;
+  return 60.0 / v;
+}
+
 function loadChart() {
   fetch('/chart_data').then(r => r.json()).then(d => {
     if (d.error) return;
@@ -3508,9 +3565,12 @@ function loadChart() {
     if (chart) chart.destroy();
 
     // Build {x, y} point arrays, using null for NaN to create gaps
+    // When yAxisMode='tau', convert drip rate → τ = 60/d
+    const useTau = yAxisMode === 'tau';
     const mkPts = arr => d.age.map((a, i) => {
       const v = arr[i];
-      return {x: a, y: (v === null || v === undefined || !isFinite(v)) ? null : v};
+      if (v === null || v === undefined || !isFinite(v)) return {x: a, y: null};
+      return {x: a, y: useTau ? dripToTau(v) : v};
     });
 
     // Hiatus zone overlay plugin
@@ -3580,7 +3640,8 @@ function loadChart() {
                ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
                title: { display: true,
-                 text: d.mode === 'semi' ? 'Relative drip rate (% of reference)' : 'Drip rate (min\u207b\u00b9)',
+                 text: d.mode === 'semi' ? 'Relative drip rate (% of reference)'
+                       : useTau ? 'Residence time \u03c4 (s)' : 'Drip rate (min\u207b\u00b9)',
                  color: '#8fa4b5', font: { size: 11 } } }
         }
       },
@@ -3598,6 +3659,9 @@ const CMAPS = {
   magma:    [[0,0,4],[18,13,49],[51,16,104],[89,26,120],[128,40,118],[165,63,111],[199,90,103],[227,126,101],[248,170,109],[254,216,144],[252,253,191]],
   cividis:  [[0,34,78],[0,57,100],[38,77,108],[73,96,111],[107,114,117],[140,132,120],[172,151,112],[202,172,93],[228,195,64],[248,222,30],[255,255,0]],
   turbo:    [[48,18,59],[69,91,205],[32,158,245],[18,209,192],[66,243,114],[147,254,57],[220,237,30],[255,193,22],[250,131,13],[217,65,8],[122,4,3]],
+  greens:   [[247,252,245],[229,245,224],[199,233,192],[161,217,155],[116,196,118],[65,171,93],[35,139,69],[0,109,44],[0,68,27],[0,48,18],[0,32,10]],
+  blues:    [[247,251,255],[222,235,247],[198,219,239],[158,202,225],[107,174,214],[66,146,198],[33,113,181],[8,81,156],[8,48,107],[3,32,76],[1,18,50]],
+  reds:     [[255,245,240],[254,224,210],[252,187,161],[252,146,114],[251,106,74],[239,59,44],[203,24,29],[165,15,21],[103,0,13],[70,0,8],[45,0,4]],
 };
 
 function sampleCmap(name, t) {
@@ -3695,15 +3759,17 @@ function renderPdfHeatmap() {
   }
   ctx.fillText('Age (yrs BP)', ML + pw/2, MT + ph + 30);
   const vMin = V_span[0], vMax = V_span[nv-1];
+  const useTau = yAxisMode === 'tau';
   ctx.textAlign = 'right';
   for (let i = 0; i <= 5; i++) {
     const frac = i / 5, v = vMin + frac * (vMax - vMin), py = MT + ph - frac * ph;
-    ctx.fillText(v.toFixed(1), ML - 5, py + 4);
+    const label = useTau ? (v > 0 ? (60/v).toFixed(1) : '\u221e') : v.toFixed(1);
+    ctx.fillText(label, ML - 5, py + 4);
     ctx.beginPath(); ctx.moveTo(ML, py); ctx.lineTo(ML-3, py); ctx.stroke();
   }
   ctx.save(); ctx.translate(14, MT + ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign = 'center';
-  ctx.fillText('Drip rate (min\u207b\u00b9)', 0, 0);
+  ctx.fillText(useTau ? 'Residence time \u03c4 (s)' : 'Drip rate (min\u207b\u00b9)', 0, 0);
   ctx.restore();
 
   // ── Percentile overlay ────────────────────────────────────────────
@@ -4858,7 +4924,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v40 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v41 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
 });
