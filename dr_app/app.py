@@ -40,7 +40,10 @@ HTML = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drip Rate Estimator (v32)</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Drip Rate Estimator (v39)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -1505,6 +1508,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v39</div>
   </div>
 
 </div>
@@ -3273,14 +3277,6 @@ function pollStatus() {
         document.getElementById('resultsBtn').style.display = 'inline-flex';
         document.getElementById('badgeResults').style.display = 'inline';
         refreshDownloads(s.outputs);
-        // Load PDF heatmap data
-        fetch('/download/pdf_heatmap.json').then(r=>r.ok?r.json():null).then(d => {
-          if (d) { window._pdfHeatmapData = d; renderPdfHeatmap(); }
-        }).catch(()=>{});
-        // Load age model data
-        fetch('/download/age_model.json').then(r=>r.ok?r.json():null).then(d => {
-          if (d) { window._ageModelData = d; renderAgeModelChart(); }
-        }).catch(()=>{});
         // Load hiatus zones from chart_data for results overlays
         fetch('/chart_data').then(r=>r.ok?r.json():null).then(d => {
           if (d && d.hiatus_zones) window._chartDataHiatusZones = d.hiatus_zones;
@@ -3321,9 +3317,49 @@ function switchResultTab(name) {
     btn.style.color = t===name ? 'var(--texthi)' : 'var(--muted)';
   });
   if (name==='sf') loadSFChart();
-  // Defer canvas renders to next frame so container has non-zero dimensions after display change
-  if (name==='pdf') requestAnimationFrame(() => renderPdfHeatmap());
-  if (name==='age') requestAnimationFrame(() => renderAgeModelChart());
+  if (name==='pdf') loadPdfHeatmap();
+  if (name==='age') loadAgeModel();
+}
+
+function loadPdfHeatmap() {
+  fetch('/data/pdf_heatmap.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      window._pdfHeatmapData = d;
+      // Small delay for layout reflow after tab becomes visible
+      setTimeout(renderPdfHeatmap, 80);
+    })
+    .catch(e => {
+      console.warn('PDF heatmap load:', e);
+      const c = document.getElementById('pdfHeatmapCanvas');
+      if (c) {
+        const ctx = c.getContext('2d');
+        c.width = c.parentElement.clientWidth || 400;
+        c.height = c.parentElement.clientHeight || 300;
+        ctx.fillStyle = '#8fa4b5'; ctx.font = '13px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('No PDF data — run the model first', c.width/2, c.height/2);
+      }
+    });
+}
+
+function loadAgeModel() {
+  fetch('/data/age_model.json')
+    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(d => {
+      window._ageModelData = d;
+      setTimeout(renderAgeModelChart, 80);
+    })
+    .catch(e => {
+      console.warn('Age model load:', e);
+      const c = document.getElementById('ageModelChart');
+      if (c) {
+        const ctx = c.getContext('2d');
+        c.width = c.parentElement.clientWidth || 400;
+        c.height = c.parentElement.clientHeight || 300;
+        ctx.fillStyle = '#8fa4b5'; ctx.font = '13px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('No age model data — run the model first', c.width/2, c.height/2);
+      }
+    });
 }
 
 function loadSFChart() {
@@ -3569,42 +3605,53 @@ function sampleCmap(name, t) {
 }
 
 // ── PDF Heatmap rendering ────────────────────────────────────────────────
+let _pdfRetries = 0;
 function renderPdfHeatmap() {
   const canvas = document.getElementById('pdfHeatmapCanvas');
   if (!canvas || !window._pdfHeatmapData) return;
-  if (!canvas.parentElement.clientWidth || !canvas.parentElement.clientHeight) return;
+  const parentW = canvas.parentElement.clientWidth;
+  const parentH = canvas.parentElement.clientHeight;
+  if (!parentW || !parentH) {
+    if (_pdfRetries++ < 10) setTimeout(renderPdfHeatmap, 100);
+    return;
+  }
+  _pdfRetries = 0;
 
   const {V_pdf, V_span, ages} = window._pdfHeatmapData;
   const nv = V_pdf.length, nt = V_pdf[0].length;
   const cmap = document.getElementById('pdf-cmap')?.value || 'viridis';
   const useLog = document.getElementById('pdf-log')?.checked || false;
 
-  // Normalize each timestep column to sum=1 (proper PDF)
+  // Normalize each timestep column to [0,1] by its own max (per-column)
+  // This ensures every timestep shows its PDF shape at full contrast
   const normPdf = [];
   for (let v = 0; v < nv; v++) normPdf.push(new Array(nt).fill(0));
   for (let t = 0; t < nt; t++) {
-    let colSum = 0;
-    for (let v = 0; v < nv; v++) colSum += (V_pdf[v][t] || 0);
-    if (colSum > 0) for (let v = 0; v < nv; v++) normPdf[v][t] = (V_pdf[v][t] || 0) / colSum;
+    let colMax = 0;
+    for (let v = 0; v < nv; v++) {
+      const val = V_pdf[v][t] || 0;
+      if (val > colMax) colMax = val;
+    }
+    if (colMax > 0) {
+      for (let v = 0; v < nv; v++) normPdf[v][t] = (V_pdf[v][t] || 0) / colMax;
+    }
   }
 
-  let maxD = 0;
+  let maxD = 1.0;  // already normalised to [0,1] per column
   const data = [];
   for (let v = 0; v < nv; v++) {
     const row = [];
     for (let t = 0; t < nt; t++) {
       let val = normPdf[v][t];
-      if (useLog && val > 0) val = Math.log10(val + 1e-20);
+      if (useLog && val > 0) val = Math.log10(val * 9 + 1);  // log scale mapped to [0,1]
       row.push(val);
-      if (isFinite(val) && val > maxD) maxD = val;
     }
     data.push(row);
   }
-  if (maxD <= 0) maxD = 1;
 
   const dpr = window.devicePixelRatio || 1;
-  const W = canvas.parentElement.clientWidth;
-  const H = canvas.parentElement.clientHeight;
+  const W = parentW;
+  const H = parentH;
   canvas.width = W * dpr; canvas.height = H * dpr;
   canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
   const ctx = canvas.getContext('2d');
@@ -3677,11 +3724,16 @@ function renderPdfHeatmap() {
 // ── Age model chart ──────────────────────────────────────────────────────
 let ageModelChart = null;
 
+let _ageRetries = 0;
 function renderAgeModelChart() {
-  if (!window._ageModelData) return;
-  const {depth, age_median, age_lo, age_hi, dated_depth, dated_age, dated_err} = window._ageModelData;
   const canvas = document.getElementById('ageModelChart');
-  if (!canvas || !canvas.parentElement.clientWidth) return;  // skip if hidden
+  if (!canvas || !window._ageModelData) return;
+  if (!canvas.parentElement.clientWidth) {
+    if (_ageRetries++ < 10) setTimeout(renderAgeModelChart, 100);
+    return;
+  }
+  _ageRetries = 0;
+  const {depth, age_median, age_lo, age_hi, dated_depth, dated_age, dated_err} = window._ageModelData;
   if (ageModelChart) ageModelChart.destroy();
 
   // Subsample to ~500 points for Chart.js performance
@@ -4733,6 +4785,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
+  console.log('%c PaleoDripRates v39 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
 });
@@ -4865,6 +4918,18 @@ def download(filename):
     if not os.path.exists(path):
         return jsonify({'error': 'File not found'}), 404
     return send_file(path, as_attachment=True)
+
+@app.route('/data/<filename>')
+def serve_data(filename):
+    """Serve output files inline (for fetch/AJAX) without Content-Disposition: attachment."""
+    safe = os.path.basename(filename)
+    path = os.path.join(OUTPUT_FOLDER, safe)
+    if not os.path.exists(path):
+        return jsonify({'error': 'File not found'}), 404
+    if safe.endswith('.json'):
+        with open(path) as f:
+            return Response(f.read(), mimetype='application/json')
+    return send_file(path, as_attachment=False)
 
 
 # ── Model runner (background thread) ────────────────────────────────────────
@@ -5830,13 +5895,33 @@ def _run_model(params):
 
         # ── PDF heatmap JSON (subsampled for browser) ────────────────
         try:
-            # Subsample the V_pdf matrix for manageable browser rendering
+            # Auto-crop V range to where density exists (±5% padding)
+            _row_sums = V_pdf.sum(axis=1)
+            _total_density = _row_sums.sum()
+            if _total_density > 0:
+                _cumsum = np.cumsum(_row_sums) / _total_density
+                _v_lo = max(0, np.searchsorted(_cumsum, 0.001) - 2)
+                _v_hi = min(len(_cumsum) - 1, np.searchsorted(_cumsum, 0.999) + 2)
+                # Ensure at least 20 bins
+                if _v_hi - _v_lo < 20:
+                    _mid = (_v_lo + _v_hi) // 2
+                    _v_lo = max(0, _mid - 10)
+                    _v_hi = min(len(_cumsum) - 1, _mid + 10)
+                log(f'PDF heatmap: V density in bins {_v_lo}–{_v_hi} '
+                    f'(V={V_span[_v_lo]:.2f}–{V_span[_v_hi]:.2f} drips/min)')
+            else:
+                _v_lo, _v_hi = 0, V_pdf.shape[0] - 1
+
+            _cropped_pdf = V_pdf[_v_lo:_v_hi+1, :]
+            _cropped_v   = V_span[_v_lo:_v_hi+1]
+
+            # Subsample for manageable browser rendering
             _max_v = 200   # max V bins
             _max_t = 500   # max time steps
-            _v_step = max(1, V_pdf.shape[0] // _max_v)
-            _t_step = max(1, V_pdf.shape[1] // _max_t)
-            _sub_pdf = V_pdf[::_v_step, ::_t_step]
-            _sub_v   = V_span[::_v_step]
+            _v_step = max(1, _cropped_pdf.shape[0] // _max_v)
+            _t_step = max(1, _cropped_pdf.shape[1] // _max_t)
+            _sub_pdf = _cropped_pdf[::_v_step, ::_t_step]
+            _sub_v   = _cropped_v[::_v_step]
             _sub_age = V_age[::_t_step]
             _hm_data = {
                 'V_pdf':  _sub_pdf.tolist(),
@@ -5847,7 +5932,8 @@ def _run_model(params):
             with open(_hm_path, 'w') as f:
                 json.dump(_hm_data, f)
             _outputs.append('pdf_heatmap.json')
-            log(f'Saved pdf_heatmap.json ({_sub_pdf.shape[0]}×{_sub_pdf.shape[1]} subsampled)')
+            log(f'Saved pdf_heatmap.json ({_sub_pdf.shape[0]}×{_sub_pdf.shape[1]} subsampled, '
+                f'V range: {_sub_v[0]:.2f}–{_sub_v[-1]:.2f})')
         except Exception as _e:
             log(f'Could not save PDF heatmap: {_e}')
 
