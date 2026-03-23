@@ -54,11 +54,15 @@ paleodriprates/
 │   ├── params.py                 ← Physical constants (VMAX, VMIN, VRES, etc.)
 │   ├── driprates_stochastic.py   ← Drip rate PDF computation with stochastic priors
 │   ├── model_stochastic.py       ← Stochastic model wrapper
-│   └── concentration_prior.py    ← Log-normal priors for [TE]aq and [Ca]aq
+│   ├── concentration_prior.py    ← Log-normal priors for [TE]aq and [Ca]aq
+│   └── HS4_example_inputs/       ← Example data (Heshang Cave stalagmite HS4)
+│       ├── HS4_depth_age.csv     ← U-Th dating table
+│       └── HS4_trace_elements.csv← Co and Ni LA-ICP-MS profiles
 ├── bayprox/                      ← BayProX age-depth engine (if not pip-installed)
 │   ├── data.py
 │   ├── agedepth.py
 │   └── proxyrecord.py
+├── QUICKSTART.md                 ← This file
 └── README.md
 ```
 
@@ -85,7 +89,42 @@ Open **http://localhost:5000** in any modern browser (Chrome, Firefox, Edge).
 
 ---
 
-## 5. Prepare your data
+## 5. Quick test with HS4 example data
+
+The repository includes example input files from **stalagmite HS4, Heshang Cave, China** — the validation dataset from the manuscript. This lets you verify your installation produces correct output in under 15 minutes.
+
+### Step 1 — Upload data
+
+1. Navigate to **Data Inputs**
+2. Upload `dr_app/HS4_example_inputs/HS4_depth_age.csv` to the **Depth / Age** dropzone
+3. Upload `dr_app/HS4_example_inputs/HS4_trace_elements.csv` to the **Trace Elements** dropzone
+4. The app will auto-detect columns and elements — verify the age–depth plot looks reasonable (monotonically increasing, 0–260 cm depth, 0–10,000 yrs BP)
+
+### Step 2 — Accept defaults and run
+
+All model parameters are pre-configured with sensible defaults for HS4:
+- Cave temperature, Ca concentration, and element-specific Kp/Kd values auto-populate
+- The element selector detects Co and Ni from the column headers
+
+Simply navigate to **Run Model** and click **Run Model**. Typical runtime is 10–15 minutes for two trace elements over ~10,000 years.
+
+### Step 3 — Check outputs
+
+When complete, click **Results** to explore the four output tabs:
+
+**📈 Time Series** — reconstructed drip rate showing the Holocene decline from ~20 drips/min in the early Holocene, with the pronounced 5.2 ka aridity event clearly resolved as a sharp dip, and the modern (post-1820) increase.
+
+**🌈 PDF Heatmap** — full probability density field showing how uncertainty varies through time. Select the **Reds** colourmap for clearest contrast. Toggle **Percentiles** to overlay the median and IQR bands.
+
+**💧 Smart & Friedrich** — hydrological classification placing HS4 in the **Buffered overflow** quadrant (mean ~20 drips/min, CV ~0.25), consistent with the site's known hydrology.
+
+**📐 Age Model** — BayProX posterior age–depth relationship with dated points, showing the smooth monotonic age model through 260 cm of growth.
+
+All outputs are downloadable from the **Downloads** tab as CSV/JSON files.
+
+---
+
+## 6. Prepare your own data
 
 You need **two CSV files**:
 
@@ -108,7 +147,7 @@ You need **two CSV files**:
 
 ---
 
-## 6. Workflow
+## 7. Full workflow
 
 ### Step 1 — Data Inputs
 
@@ -154,7 +193,7 @@ All outputs are available as CSV/JSON files from the **Downloads** tab, includin
 
 ---
 
-## 7. Troubleshooting
+## 8. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -167,7 +206,7 @@ All outputs are available as CSV/JSON files from the **Downloads** tab, includin
 
 ---
 
-## 8. Citation
+## 9. Citation
 
 If you use this tool, please cite:
 
@@ -177,7 +216,7 @@ Code & data: [github.com/waikatosci/paleodriprates](https://github.com/waikatosc
 
 ---
 
-## 9. Contact
+## 10. Contact
 
 Adam Hartland — [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
 
