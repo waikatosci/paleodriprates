@@ -563,7 +563,7 @@ if bProxyRecord:
                 type1, name2 = names
                 if iSheet==1:
                     xname = "Depth (from top)"
-                    yname = "%s (ppb)" % name2
+                    yname = "%s (ppm)" % name2
                 elif iSheet == 2:
                     xname = "Depth (cm)"
                     yname = "%s (per mil)" % name2

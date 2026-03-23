@@ -82,7 +82,7 @@ def te_timeseries(TE, series):
                     % (TE, OWS, SRES)
     DAT = pd.read_csv(FIN, delimiter=",")
     age = DAT["Age (yBP)"].to_numpy()
-    Xs = DAT["%s (ppb) %s" % (TE, series)].to_numpy()
+    Xs = DAT["%s (ppm) %s" % (TE, series)].to_numpy()
     molwt = {
                 "Ni": 58.693,
                 "Co": 58.933,
