@@ -34,6 +34,7 @@ paleodriprates/
 │
 ├── companion_analysis/
 ├── RQA_HS4_ensemble.py        # Windowed ensemble RQA
+├── drip_rate_stationarity_tests.py    # Statistical tests for event significance and stationarity 
 │
 ├── precip_recon/              # Precipitation reconstruction (chained regressions)
 │   ├── P_quantification_Holocene.ipynb   # Jupyter notebook: Monte Carlo P reconstruction
