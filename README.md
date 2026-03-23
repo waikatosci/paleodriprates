@@ -32,6 +32,9 @@ paleodriprates/
 │   ├── simulate.py            # Simulation utilities
 │   └── visualize.py           # Plotting routines
 │
+├── companion_analysis/
+├── RQA_HS4_ensemble.py        # Windowed ensemble RQA
+│
 ├── precip_recon/              # Precipitation reconstruction (chained regressions)
 │   ├── P_quantification_Holocene.ipynb   # Jupyter notebook: Monte Carlo P reconstruction
 │   ├── Heshang-Yichang_PT_regression_data.xlsx
