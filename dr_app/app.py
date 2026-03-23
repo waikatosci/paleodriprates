@@ -5,7 +5,7 @@ Provides a browser-based interface for the speleothem drip rate
 reconstruction pipeline (replaces the Excel-based workflow).
 """
 
-import os, sys, json, threading, time, traceback, pickle, copy
+import os, sys, json, threading, time, traceback, pickle, copy, datetime
 from flask import Flask, request, jsonify, send_file, Response
 import numpy as np
 import pandas as pd
@@ -40,9 +40,7 @@ HTML = r'''<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Drip Rate Estimator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<title>Drip Rate Estimator (v32)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -51,13 +49,13 @@ HTML = r'''<!DOCTYPE html>
     --border:   #2a3441;
     --accent:   #4cc9a0;
     --accent2:  #f7a440;
-    --muted:    #6e7f8d;
-    --text:     #cdd9e5;
-    --texthi:   #e6edf3;
+    --muted:    #8fa4b5;
+    --text:     #dce6ef;
+    --texthi:   #f0f4f8;
     --danger:   #e05c5c;
     --radius:   10px;
-    --mono:     'DM Mono', monospace;
-    --serif:    'Fraunces', Georgia, serif;
+    --mono:     Arial, Helvetica, sans-serif;
+    --serif:    Arial, Helvetica, sans-serif;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -66,7 +64,7 @@ HTML = r'''<!DOCTYPE html>
     background: var(--bg);
     color: var(--text);
     font-family: var(--mono);
-    font-size: 13px;
+    font-size: 14px;
     min-height: 100vh;
   }
 
@@ -159,7 +157,7 @@ HTML = r'''<!DOCTYPE html>
 
   .page-title {
     font-family: var(--serif);
-    font-size: 22px;
+    font-size: 24px;
     font-weight: 300;
     color: var(--texthi);
     margin-bottom: 6px;
@@ -180,7 +178,7 @@ HTML = r'''<!DOCTYPE html>
     margin-bottom: 16px;
   }
   .card-title {
-    font-size: 11px;
+    font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 1.2px;
     color: var(--accent);
@@ -199,14 +197,14 @@ HTML = r'''<!DOCTYPE html>
   .form-grid.wide { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
 
   .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 11px; color: var(--muted); }
+  .field label { font-size: 12px; color: var(--muted); }
   .field input, .field select {
     background: var(--bg);
     border: 1px solid var(--border);
     border-radius: 6px;
     color: var(--texthi);
     font-family: var(--mono);
-    font-size: 12px;
+    font-size: 13px;
     padding: 8px 10px;
     transition: border-color 0.15s;
     width: 100%;
@@ -237,8 +235,8 @@ HTML = r'''<!DOCTYPE html>
   .dropzone:hover, .dropzone.drag { border-color: var(--accent); background: rgba(76,201,160,0.04); }
   .dropzone.ready { border-color: var(--accent); border-style: solid; }
   .dropzone .dz-icon { font-size: 22px; margin-bottom: 6px; }
-  .dropzone .dz-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; }
-  .dropzone .dz-name { font-size: 11px; color: var(--accent); display: none; }
+  .dropzone .dz-label { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .dropzone .dz-name { font-size: 12px; color: var(--accent); display: none; }
   .dropzone.ready .dz-name { display: block; }
   .dropzone.ready .dz-hint { display: none; }
   .dropzone .dz-hint { font-size: 10px; color: var(--muted); }
@@ -249,7 +247,7 @@ HTML = r'''<!DOCTYPE html>
   /* column selector that appears after upload */
   .col-selector { margin-top: 10px; display: none; }
   .col-selector.show { display: block; }
-  .col-selector label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 3px; }
+  .col-selector label { font-size: 11px; color: var(--muted); display: block; margin-bottom: 3px; }
   .col-selector select {
     width: 100%;
     background: var(--bg);
@@ -292,6 +290,29 @@ HTML = r'''<!DOCTYPE html>
     background: transparent;
     border: 1px solid var(--danger);
     color: var(--danger);
+  }
+
+  /* ── Mode toggle buttons (manual/CSV) ── */
+  .mode-btn {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 6px;
+    padding: 4px 12px;
+    font-family: var(--mono);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: #0d1117;
+    border-color: var(--accent);
+    font-weight: 500;
+  }
+  .mode-btn:hover:not(.active) {
+    border-color: var(--accent);
+    color: var(--accent);
   }
 
   /* ── Progress ── */
@@ -415,13 +436,18 @@ HTML = r'''<!DOCTYPE html>
     display: none;
     position: absolute;
     top: calc(100% + 8px);
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    right: auto;
+    max-width: min(640px, calc(100vw - 40px));
     width: 640px;
     background: #1c2635;
+    overflow-y: auto;
+    max-height: 80vh;
     border: 1px solid var(--accent);
     border-radius: 8px;
     padding: 12px 14px;
-    font-size: 11px;
+    font-size: 12px;
     line-height: 1.7;
     color: var(--text);
     z-index: 999;
@@ -598,8 +624,19 @@ HTML = r'''<!DOCTYPE html>
               <div class="dz-name" id="name-depth_age"></div>
             </div>
             <div class="col-selector" id="cols-depth_age">
-              <label>Depth column</label>
-              <select id="sel-depth_age-depth" onchange="storeCol('depth_age','depth',this.value);renderAgePlot()"></select>
+              <div style="display:grid;grid-template-columns:1fr 90px;gap:8px;align-items:end">
+                <div>
+                  <label>Depth column</label>
+                  <select id="sel-depth_age-depth" onchange="storeCol('depth_age','depth',this.value);renderAgePlot()"></select>
+                </div>
+                <div>
+                  <label>Unit</label>
+                  <select id="da-depth-unit-sel" style="width:100%" onchange="renderAgePlot()">
+                    <option value="cm" selected>cm</option>
+                    <option value="mm">mm</option>
+                  </select>
+                </div>
+              </div>
               <label>Age column (yrs BP)</label>
               <select id="sel-depth_age-age" onchange="storeCol('depth_age','age',this.value);renderAgePlot()"></select>
               <label>Age error column (2σ)</label>
@@ -642,6 +679,38 @@ HTML = r'''<!DOCTYPE html>
             the data range using the end tangent. Edit the min/max fields or the extrap inputs to
             override the auto-populated calibration age range.
           </p>
+
+          <!-- Growth rate chart + hiatus detection -->
+          <div id="growth-rate-panel" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600;color:var(--texthi)">📏 Growth Rate &amp; Hiatus Detection</span>
+            </div>
+            <div class="chart-wrap" style="height:160px;padding:10px">
+              <canvas id="growthRateCanvas"></canvas>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px;align-items:end">
+              <div class="field">
+                <label>Hiatus threshold (mm/yr)</label>
+                <input type="number" id="hiatus-threshold" value="0.005" step="0.001" min="0"
+                       style="width:100%" oninput="updateGrowthRate()">
+                <div style="font-size:9.5px;color:var(--muted);margin-top:2px">
+                  Intervals below this growth rate are flagged as potential hiatuses.
+                </div>
+              </div>
+              <button onclick="autoDetectHiatuses()" class="btn btn-primary"
+                      style="padding:8px 14px;font-size:11px;height:fit-content">Auto-detect hiatuses</button>
+            </div>
+            <div id="hiatus-zones" style="margin-top:12px">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+                <span style="font-size:11px;font-weight:600;color:var(--texthi)">Exclusion zones</span>
+                <button onclick="addHiatusZone()" class="btn btn-ghost" style="padding:3px 10px;font-size:11px">+ Add zone</button>
+              </div>
+              <div id="hiatus-zone-list"></div>
+              <div id="hiatus-zone-hint" style="font-size:10px;color:var(--muted);margin-top:4px">
+                No exclusion zones defined. Use auto-detect or add manually.
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -656,9 +725,18 @@ HTML = r'''<!DOCTYPE html>
           <div class="dz-name" id="name-trace_elem1"></div>
         </div>
         <div id="te-config" style="display:none; margin-top:12px">
-          <div style="margin-bottom:10px">
-            <label style="font-size:11px;color:var(--muted)">Depth column</label>
-            <select id="te-depth-sel" style="width:100%;margin-top:4px" onchange="teDepthChanged(this.value)"></select>
+          <div style="display:grid;grid-template-columns:1fr 120px;gap:8px;margin-bottom:10px;align-items:end">
+            <div>
+              <label style="font-size:11px;color:var(--muted)">Depth column</label>
+              <select id="te-depth-sel" style="width:100%;margin-top:4px" onchange="teDepthChanged(this.value)"></select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted)">Depth unit</label>
+              <select id="te-depth-unit-sel" style="width:100%;margin-top:4px" onchange="teDepthUnitChanged(this.value)">
+                <option value="mm">mm</option>
+                <option value="cm" selected>cm</option>
+              </select>
+            </div>
           </div>
           <div style="font-size:11px;color:var(--muted);margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
             Proxy columns — add one row per trace element:
@@ -672,7 +750,7 @@ HTML = r'''<!DOCTYPE html>
               <span style="font-size:11px;font-weight:600;color:var(--texthi)">🔧 Data Preprocessing</span>
               <span id="te-row-badge" style="font-size:10px;color:var(--muted)"></span>
             </div>
-            <div style="height:140px;margin-bottom:10px">
+            <div style="height:220px;margin-bottom:10px">
               <canvas id="te-preview-chart" style="width:100%;height:100%"></canvas>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr 120px;gap:10px;align-items:end">
@@ -697,6 +775,45 @@ HTML = r'''<!DOCTYPE html>
                       style="padding:8px 14px;font-size:11px;height:fit-content">Apply &amp; Save</button>
             </div>
             <div id="te-preproc-status" style="font-size:10px;color:var(--muted);margin-top:6px;min-height:14px"></div>
+          </div>
+
+          <!-- TE cross-correlation scatter -->
+          <div id="te-scatter-panel" style="display:none;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+              <span style="font-size:12px;font-weight:600;color:var(--texthi)">📊 TE Cross-Correlation</span>
+              <button onclick="document.getElementById('te-scatter-help').style.display=document.getElementById('te-scatter-help').style.display==='none'?'':'none'"
+                      class="btn btn-ghost" style="padding:3px 8px;font-size:11px">?</button>
+            </div>
+            <div id="te-scatter-help" style="display:none;margin-bottom:10px;padding:8px 10px;
+                 background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:11px;color:var(--text);line-height:1.7">
+              If two trace elements are both controlled by drip rate via OMC dissociation
+              kinetics, their speleothem concentrations should be correlated — higher drip
+              rates reduce both. Positive correlation supports a shared drip rate control;
+              low or no correlation suggests different processes dominate (redox, PCP, etc.).
+              Use this to screen element pairs before multi-TE reconstruction.
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;align-items:end">
+              <div class="field">
+                <label>X axis</label>
+                <select id="te-scatter-x" onchange="updateScatterPlot()" style="width:100%"></select>
+              </div>
+              <div class="field">
+                <label>Y axis</label>
+                <select id="te-scatter-y" onchange="updateScatterPlot()" style="width:100%"></select>
+              </div>
+              <div class="field">
+                <label>Fit</label>
+                <select id="te-scatter-fit" onchange="updateScatterPlot()" style="width:100%">
+                  <option value="none">None</option>
+                  <option value="linear" selected>Linear</option>
+                  <option value="exp">Exponential</option>
+                </select>
+              </div>
+            </div>
+            <div style="height:220px">
+              <canvas id="te-scatter-chart"></canvas>
+            </div>
+            <div id="te-scatter-stats" style="font-size:10px;color:var(--muted);margin-top:4px"></div>
           </div>
         </div>
       </div>
@@ -828,13 +945,87 @@ HTML = r'''<!DOCTYPE html>
             <label>Cave temperature (°C)</label>
             <input type="number" id="temp_C" value="16.5" step="0.1">
           </div>
-          <div class="field fullonly">
-            <label>Ca concentration in drip water</label>
-            <input type="number" id="ca_conc" value="62" step="0.1"
-                   oninput="updateCaHint();updateAllParamHints()">
+          <div class="field">
+            <label>Monitored drip rate (drips min⁻¹)
+              <span style="color:var(--muted);font-weight:400;font-size:9px;cursor:help"
+                    title="Modern observed drip rate used to anchor Kd estimation for all TEs. Leave blank or 0 to use literature Kd values."> (?)</span>
+            </label>
+            <input type="number" id="global_drip_rate" value="10" step="0.5" min="0"
+                   oninput="updateAllParamHints()">
+            <div id="global_drip_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4">
+              Used to compute ln(Kd) from observed TE concentrations via kinetic inversion.
+            </div>
+          </div>
+          <div class="field fullonly" style="grid-column:1/-1">
+            <label style="font-size:11px;font-weight:600;color:var(--texthi);margin-bottom:6px">
+              Ca aqueous concentration</label>
+            <div style="display:flex;gap:6px;margin-bottom:8px">
+              <button id="ca-mode-manual" class="mode-btn active"
+                      onclick="setCaMode('manual')">Manual entry</button>
+              <button id="ca-mode-csv" class="mode-btn"
+                      onclick="setCaMode('csv')">Upload monitoring CSV</button>
+            </div>
+            <!-- Manual entry path (default) -->
+            <div id="ca-manual-block">
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+                <div>
+                  <label style="font-size:10px;color:var(--muted)">Mean [Ca_aq]</label>
+                  <input type="number" id="ca_conc" value="62" step="0.1"
+                         oninput="updateCaHint();updateAllParamHints();fitCaPriorFromManual()">
+                </div>
+                <div>
+                  <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
+                  <input type="number" id="ca_conc_sd" placeholder="blank = fixed"
+                         step="0.1" oninput="fitCaPriorFromManual()">
+                </div>
+                <div>
+                  <label style="font-size:10px;color:var(--muted)">Unit</label>
+                  <select id="ca_unit"
+                          onchange="updateCaHint();updateAllParamHints();fitCaPriorFromManual()">
+                    <option value="ppb">ppb (µg/L)</option>
+                    <option value="ppm" selected>ppm (mg/L)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <!-- CSV upload path -->
+            <div id="ca-csv-block" style="display:none">
+              <div class="dropzone" id="dz-ca_aq"
+                   ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)"
+                   ondrop="dzDrop(event,'ca_aq',this)">
+                <input type="file" accept=".csv"
+                       onchange="dzFile(event,'ca_aq',this.parentElement)">
+                <div class="dz-label">Drop Ca monitoring CSV</div>
+                <div class="dz-name" id="name-ca_aq"></div>
+              </div>
+              <div id="ca-col-selector" style="display:none;margin-top:8px">
+                <label style="font-size:10px;color:var(--muted)">Ca column</label>
+                <select id="ca_csv_col" onchange="fitCaPriorFromCsv()"
+                        style="width:100%;margin-bottom:4px"></select>
+                <label style="font-size:10px;color:var(--muted)">Unit in file</label>
+                <select id="ca_csv_unit" onchange="fitCaPriorFromCsv()" style="width:100%">
+                  <option value="ppb">ppb (µg/L)</option>
+                  <option value="ppm" selected>ppm (mg/L)</option>
+                </select>
+              </div>
+              <!-- Distribution chart -->
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:4px">
+                <span style="font-size:10px;color:var(--muted)">Distribution fit</span>
+                <button id="ca-dist-chart_toggle" onclick="toggleLogScale('ca-dist-chart')"
+                        style="background:none;border:1px solid var(--border);color:var(--muted);
+                               border-radius:4px;cursor:pointer;font-size:10px;padding:2px 8px">Log x</button>
+              </div>
+              <div style="height:160px;display:none" id="ca-dist-chart-wrap">
+                <canvas id="ca-dist-chart"></canvas>
+              </div>
+              <div id="ca-dist-desc" style="display:none;margin-top:8px;padding:8px 10px;
+                   background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:10px"></div>
+            </div>
+            <!-- Prior summary -->
+            <div id="ca-prior-summary" style="font-size:10px;color:var(--muted);margin-top:8px;
+                 padding:6px 8px;background:var(--bg);border:1px solid var(--border);
+                 border-radius:4px;display:none"></div>
             <div id="ca_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-          <select id="ca_unit" style="margin-top:4px;width:100%"
-                  onchange="updateCaHint();updateAllParamHints()"><option value="ppb">ppb  (µg/L)</option><option value="ppm" selected>ppm  (mg/L)</option><option value="ug/g">µg/g  (≈ mg/L for dilute solutions)</option><option value="mg/kg">mg/kg  (≈ mg/L for dilute solutions)</option></select>
           </div>
         </div>
         <div class="callout" style="margin-top:12px;font-size:11px;line-height:1.75">
@@ -918,6 +1109,37 @@ HTML = r'''<!DOCTYPE html>
         </div>
       </div>
 
+      <div class="card">
+        <div class="card-title">🔧 Advanced — Drip Rate Grid</div>
+        <div style="font-size:11px;color:var(--muted);line-height:1.7;margin-bottom:12px">
+          The forward model evaluates h(V) on a grid from V<sub>min</sub> to V<sub>max</sub>.
+          If the model's predicted [TE]<sub>calcite</sub> at V<sub>max</sub> is still above
+          the observed data range, increase V<sub>max</sub>. This is needed when K₀ is large
+          (high Kp or high aq/ca ratio) and most of the kinetic fractionation occurs at
+          high drip rates beyond the default 100 drips/min.
+        </div>
+        <div class="form-grid">
+          <div class="field">
+            <label>V<sub>max</sub> (drips min⁻¹)</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input type="number" id="v_max" value="100" min="10" max="10000" step="10" style="flex:1">
+              <button class="btn btn-ghost" onclick="autoSetVmax()" style="padding:5px 10px;font-size:11px"
+                      title="Set VMAX based on where h(V) crosses the data range">Auto</button>
+            </div>
+            <div id="v_max_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4">
+              Default: 100. Use Auto to fit to data range.
+            </div>
+          </div>
+          <div class="field">
+            <label>V grid resolution</label>
+            <input type="number" id="v_res" value="5000" min="500" max="50000" step="500">
+            <div style="font-size:9.5px;color:var(--muted);margin-top:3px">
+              Default: 5000. Higher = finer grid but slower.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex; gap:10px;">
         <button class="btn btn-ghost" onclick="showPanel('params')">← Back</button>
         <button class="btn btn-primary" onclick="showPanel('run')">Next: Run Model →</button>
@@ -983,6 +1205,12 @@ HTML = r'''<!DOCTYPE html>
         <button id="tab-sf" onclick="switchResultTab('sf')" class="result-tab"
                 style="padding:8px 18px;font-size:11px;background:none;border:none;
                        border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">💧 Smart &amp; Friedrich</button>
+        <button id="tab-pdf" onclick="switchResultTab('pdf')" class="result-tab"
+                style="padding:8px 18px;font-size:11px;background:none;border:none;
+                       border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">🌈 PDF Heatmap</button>
+        <button id="tab-age" onclick="switchResultTab('age')" class="result-tab"
+                style="padding:8px 18px;font-size:11px;background:none;border:none;
+                       border-bottom:2px solid transparent;color:var(--muted);cursor:pointer">📐 Age Model</button>
       </div>
 
       <!-- Time series panel -->
@@ -1028,6 +1256,49 @@ HTML = r'''<!DOCTYPE html>
         </div>
       </div>
 
+      <!-- PDF heatmap panel -->
+      <div id="rtab-pdf" style="display:none">
+        <div class="card">
+          <div class="card-title">🌈 Drip Rate Probability Density</div>
+          <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
+            <label style="font-size:10px;color:var(--muted)">Colour map:</label>
+            <select id="pdf-cmap" onchange="renderPdfHeatmap()"
+                    style="font-size:11px;padding:3px 8px">
+              <option value="viridis" selected>Viridis</option>
+              <option value="inferno">Inferno</option>
+              <option value="plasma">Plasma</option>
+              <option value="magma">Magma</option>
+              <option value="cividis">Cividis</option>
+              <option value="turbo">Turbo</option>
+            </select>
+            <label style="font-size:10px;color:var(--muted);margin-left:10px">Log density:</label>
+            <input type="checkbox" id="pdf-log" onchange="renderPdfHeatmap()"
+                   style="accent-color:var(--accent)">
+          </div>
+          <div style="height:400px;position:relative">
+            <canvas id="pdfHeatmapCanvas" style="width:100%;height:100%"></canvas>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:4px">
+            <span id="pdf-xrange"></span>
+            <span id="pdf-yrange"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Age model panel -->
+      <div id="rtab-age" style="display:none">
+        <div class="card">
+          <div class="card-title">📐 BayProX Age Model</div>
+          <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+            The age-depth relationship computed by BayProX from the U-Th dated
+            points. Uncertainty envelope shows the model posterior spread.
+          </div>
+          <div class="chart-wrap">
+            <canvas id="ageModelChart"></canvas>
+          </div>
+        </div>
+      </div>
+
       <div style="display:flex;gap:10px;margin-top:4px">
         <button class="btn btn-ghost" onclick="showPanel('downloads')">⬇ Downloads</button>
       </div>
@@ -1050,6 +1321,43 @@ HTML = r'''<!DOCTYPE html>
     <div id="panel-about" class="panel">
       <div class="page-title">About</div>
       <p class="page-desc">Project background, authorship and funding acknowledgements.</p>
+
+      <div class="card" style="border-color:var(--accent);border-width:2px">
+        <div class="card-title" style="font-size:13px">🌍 Parent Project — QUEST</div>
+        <div style="font-size:12px; line-height:1.9; color:var(--text)">
+          <div style="display:flex;gap:16px;align-items:center;margin-bottom:14px;flex-wrap:wrap">
+            <a href="https://quest.pik-potsdam.de/" target="_blank">
+              <img src="https://quest.pik-potsdam.de/wp-content/uploads/2017/03/Logo-AI_QUEST-1024x527-300x154.jpg"
+                   alt="QUEST — QUantitative palaeoEnvironments from SpeleoThems"
+                   style="height:60px;border-radius:4px;background:#fff;padding:4px"
+                   onerror="this.style.display='none'">
+            </a>
+            <div>
+              <div style="font-family:var(--serif);font-size:18px;font-weight:600;color:var(--texthi)">
+                QUEST</div>
+              <div style="color:var(--accent);font-size:12px">
+                QUantitative palaeoEnvironments from SpeleoThems</div>
+            </div>
+          </div>
+          <div style="margin-bottom:12px">
+            This tool was developed within the QUEST project — an international research
+            collaboration that develops new techniques for extracting quantitative
+            palaeoclimate information from speleothems. QUEST combines field and laboratory
+            experiments on water/mineral chemistry with innovative physical and numerical
+            analyses to deliver quantitative reconstructions of past hydrology and temperature.
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+            <a href="https://quest.pik-potsdam.de/" target="_blank"
+               class="btn btn-primary" style="font-size:11px;padding:6px 14px;text-decoration:none">
+              Visit QUEST project ↗
+            </a>
+            <a href="https://cordis.europa.eu/project/id/691037" target="_blank"
+               style="color:var(--accent);font-size:11px;text-decoration:none">
+              EU CORDIS project record ↗
+            </a>
+          </div>
+        </div>
+      </div>
 
       <div class="card">
         <div class="card-title">📄 Manuscript</div>
@@ -1123,9 +1431,18 @@ HTML = r'''<!DOCTYPE html>
         <div style="font-size:12px; line-height:1.9; color:var(--text)">
           This research was supported by the following funders:
           <div style="margin-top:12px; display:flex; flex-direction:column; gap:10px;">
-            <div style="display:flex; gap:14px; align-items:flex-start; padding:10px 14px;
+
+            <!-- EU / QUEST -->
+            <div style="display:flex; gap:14px; align-items:center; padding:12px 14px;
                         background:var(--bg); border:1px solid var(--border); border-radius:8px">
-              <span style="font-size:20px">🇪🇺</span>
+              <div style="display:flex;gap:10px;align-items:center;flex-shrink:0">
+                <img src="https://quest.pik-potsdam.de/wp-content/uploads/2017/03/eu_flag-1-300x200.png"
+                     alt="EU Flag" style="height:36px;border-radius:2px"
+                     onerror="this.outerHTML='<span style=font-size:28px>🇪🇺</span>'">
+                <img src="https://quest.pik-potsdam.de/wp-content/uploads/2017/03/Logo-AI_QUEST-1024x527-300x154.jpg"
+                     alt="QUEST" style="height:32px;border-radius:3px;background:#fff;padding:2px"
+                     onerror="this.style.display='none'">
+              </div>
               <div>
                 <div style="color:var(--texthi); font-weight:500">EU Horizon 2020 — Marie Skłodowska-Curie Actions</div>
                 <div style="color:var(--muted); font-size:11px">Grant no. 691037 —
@@ -1134,22 +1451,41 @@ HTML = r'''<!DOCTYPE html>
                 </div>
               </div>
             </div>
-            <div style="display:flex; gap:14px; align-items:flex-start; padding:10px 14px;
+
+            <!-- Te Apārangi -->
+            <div style="display:flex; gap:14px; align-items:center; padding:12px 14px;
                         background:var(--bg); border:1px solid var(--border); border-radius:8px">
-              <span style="font-size:20px">🇳🇿</span>
+              <div style="flex-shrink:0">
+                <img src="https://www.royalsociety.org.nz/assets/Uploads/Logo-Te-Aparangi-lockup__FillMaxWzIwMCwyMDBd.png"
+                     alt="Royal Society Te Apārangi" style="height:40px"
+                     onerror="this.outerHTML='<span style=font-size:28px>🇳🇿</span>'">
+              </div>
               <div>
-                <div style="color:var(--texthi); font-weight:500">Te Apārangi — Royal Society of New Zealand</div>
+                <div style="color:var(--texthi); font-weight:500">
+                  <a href="https://www.royalsociety.org.nz/" target="_blank"
+                     style="color:var(--texthi);text-decoration:none">Te Apārangi — Royal Society of New Zealand</a>
+                </div>
                 <div style="color:var(--muted); font-size:11px">Grant RIS-UOW1501 &nbsp;·&nbsp; Rutherford Discovery Fellowship RDF-UOW1601</div>
               </div>
             </div>
-            <div style="display:flex; gap:14px; align-items:flex-start; padding:10px 14px;
+
+            <!-- MBIE -->
+            <div style="display:flex; gap:14px; align-items:center; padding:12px 14px;
                         background:var(--bg); border:1px solid var(--border); border-radius:8px">
-              <span style="font-size:20px">🇳🇿</span>
+              <div style="flex-shrink:0">
+                <img src="https://www.mbie.govt.nz/dmsdocument/5765-ministry-of-business-innovation-and-employment-logo"
+                     alt="MBIE" style="height:36px"
+                     onerror="this.outerHTML='<span style=font-size:28px>🇳🇿</span>'">
+              </div>
               <div>
-                <div style="color:var(--texthi); font-weight:500">Ministry for Business, Innovation and Employment (MBIE)</div>
+                <div style="color:var(--texthi); font-weight:500">
+                  <a href="https://www.mbie.govt.nz/" target="_blank"
+                     style="color:var(--texthi);text-decoration:none">Ministry for Business, Innovation and Employment (MBIE)</a>
+                </div>
                 <div style="color:var(--muted); font-size:11px">Grant UOWX2102</div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -1231,15 +1567,54 @@ function uploadFile(key, file, el) {
             Object.keys(data[key].data)[0],  // placeholder — updated after depth sel
             data[key].rows);
         }
+        // Ca monitoring CSV
+        if (key === 'ca_aq' && data[key].data) {
+          window.caAqCsvData = data[key].data;
+          const sel = document.getElementById('ca_csv_col');
+          if (sel) {
+            sel.innerHTML = data[key].columns.map(c =>
+              `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('ca-col-selector').style.display = '';
+            fitCaPriorFromCsv();
+          }
+        }
+        // TE monitoring CSVs (match te1_aq, te2_aq, etc.)
+        const aqMatch = key.match(/^(te\d+)_aq$/);
+        if (aqMatch && data[key].data) {
+          const p = aqMatch[1];
+          window[`${p}AqCsvData`] = data[key].data;
+          const sel = document.getElementById(`${p}_aq_csv_col`);
+          if (sel) {
+            sel.innerHTML = data[key].columns.map(c =>
+              `<option value="${c}">${c}</option>`).join('');
+            document.getElementById(`${p}-aq-col-selector`).style.display = '';
+            fitAqPriorFromCsv(p);
+          }
+        }
         populateColSelectors(key, data[key].columns);
-        if (key === 'depth_age') renderAgePlot();
+        if (key === 'depth_age') {
+          // Auto-detect depth unit from column name
+          const daDepCol = document.getElementById('sel-depth_age-depth')?.value || '';
+          const daSel = document.getElementById('da-depth-unit-sel');
+          if (daSel) {
+            const dcl = daDepCol.toLowerCase();
+            if (dcl.includes('(mm)') || dcl.includes('_mm') || dcl.endsWith('mm') || dcl.includes(' mm')) {
+              daSel.value = 'mm';
+            } else if (dcl.includes('(cm)') || dcl.includes('_cm') || dcl.endsWith('cm') || dcl.includes(' cm')) {
+              daSel.value = 'cm';
+            }
+          }
+          renderAgePlot();
+        }
       }
-    });
+    })
+    .catch(err => console.error('Upload error for', key, err));
 }
 
 // ── TE row state ─────────────────────────────────────────────────────────
 let teColumns = [];   // all columns from uploaded TE CSV
 let teDepthCol = '';  // selected depth column
+let teDepthUnit = 'cm'; // auto-detected: 'mm' or 'cm'
 let teRowData  = [{col: '', unit: 'ppm'}];  // [{col, unit}, ...] — default TE1
 
 const UNIT_OPTS = [
@@ -1254,12 +1629,14 @@ const ELEM_OPTS = `
     <option value="Co">Co — Cobalt</option>
     <option value="Cu">Cu — Copper (high Kd)</option>
   </optgroup>
-  <optgroup label="d-block (limited)">
-    <option value="V">V — Vanadium</option>
+  <optgroup label="d-block (literature Kp)">
     <option value="Zn">Zn — Zinc</option>
+    <option value="Mn">Mn — Manganese (redox-sensitive)</option>
+    <option value="Fe">Fe — Iron (redox-sensitive)</option>
     <option value="Cd">Cd — Cadmium</option>
+    <option value="V">V — Vanadium</option>
   </optgroup>
-  <optgroup label="p-block">
+  <optgroup label="Other">
     <option value="Al">Al — Aluminium</option>
     <option value="Pb">Pb — Lead</option>
   </optgroup>
@@ -1277,6 +1654,8 @@ const ELEM_DETECT = [
   {keys: ['vanadium','Va','\bV\b'],   val: 'V'},
   {keys: ['zinc','Zn'],                 val: 'Zn'},
   {keys: ['cadmium','Cd'],              val: 'Cd'},
+  {keys: ['manganese','Mn'],            val: 'Mn'},
+  {keys: ['iron','Fe'],                 val: 'Fe'},
   {keys: ['alumin','Al'],               val: 'Al'},
   {keys: ['lead','Pb'],                 val: 'Pb'},
   {keys: ['lanthanum','La'],            val: 'La'},
@@ -1313,8 +1692,32 @@ function applyElemDetection(idx) {
 function teDepthChanged(val) {
   teDepthCol = val;
   teRawDepth = (teRawData[val] || []).map(Number).filter(isFinite);
+  detectDepthUnit(val);
   renderTERows();
   updatePreviewChart();
+}
+
+function teDepthUnitChanged(val) {
+  teDepthUnit = val;
+  updatePreviewChart();
+  renderAgePlot();
+}
+
+function detectDepthUnit(colName) {
+  // 1. Check column header name for explicit unit
+  const cl = (colName || '').toLowerCase();
+  if (cl.includes('(mm)') || cl.includes('_mm') || cl.endsWith('mm') || cl.includes('mm_') || cl.includes(' mm')) {
+    teDepthUnit = 'mm';
+  } else if (cl.includes('(cm)') || cl.includes('_cm') || cl.endsWith('cm') || cl.includes('cm_') || cl.includes(' cm')) {
+    teDepthUnit = 'cm';
+  } else {
+    // 2. Heuristic: max depth > 500 likely mm
+    const maxDep = teRawDepth.length ? teRawDepth.reduce((a,b) => a > b ? a : b, 0) : 0;
+    teDepthUnit = maxDep > 500 ? 'mm' : 'cm';
+  }
+  // Sync the dropdown
+  const sel = document.getElementById('te-depth-unit-sel');
+  if (sel) sel.value = teDepthUnit;
 }
 
 function addTERow() {
@@ -1325,6 +1728,7 @@ function addTERow() {
   renderTERows();
   renderTEParamCards();
   applyElemDetection(teRowData.length - 1);
+  updatePreviewChart();
 }
 
 function removeTERow(idx) {
@@ -1332,6 +1736,7 @@ function removeTERow(idx) {
   teRowData.splice(idx, 1);
   renderTERows();
   renderTEParamCards();
+  updatePreviewChart();
 }
 
 function teSyncRow(idx) {
@@ -1340,6 +1745,8 @@ function teSyncRow(idx) {
   teRowData[idx].col  = rowEl.querySelector('.te-col-sel').value;
   teRowData[idx].unit = rowEl.querySelector('.te-unit-sel').value;
   applyElemDetection(idx);
+  updatePreviewChart();
+  populateScatterSelectors();
 }
 
 function renderTERows() {
@@ -1369,6 +1776,7 @@ function renderTERows() {
                      line-height:1;padding:0;align-self:end"
               title="Remove" ${teRowData.length<=1?'disabled':''}>×</button>
     </div>`).join('');
+  populateScatterSelectors();
 }
 
 // ── Element-specific default parameters ───────────────────────────────
@@ -1376,11 +1784,11 @@ function renderTERows() {
 // Kd_mn = ln(Kd_NOM); users refine using the "implied ln(Kd)" hint.
 // aq_conc are order-of-magnitude starting points — cave-specific.
 const ELEM_DEFAULTS = {
-  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 4.370, K_e: 1.0 },
-  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.01, InertF: 0.40, aq_conc: 0.300, K_e: 1.0 },
-  'Cu': { Kd_mn: -0.083, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
+  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 4.370, K_e: 1.0 },
+  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.00001, InertF: 0.40, aq_conc: 0.300, K_e: 1.0 },
+  'Cu': { Kd_mn: -0.083, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
 };
-const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.385, F: 0.01, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };
+const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };
 
 // Which element goes in which slot by default (before auto-detection)
 const TE_POSITION_ELEM = { 1: 'Ni', 2: 'Co' };
@@ -1432,10 +1840,10 @@ const KP_TOOLTIP_HTML = `
     X<sub>L</sub>, X<sub>F</sub>, and X<sub>I</sub> fractions.
   </div>`;
 
-function makeTEParamCard(n) {
+function makeTEParamCard(n, detectedElem) {
   const p = `te${n}`;
-  // Resolve element for this position, then look up element-specific defaults
-  const elem = TE_POSITION_ELEM[n] || TE_POSITION_FALLBACK;
+  // Use detected element if provided, otherwise fall back to position default
+  const elem = detectedElem || TE_POSITION_ELEM[n] || TE_POSITION_FALLBACK;
   const d = ELEM_DEFAULTS[elem] || ELEM_DEFAULT_FALLBACK;
   const mw = MOL_WT[elem] || 58.693;
   const kp = KP_DEFAULT[elem] !== undefined ? KP_DEFAULT[elem] : -1;
@@ -1493,9 +1901,20 @@ function makeTEParamCard(n) {
           </button>
         </div>
         <div id="${p}_dr_wrap" style="margin-bottom:8px">
-          <label style="font-size:11px;color:var(--muted)">Measured drip rate (drips min⁻¹)</label>
-          <input type="number" id="${p}_drip_rate" value="10" step="0.5" min="0.1"
-                 oninput="updateParamHints('${p}')" style="width:100%">
+          <div style="margin-top:4px">
+            <label style="font-size:11px;color:var(--muted)">
+              Calibration window — anchor to most recent
+              <strong id="${p}_cal_pct_label">5</strong>% of deposition
+            </label>
+            <div style="display:flex;gap:8px;align-items:center;margin-top:2px">
+              <span style="font-size:9px;color:var(--muted)">1%</span>
+              <input type="range" id="${p}_cal_pct" min="1" max="100" value="5" step="1"
+                     style="flex:1;accent-color:var(--accent)"
+                     oninput="document.getElementById('${p}_cal_pct_label').textContent=this.value;updateParamHints('${p}')">
+              <span style="font-size:9px;color:var(--muted)">100%</span>
+            </div>
+            <div id="${p}_cal_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          </div>
           <div id="${p}_dr_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1514,7 +1933,11 @@ function makeTEParamCard(n) {
           </div>
         </div>
       </div>
-      <div class="field"><label>K<sub>e</sub> — OMC dissociation rate (s⁻¹)</label>
+      <div class="field">
+        <label title="Partitioning efficiency multiplier on K₀. At K_e=1 the full thermodynamic Kp applies. Values <1 reduce effective partitioning (growth rate effects, surface saturation). Essentially Kp_effective = Kp × K_e — useful for keeping Kp at the published value while tuning empirically.">
+          K<sub>e</sub> — partition efficiency
+          <span style="color:var(--muted);font-weight:400;font-size:9px;cursor:help" title="K_e scales K₀ = Kp·Y_s·(Xa/Ya)·K_e. At 1.0 the thermodynamic Kp operates at full efficiency. Reduce below 1 to account for non-equilibrium growth, surface effects, or co-precipitation competition."> (?)</span>
+        </label>
         <input type="number" id="${p}_K_e" value="${d.K_e}" step="0.1" min="0.001"
                oninput="updateParamHints('${p}')"></div>
       <div class="field"><label>X<sub>F</sub> — Fast fraction</label>
@@ -1526,17 +1949,82 @@ function makeTEParamCard(n) {
       <div class="field"><label>X<sub>L</sub> — Labile (auto)</label>
         <input type="number" id="${p}_labile" value="${labile.toFixed(4)}" step="0.001" readonly
                style="opacity:0.6;cursor:not-allowed"></div>
-      <div class="field fullonly"><label>Aqueous concentration</label>
-        <input type="number" id="${p}_aq_conc" value="${d.aq_conc}" step="0.001"
-               oninput="updateParamHints('${p}')">
+      <div class="field fullonly" style="grid-column:1/-1">
+        <label style="font-size:11px;font-weight:600;color:var(--texthi);margin-bottom:6px">
+          Aqueous [<span id="${p}_aq_elem_label">${elem}</span>] concentration</label>
+        <div style="display:flex;gap:6px;margin-bottom:8px">
+          <button id="${p}-aq-mode-manual" class="mode-btn active"
+                  onclick="setAqMode('${p}','manual')">Manual</button>
+          <button id="${p}-aq-mode-csv" class="mode-btn"
+                  onclick="setAqMode('${p}','csv')">Monitoring CSV</button>
+        </div>
+        <!-- Manual path -->
+        <div id="${p}-aq-manual-block">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <label style="font-size:10px;color:var(--muted)">Mean</label>
+              <input type="number" id="${p}_aq_conc" value="${d.aq_conc}" step="0.001"
+                     oninput="updateParamHints('${p}');fitAqPriorFromManual('${p}')">
+            </div>
+            <div>
+              <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
+              <input type="number" id="${p}_aq_conc_sd" placeholder="blank = fixed"
+                     step="0.001" oninput="fitAqPriorFromManual('${p}')">
+            </div>
+          </div>
+          <select id="${p}_aq_unit" style="margin-top:4px;width:100%"
+                  onchange="updateParamHints('${p}');fitAqPriorFromManual('${p}')">
+            <option value="ppb" selected>ppb (µg/L)</option><option value="ppm">ppm (mg/L)</option>
+          </select>
+        </div>
+        <!-- CSV path -->
+        <div id="${p}-aq-csv-block" style="display:none">
+          <div class="dropzone" id="dz-${p}_aq"
+               ondragover="dzDrag(event,this)" ondragleave="dzLeave(this)"
+               ondrop="dzDrop(event,'${p}_aq',this)">
+            <input type="file" accept=".csv"
+                   onchange="dzFile(event,'${p}_aq',this.parentElement)">
+            <div class="dz-label">Drop <span class="${p}-aq-elem-dyn">${elem}</span> monitoring CSV</div>
+            <div class="dz-name" id="name-${p}_aq"></div>
+          </div>
+          <div id="${p}-aq-col-selector" style="display:none;margin-top:8px">
+            <label style="font-size:10px;color:var(--muted)">Concentration column</label>
+            <select id="${p}_aq_csv_col" onchange="fitAqPriorFromCsv('${p}')"
+                    style="width:100%;margin-bottom:4px"></select>
+            <label style="font-size:10px;color:var(--muted)">Unit in file</label>
+            <select id="${p}_aq_csv_unit" onchange="fitAqPriorFromCsv('${p}')" style="width:100%">
+              <option value="ppb" selected>ppb (µg/L)</option><option value="ppm">ppm (mg/L)</option>
+            </select>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;margin-bottom:4px">
+            <span style="font-size:10px;color:var(--muted)">Distribution fit</span>
+            <button id="${p}-dist-chart_toggle" onclick="toggleLogScale('${p}-dist-chart')"
+                    style="background:none;border:1px solid var(--border);color:var(--muted);
+                           border-radius:4px;cursor:pointer;font-size:10px;padding:2px 8px">Log x</button>
+          </div>
+          <div style="height:160px;display:none" id="${p}-dist-chart-wrap">
+            <canvas id="${p}-dist-chart"></canvas>
+          </div>
+          <div id="${p}-dist-desc" style="display:none;margin-top:8px;padding:8px 10px;
+               background:var(--bg);border:1px solid var(--border);border-radius:6px;font-size:10px"></div>
+        </div>
+        <!-- Prior summary -->
+        <div id="${p}-aq-prior-summary" style="font-size:10px;color:var(--muted);margin-top:6px;
+             padding:6px 8px;background:var(--bg);border:1px solid var(--border);
+             border-radius:4px;display:none"></div>
         <div id="${p}_aq_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
-        <select id="${p}_aq_unit" style="margin-top:4px;width:100%"
-                onchange="updateParamHints('${p}')">
-          <option value="ppb" selected>ppb  (µg/L)</option><option value="ppm">ppm  (mg/L)</option>
-          <option value="ug/g">µg/g  (≈ mg/L)</option><option value="mg/kg">mg/kg  (≈ mg/L)</option>
-        </select></div>
+      </div>
       <div class="field fullonly" style="grid-column:1/-1">
         <div id="${p}_pred_obs" style="font-size:10px;padding:6px 8px;background:var(--bg);border:1px solid var(--border);border-radius:4px;min-height:0"></div></div>
+      <!-- h(V) vs drip rate diagnostic chart -->
+      <div class="field fullonly" style="grid-column:1/-1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:10px;color:var(--muted)">Forward model h(V) vs data</span>
+        </div>
+        <div style="height:180px">
+          <canvas id="${p}_hv_chart"></canvas>
+        </div>
+      </div>
     </div></div>`;
 }
 
@@ -1546,11 +2034,15 @@ function renderTEParamCards() {
   if (!container) return;
   container.innerHTML = '';
   for (let i = 0; i < n; i++) {
-    container.insertAdjacentHTML('beforeend', makeTEParamCard(i + 1));
-    // Detect element from column name, fallback to position default
-    const fallbackElem = TE_POSITION_ELEM[i + 1] || TE_POSITION_FALLBACK;
-    const detectedElem = detectElemFromCol(teRowData[i]?.col) || fallbackElem;
-    updateMolWt(`te${i+1}`, detectedElem);
+    // Detect element from column name in the inputs section
+    const detectedElem = detectElemFromCol(teRowData[i]?.col) || null;
+    container.insertAdjacentHTML('beforeend', makeTEParamCard(i + 1, detectedElem));
+    // Apply defaults for the detected element
+    const finalElem = detectedElem || TE_POSITION_ELEM[i + 1] || TE_POSITION_FALLBACK;
+    // Set the dropdown to the detected element
+    const sel = document.getElementById(`te${i+1}_elem`);
+    if (sel) sel.value = finalElem;
+    updateMolWt(`te${i+1}`, finalElem);
     updateLabile(`te${i+1}`);
     updateTheoKp(`te${i+1}`);
   }
@@ -1600,14 +2092,32 @@ function populateColSelectors(key, columns) {
   wrap.querySelectorAll('select[id^="sel-"]').forEach(sel => {
     const role = sel.id.split('-').pop();
     sel.innerHTML = columns.map(c => `<option value="${c}">${c}</option>`).join('');
-    const guesses = {
-      depth:   ['depth','Depth','DEPTH','dist','Dist'],
-      age:     ['age','Age','AGE','yr_bp','yBP'],
-      age_err: ['error','Error','err','Err','sigma'],
+
+    // Auto-detect column: try exact match first, then case-insensitive substring
+    const exactGuesses = {
+      depth:   ['depth','Depth','DEPTH','dist','Dist','distance','Distance'],
+      age:     ['age','Age','AGE','yr_bp','yBP','age_BP','Age_BP','cal_age','CalAge'],
+      age_err: ['error','Error','err','Err','sigma','Sigma','age_err','uncertainty','sd','SD','1sd','2sd'],
       proxy:   columns.filter(c => !c.toLowerCase().includes('depth')),
     };
-    const g = (guesses[role] || []).find(h => columns.includes(h));
-    if (g) sel.value = g;
+    const substringGuesses = {
+      depth:   ['depth','dist'],
+      age:     ['age','yr','bp','ka'],
+      age_err: ['err','sigma','uncert','sd'],
+    };
+
+    let found = (exactGuesses[role] || []).find(h => columns.includes(h));
+    // If no exact match, try case-insensitive substring (skip depth-like cols for age)
+    if (!found && substringGuesses[role]) {
+      const subs = substringGuesses[role];
+      found = columns.find(c => {
+        const cl = c.toLowerCase();
+        if (role === 'age') return subs.some(s => cl.includes(s)) && !cl.includes('depth') && !cl.includes('dist');
+        if (role === 'age_err') return subs.some(s => cl.includes(s)) && !cl.includes('depth');
+        return subs.some(s => cl.includes(s));
+      });
+    }
+    if (found) sel.value = found;
     storeCol(key, role, sel.value);
   });
 }
@@ -1698,66 +2208,47 @@ function renderAgePlot() {
   const rawA = agePlotData[ageCol] || [];
   const rawE = errCol ? (agePlotData[errCol] || []) : [];
 
-  // Zip and filter to numeric pairs
-  const pts = rawD.map((d,i) => ({d: parseFloat(d), a: parseFloat(rawA[i]),
+  // Sanity check: if age values look like depths (max < 200) and depth values
+  // look like ages (max > 200), the columns are probably swapped
+  const maxA = rawA.reduce((m,v) => { const n=parseFloat(v); return isFinite(n)&&n>m?n:m; }, 0);
+  const maxD = rawD.reduce((m,v) => { const n=parseFloat(v); return isFinite(n)&&n>m?n:m; }, 0);
+  let useD = rawD, useA = rawA;
+  if (maxA < 200 && maxD > 200) {
+    console.warn('Age-depth auto-detect: columns appear swapped (age max=' + maxA + ', depth max=' + maxD + '). Swapping.');
+    useD = rawA; useA = rawD;
+  }
+
+  const pts = useD.map((d,i) => ({d: parseFloat(d), a: parseFloat(useA[i]),
                                    e: parseFloat(rawE[i]) || 0}))
-                  .filter(p => isFinite(p.d) && isFinite(p.a));
+                  .filter(p => isFinite(p.d) && isFinite(p.a) && p.d >= 0);
   if (pts.length === 0) return;
 
   pts.sort((a,b) => a.d - b.d);
   const depths = pts.map(p=>p.d), ages = pts.map(p=>p.a);
 
-  // Choose fit type
+  // Fit age=f(depth), then display as (age, depth) with depth on Y inverted
   const fitType = document.getElementById('age-fit-type')?.value || 'pchip';
   const fit = fitType === 'linear' ? linReg(depths, ages) : pchip(depths, ages);
 
-  // Depth grid for smooth curve — 300 pts across extended range
-  const dMin = depths[0], dMax = depths[depths.length-1];
+  const dMin = Math.max(0, depths[0]), dMax = depths[depths.length-1];
   const dSpan = dMax - dMin || 1;
-  const dExtMin = dMin - dSpan * 0.12;
-  const dExtMax = dMax + dSpan * 0.12;
+  const dExtMax = dMax + dSpan * 0.05;
   const N_CURVE = 300;
-  const dStep   = (dExtMax - dExtMin) / (N_CURVE - 1);
-  const curvePts = Array.from({length: N_CURVE}, (_, i) => {
-    const d = dExtMin + i * dStep;
-    return {x: d, y: fit ? fit.predict(d) : null};
-  }).filter(p => p.y !== null);
-
-  // Split into data-range (solid) and extrapolation (dashed) segments
-  const solidPts = curvePts.filter(p => p.x >= dMin && p.x <= dMax);
-  const extLoPts = curvePts.filter(p => p.x <  dMin);
-  const extHiPts = curvePts.filter(p => p.x >  dMax);
-  // Join extrapolation segments to the nearest data-range endpoint
-  if (solidPts.length) {
-    if (extLoPts.length) extLoPts.push(solidPts[0]);
-    if (extHiPts.length) extHiPts.unshift(solidPts[solidPts.length-1]);
+  const curvePts = [];
+  for (let i = 0; i < N_CURVE; i++) {
+    const d = dMin + i * (dExtMax - dMin) / (N_CURVE - 1);
+    const a = fit ? fit.predict(d) : null;
+    if (a !== null && isFinite(a)) curvePts.push({x: a, y: d});
   }
 
-  // Youngest and oldest ages in the actual data
-  const ageDataMin = Math.min(...ages);  // youngest — extrapolation must not go below this
-  const ageDataMax = Math.max(...ages);
+  const ageDataMin = ages.reduce((a,b) => a < b ? a : b, Infinity);
+  const ageDataMax = ages.reduce((a,b) => a > b ? a : b, -Infinity);
 
-  // Auto-populate age range from extrapolated endpoints,
-  // clamping ageMin so it never exceeds the shallowest dated age.
-  let ageMin, ageMax;
+  let ageMin = ageDataMin, ageMax = ageDataMax;
   if (fit) {
-    const predLo = fit.predict(dExtMin);
-    const predHi = fit.predict(dExtMax);
-    // Top of record: shallowest depth has smallest (youngest) age.
-    // Clamp the upper end of the visual extrapolation to ageDataMin.
-    ageMin = Math.round(Math.max(Math.min(predLo, predHi), ageDataMin));
-    ageMax = Math.round(Math.max(predLo, predHi));
-  } else {
+    const predMax = fit.predict(dExtMax);
+    if (isFinite(predMax)) ageMax = Math.round(Math.max(ageMax, predMax));
     ageMin = Math.round(ageDataMin);
-    ageMax = Math.round(ageDataMax);
-  }
-
-  // Also clip the visual extLoPts curve so it stops at ageDataMin
-  if (fit) {
-    // Remove any extrapolation points that predict age < ageDataMin
-    const extLoFiltered = extLoPts.filter(p => p.y >= ageDataMin);
-    extLoPts.length = 0;
-    extLoFiltered.forEach(p => extLoPts.push(p));
   }
 
   const extMin = document.getElementById('age-extrap-min');
@@ -1768,132 +2259,161 @@ function renderAgePlot() {
 
   const wrap = document.getElementById('age-plot-wrap');
   if (wrap) wrap.style.display = '';
-
   const ctx = document.getElementById('agePlotCanvas').getContext('2d');
   if (agePlotChart) agePlotChart.destroy();
 
-  // Build chart datasets
-  const scatterPts = pts.map(p => ({x: p.d, y: p.a}));
-  const errBars    = pts.map(p => ({x: p.d, y: p.a, e: p.e}));
-
   const datasets = [];
 
-  // Error bars
-  if (rawE.length) {
-    datasets.push({
-      label: '2σ error',
-      data: errBars,
-      type: 'scatter',
-      pointRadius: 0,
-      showLine: false,
-    });
+  // 2σ error envelope — polygon approach
+  if (errCol && agePlotData[errCol] && pts.some(p => p.e > 0)) {
+    const ePts = pts.filter(p => p.e > 0).sort((a,b) => a.d - b.d);
+    const envPts = [];
+    ePts.forEach(p => envPts.push({x: p.a + p.e * 2, y: p.d}));
+    [...ePts].reverse().forEach(p => envPts.push({x: p.a - p.e * 2, y: p.d}));
+    if (envPts.length >= 3) {
+      envPts.push({...envPts[0]}); // close polygon
+      datasets.push({
+        label: '2σ envelope',
+        data: envPts, type: 'line',
+        borderColor: 'rgba(76,201,160,0.2)',
+        backgroundColor: 'rgba(76,201,160,0.08)',
+        borderWidth: 1, pointRadius: 0, fill: true, tension: 0.2,
+      });
+    }
   }
 
-  // Solid fit line (within data range)
-  if (solidPts.length) {
+
+  // Fit line (solid within data, dashed extrapolation)
+  if (curvePts.length > 1) {
+    const solidPts = curvePts.filter(p => p.y >= dMin && p.y <= dMax);
+    const extPts   = curvePts.filter(p => p.y > dMax);
+    if (solidPts.length && extPts.length) extPts.unshift(solidPts[solidPts.length-1]);
+
     datasets.push({
       label: fitType === 'linear' ? 'Linear fit' : 'PCHIP spline',
-      data: solidPts,
-      type: 'line',
-      borderColor: 'rgba(76,201,160,0.7)',
-      borderWidth: 1.8,
-      pointRadius: 0,
-      fill: false,
-      tension: 0,
+      data: solidPts, type: 'line',
+      borderColor: 'rgba(76,201,160,0.7)', borderWidth: 1.8,
+      pointRadius: 0, fill: false, tension: 0,
     });
+    if (extPts.length > 1) {
+      datasets.push({
+        label: 'Extrapolation', data: extPts, type: 'line',
+        borderColor: 'rgba(180,180,180,0.5)', borderWidth: 1.5,
+        borderDash: [4,3], pointRadius: 0, fill: false, tension: 0,
+      });
+    }
   }
 
-  // Dashed extrapolation below data
-  if (extLoPts.length > 1) {
-    datasets.push({
-      label: 'Extrapolation',
-      data: extLoPts,
-      type: 'line',
-      borderColor: 'rgba(180,180,180,0.5)',
-      borderWidth: 1.5,
-      borderDash: [4,3],
-      pointRadius: 0,
-      fill: false,
-      tension: 0,
-    });
+  // Error bars (horizontal — age uncertainty at each depth)
+  if (errCol && agePlotData[errCol]) {
+    const errSegs = [];
+    for (const p of pts) {
+      if (p.e > 0) {
+        errSegs.push({x: p.a - p.e, y: p.d}, {x: p.a + p.e, y: p.d}, {x: NaN, y: NaN});
+      }
+    }
+    if (errSegs.length) {
+      datasets.push({
+        label: 'Age error (\u00b11\u03c3)',
+        data: errSegs, type: 'line',
+        borderColor: 'rgba(247,164,64,0.5)', borderWidth: 1.5,
+        pointRadius: 0, fill: false, spanGaps: false,
+      });
+    }
   }
 
-  // Dashed extrapolation above data
-  if (extHiPts.length > 1) {
-    datasets.push({
-      label: 'Extrapolation (hi)',
-      data: extHiPts,
-      type: 'line',
-      borderColor: 'rgba(180,180,180,0.5)',
-      borderWidth: 1.5,
-      borderDash: [4,3],
-      pointRadius: 0,
-      fill: false,
-      tension: 0,
-    });
-  }
-
+  // Dated points
   datasets.push({
     label: 'Dated points',
-    data: scatterPts,
+    data: pts.map(p => ({x: p.a, y: p.d})),
     type: 'scatter',
     backgroundColor: 'rgba(76,201,160,0.85)',
-    pointRadius: 5,
-    pointHoverRadius: 7,
+    pointRadius: 5, pointHoverRadius: 7,
   });
 
-  // Age-range shading plugin
+  // Age-range shading + hiatus exclusion zones (both on X axis)
   const shadingPlugin = {
     id: 'ageRangeShading',
     afterDraw(chart) {
-      const {ctx: c, chartArea: {left,right,top,bottom}, scales: {y}} = chart;
+      const {ctx: c, chartArea: {left,right,top,bottom}, scales: {x}} = chart;
+      // Age range band
       const mn = parseFloat(document.getElementById('calage_min')?.value);
       const mx = parseFloat(document.getElementById('calage_max')?.value);
-      if (!isFinite(mn) || !isFinite(mx)) return;
-      const yMn = y.getPixelForValue(mn), yMx = y.getPixelForValue(mx);
-      const yTop = Math.min(yMn, yMx), yBot = Math.max(yMn, yMx);
-      c.save();
-      c.fillStyle = 'rgba(76,201,160,0.07)';
-      c.fillRect(left, yTop, right-left, yBot-yTop);
-      c.strokeStyle = 'rgba(76,201,160,0.4)';
-      c.setLineDash([3,3]);
-      c.lineWidth = 1;
-      c.beginPath(); c.moveTo(left,yMn); c.lineTo(right,yMn); c.stroke();
-      c.beginPath(); c.moveTo(left,yMx); c.lineTo(right,yMx); c.stroke();
-      c.restore();
+      if (isFinite(mn) && isFinite(mx)) {
+        const xMn = x.getPixelForValue(mn), xMx = x.getPixelForValue(mx);
+        const xL = Math.min(xMn, xMx), xR = Math.max(xMn, xMx);
+        c.save();
+        c.fillStyle = 'rgba(76,201,160,0.07)';
+        c.fillRect(xL, top, xR-xL, bottom-top);
+        c.strokeStyle = 'rgba(76,201,160,0.4)';
+        c.setLineDash([3,3]); c.lineWidth = 1;
+        c.beginPath(); c.moveTo(xMn,top); c.lineTo(xMn,bottom); c.stroke();
+        c.beginPath(); c.moveTo(xMx,top); c.lineTo(xMx,bottom); c.stroke();
+        c.restore();
+      }
+      // Hiatus exclusion zones
+      if (typeof hiatusZones !== 'undefined' && hiatusZones.length > 0) {
+        c.save();
+        hiatusZones.forEach(z => {
+          const xF = x.getPixelForValue(z.from), xT = x.getPixelForValue(z.to);
+          const xL = Math.min(xF, xT), xR = Math.max(xF, xT);
+          c.fillStyle = 'rgba(255,80,80,0.12)';
+          c.fillRect(xL, top, xR-xL, bottom-top);
+          c.strokeStyle = 'rgba(255,80,80,0.4)';
+          c.setLineDash([2,2]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(xL,top); c.lineTo(xL,bottom); c.stroke();
+          c.beginPath(); c.moveTo(xR,top); c.lineTo(xR,bottom); c.stroke();
+          // Label
+          c.fillStyle = 'rgba(255,80,80,0.6)';
+          c.font = '9px Arial, sans-serif';
+          c.textAlign = 'center';
+          c.fillText('hiatus', (xL+xR)/2, top + 12);
+        });
+        c.restore();
+      }
     }
   };
 
-  agePlotChart = new Chart(ctx, {
-    data: {datasets},
-    options: {
-      animation: false,
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {display: false},
-        tooltip: {
-          callbacks: {
-            label: item => `depth ${item.parsed.x.toFixed(2)} cm → ${item.parsed.y.toFixed(0)} yrs BP`
+  try {
+    agePlotChart = new Chart(ctx, {
+      data: {datasets},
+      options: {
+        animation: false, responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color:'#8fa4b5', font:{size:10},
+            filter: item => !(item.text || '').startsWith('_') } },
+          tooltip: { callbacks: {
+            label: item => {
+              const y = item.parsed?.y, x = item.parsed?.x;
+              if (!isFinite(y) || !isFinite(x)) return '';
+              return y.toFixed(2) + ' ' + teDepthUnit + ' depth \u2192 ' + x.toFixed(0) + ' yrs BP';
+            }
+          }}
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            title: {display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:11}},
+            grid: {color:'rgba(255,255,255,0.05)'},
+            ticks: {color:'#8fa4b5', font:{size:10}},
+          },
+          y: {
+            type: 'linear',
+            reverse: true,
+            min: 0,
+            title: {display:true, text:'Depth (' + teDepthUnit + ')', color:'#8fa4b5', font:{size:11}},
+            grid: {color:'rgba(255,255,255,0.05)'},
+            ticks: {color:'#8fa4b5', font:{size:10}},
           }
         }
       },
-      scales: {
-        x: {
-          title: {display:true, text:'Depth (cm)', color:'#6e7f8d', font:{size:10}},
-          grid: {color:'rgba(255,255,255,0.05)'},
-          ticks: {color:'#6e7f8d', font:{size:10}},
-        },
-        y: {
-          title: {display:true, text:'Age (yrs BP)', color:'#6e7f8d', font:{size:10}},
-          grid: {color:'rgba(255,255,255,0.05)'},
-          ticks: {color:'#6e7f8d', font:{size:10}},
-        }
-      }
-    },
-    plugins: [shadingPlugin],
-  });
+      plugins: [shadingPlugin],
+    });
+  } catch(e) { console.error('Age plot chart error:', e); }
+  // Update growth rate chart
+  updateGrowthRate();
 }
+
 
 function applyAgeRange(minAge, maxAge) {
   const lo = Math.min(minAge, maxAge), hi = Math.max(minAge, maxAge);
@@ -1927,6 +2447,201 @@ function syncExtrapFromFields() {
 // ── Analysis mode ────────────────────────────────────────────────────────
 let analysisMode = 'full';
 
+// ── Growth rate & hiatus detection ──────────────────────────────────────
+let growthRateChart = null;
+let hiatusZones = [];  // [{from: ageMin, to: ageMax}, ...]
+let _lastGrowthData = null;  // {ages: [], rates: []}
+
+function computeGrowthRate() {
+  // Compute growth rate (mm/yr) from the current age-depth fit
+  if (!agePlotData) return null;
+  const depCol = document.getElementById('sel-depth_age-depth')?.value;
+  const ageCol = document.getElementById('sel-depth_age-age')?.value;
+  if (!depCol || !ageCol) return null;
+
+  const rawD = agePlotData[depCol] || [];
+  const rawA = agePlotData[ageCol] || [];
+  const maxA = rawA.reduce((m,v) => { const n=parseFloat(v); return isFinite(n)&&n>m?n:m; }, 0);
+  const maxD = rawD.reduce((m,v) => { const n=parseFloat(v); return isFinite(n)&&n>m?n:m; }, 0);
+  let useD = rawD, useA = rawA;
+  if (maxA < 200 && maxD > 200) { useD = rawA; useA = rawD; }
+
+  const pts = useD.map((d,i) => ({d: parseFloat(d), a: parseFloat(useA[i])}))
+                  .filter(p => isFinite(p.d) && isFinite(p.a) && p.d >= 0);
+  if (pts.length < 2) return null;
+  pts.sort((a,b) => a.d - b.d);
+  const depths = pts.map(p=>p.d), ages = pts.map(p=>p.a);
+
+  const fitType = document.getElementById('age-fit-type')?.value || 'pchip';
+  const fit = fitType === 'linear' ? linReg(depths, ages) : pchip(depths, ages);
+  if (!fit) return null;
+
+  // Compute growth rate at regular age intervals
+  const ageMin = ages.reduce((a,b)=>a<b?a:b, Infinity);
+  const ageMax = ages.reduce((a,b)=>a>b?a:b, -Infinity);
+  const nPts = 200;
+  const dMin = Math.max(0, depths[0]), dMax = depths[depths.length-1];
+  const result = {ages: [], rates: [], depths: []};
+
+  for (let i = 0; i < nPts; i++) {
+    const d = dMin + i * (dMax - dMin) / (nPts - 1);
+    const age = fit.predict(d);
+    // Numerical derivative: dDepth/dAge ≈ Δd/Δa
+    const dd = 0.01;
+    const ageP = fit.predict(d + dd);
+    const dAge = ageP - age;
+    // Growth rate in mm/yr (depth unit assumed cm unless mm detected)
+    const depthMM = teDepthUnit === 'mm' ? dd : dd * 10;
+    const rateMMperYr = dAge !== 0 ? Math.abs(depthMM / dAge) : 0;
+    result.ages.push(age);
+    result.rates.push(rateMMperYr);
+    result.depths.push(d);
+  }
+  return result;
+}
+
+function updateGrowthRate() {
+  _lastGrowthData = computeGrowthRate();
+  renderGrowthRateChart();
+}
+
+function renderGrowthRateChart() {
+  const data = _lastGrowthData;
+  const canvas = document.getElementById('growthRateCanvas');
+  if (!canvas || !data) return;
+  if (growthRateChart) growthRateChart.destroy();
+
+  const threshold = parseFloat(document.getElementById('hiatus-threshold')?.value) || 0.005;
+  const ratePts = data.ages.map((a, i) => ({x: a, y: data.rates[i]}));
+
+  // Highlight below-threshold regions
+  const belowPts = ratePts.map(p => ({x: p.x, y: p.y < threshold ? p.y : null}));
+
+  const datasets = [
+    { label: 'Growth rate',
+      data: ratePts, type: 'line',
+      borderColor: 'rgba(76,201,160,0.8)', borderWidth: 1.5,
+      pointRadius: 0, fill: false, tension: 0.3, yAxisID: 'y' },
+    { label: 'Below threshold',
+      data: belowPts, type: 'line',
+      borderColor: 'rgba(255,80,80,0.7)', backgroundColor: 'rgba(255,80,80,0.15)',
+      borderWidth: 1.5, pointRadius: 0, fill: true, tension: 0.3,
+      spanGaps: false, yAxisID: 'y' },
+    { label: 'Threshold',
+      data: [{x: data.ages[0], y: threshold}, {x: data.ages[data.ages.length-1], y: threshold}],
+      type: 'line', borderColor: 'rgba(255,160,50,0.5)', borderWidth: 1,
+      borderDash: [4,3], pointRadius: 0, fill: false, yAxisID: 'y' },
+  ];
+
+  // Highlight exclusion zones
+  hiatusZones.forEach((z, zi) => {
+    datasets.push({
+      label: zi === 0 ? 'Exclusion zones' : '_ez' + zi,
+      data: [{x: z.from, y: 0}, {x: z.from, y: threshold * 3}, {x: z.to, y: threshold * 3}, {x: z.to, y: 0}],
+      type: 'line', borderColor: 'rgba(255,80,80,0.3)',
+      backgroundColor: 'rgba(255,80,80,0.08)',
+      borderWidth: 1, pointRadius: 0, fill: true, tension: 0,
+    });
+  });
+
+  growthRateChart = new Chart(canvas, {
+    data: {datasets},
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#8fa4b5', font:{size:10},
+        filter: item => !(item.text || '').startsWith('_') } } },
+      scales: {
+        x: { type: 'linear',
+             title: {display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:10}},
+             ticks: {color:'#8fa4b5', font:{size:10}},
+             grid: {color:'rgba(255,255,255,0.04)'} },
+        y: { type: 'linear', min: 0,
+             title: {display:true, text:'Growth rate (mm/yr)', color:'#8fa4b5', font:{size:10}},
+             ticks: {color:'#8fa4b5', font:{size:10}},
+             grid: {color:'rgba(255,255,255,0.04)'} },
+      }
+    }
+  });
+}
+
+function autoDetectHiatuses() {
+  const data = _lastGrowthData || computeGrowthRate();
+  if (!data) return;
+  const threshold = parseFloat(document.getElementById('hiatus-threshold')?.value) || 0.005;
+
+  // Find contiguous age intervals where growth rate < threshold
+  hiatusZones = [];
+  let inHiatus = false, startAge = 0;
+  for (let i = 0; i < data.ages.length; i++) {
+    const below = data.rates[i] < threshold;
+    if (below && !inHiatus) {
+      inHiatus = true;
+      startAge = data.ages[i];
+    } else if (!below && inHiatus) {
+      inHiatus = false;
+      hiatusZones.push({from: Math.round(startAge), to: Math.round(data.ages[i])});
+    }
+  }
+  if (inHiatus) {
+    hiatusZones.push({from: Math.round(startAge), to: Math.round(data.ages[data.ages.length-1])});
+  }
+
+  renderHiatusZoneList();
+  renderGrowthRateChart();
+  // Also re-render the age-depth chart to show zone overlays
+  renderAgePlot();
+}
+
+function addHiatusZone() {
+  hiatusZones.push({from: 0, to: 1000});
+  renderHiatusZoneList();
+  renderGrowthRateChart();
+}
+
+function removeHiatusZone(idx) {
+  hiatusZones.splice(idx, 1);
+  renderHiatusZoneList();
+  renderGrowthRateChart();
+  renderAgePlot();
+}
+
+function updateHiatusZone(idx, field, value) {
+  hiatusZones[idx][field] = parseFloat(value) || 0;
+  renderGrowthRateChart();
+  renderAgePlot();
+}
+
+function renderHiatusZoneList() {
+  const list = document.getElementById('hiatus-zone-list');
+  const hint = document.getElementById('hiatus-zone-hint');
+  if (!list) return;
+
+  if (hiatusZones.length === 0) {
+    list.innerHTML = '';
+    if (hint) hint.style.display = '';
+    return;
+  }
+  if (hint) hint.style.display = 'none';
+
+  list.innerHTML = hiatusZones.map((z, i) => `
+    <div style="display:grid;grid-template-columns:1fr 1fr 28px;gap:6px;align-items:end;margin-bottom:6px">
+      <div>
+        <label style="font-size:10px;color:var(--muted)">From (yrs BP)</label>
+        <input type="number" value="${z.from}" style="width:100%"
+               oninput="updateHiatusZone(${i},'from',this.value)">
+      </div>
+      <div>
+        <label style="font-size:10px;color:var(--muted)">To (yrs BP)</label>
+        <input type="number" value="${z.to}" style="width:100%"
+               oninput="updateHiatusZone(${i},'to',this.value)">
+      </div>
+      <button onclick="removeHiatusZone(${i})"
+              style="background:none;border:1px solid var(--border);color:var(--muted);
+                     border-radius:4px;cursor:pointer;font-size:14px;height:32px;width:28px;
+                     line-height:1;padding:0;align-self:end" title="Remove">×</button>
+    </div>`).join('');
+}
+
 function setAnalysisMode(mode) {
   analysisMode = mode;
   const isFull = mode === 'full';
@@ -1958,6 +2673,7 @@ function initPreprocessing(rawData, depthCol, rowCount) {
   teRawData  = rawData;
   teRawDepth = (rawData[depthCol] || []).map(Number).filter(isFinite);
   teRawN     = rowCount;
+  detectDepthUnit(depthCol);
   document.getElementById('te-target-n').value  = Math.round(rowCount / 5);
   document.getElementById('te-target-n').max    = rowCount;
   document.getElementById('te-row-badge').textContent = `${rowCount} rows uploaded`;
@@ -1993,56 +2709,174 @@ function windowedSigmaClip(arr, sigma, win) {
   return flags;
 }
 
+const TE_CHART_COLORS = [
+  {bg:'rgba(76,201,160,0.5)', border:'rgba(76,201,160,0.8)', outlier:'rgba(255,100,100,0.7)'},
+  {bg:'rgba(247,164,64,0.5)', border:'rgba(247,164,64,0.8)', outlier:'rgba(200,80,40,0.7)'},
+  {bg:'rgba(168,85,247,0.5)', border:'rgba(168,85,247,0.8)', outlier:'rgba(220,60,180,0.7)'},
+  {bg:'rgba(96,165,250,0.5)', border:'rgba(96,165,250,0.8)', outlier:'rgba(60,100,200,0.7)'},
+];
+
 function updatePreviewChart() {
-  // Show first configured proxy column as scatter; highlight sigma outliers
-  const proxyCol = teRowData[0]?.col;
-  if (!proxyCol || !teRawData[proxyCol]) return;
-  const raw = teRawData[proxyCol].map(Number);
+  // Show ALL configured TE columns stacked with different colors
   const dep = teRawDepth;
-  if (!raw.length || raw.length !== dep.length) return;
+  if (!dep.length) return;
 
   const sigma   = parseFloat(document.getElementById('te-sigma').value) || 3;
   const targetN = parseInt(document.getElementById('te-target-n').value) || teRawN;
   const winSize = parseInt(document.getElementById('te-winsize').value) || 0;
+  const step    = Math.max(1, Math.round(teRawN / targetN));
 
-  // Windowed (or global) sigma-clip
-  const isOutlier = windowedSigmaClip(raw, sigma, winSize);
+  const datasets = [];
+  let totalOut = 0;
+  const perTeStats = [];
 
-  // Block-average positions (just show midpoints)
-  const step = Math.max(1, Math.round(teRawN / targetN));
-  const kept = [], ktd = [], out = [], outd = [];
-  raw.forEach((v, i) => {
-    if (!isFinite(v)) return;
-    if (isOutlier[i]) { out.push({x: dep[i], y: v}); return; }
-    if (i % step === 0) ktd.push({x: dep[i], y: v});
+  teRowData.forEach((r, ti) => {
+    const col = r.col;
+    if (!col || !teRawData[col]) return;
+    const raw = teRawData[col].map(Number);
+    if (raw.length !== dep.length) return;
+    const isOutlier = windowedSigmaClip(raw, sigma, winSize);
+    const c = TE_CHART_COLORS[ti % TE_CHART_COLORS.length];
+    const elem = detectElemFromCol(col) || `TE${ti+1}`;
+    const ktd = [], out = [];
+    raw.forEach((v, i) => {
+      if (!isFinite(v)) return;
+      if (isOutlier[i]) { out.push({x: dep[i], y: v}); return; }
+      if (i % step === 0) ktd.push({x: dep[i], y: v});
+    });
+    totalOut += out.length;
+    perTeStats.push({elem, nOut: out.length, nKept: ktd.length});
+    datasets.push({ label: `${elem} kept`, data: ktd,
+      backgroundColor: c.bg, pointRadius: 2, pointHoverRadius: 4 });
+    if (out.length) datasets.push({ label: `${elem} outlier`, data: out,
+      backgroundColor: c.outlier, borderColor: c.outlier, pointRadius: 3,
+      pointStyle: 'crossRot' });
   });
 
+  if (!datasets.length) return;
   const ctx = document.getElementById('te-preview-chart').getContext('2d');
   if (tePreviewChart) tePreviewChart.destroy();
   tePreviewChart = new Chart(ctx, {
-    type: 'scatter',
-    data: { datasets: [
-      { label: 'Kept', data: ktd,
-        backgroundColor: 'rgba(76,201,160,0.5)', pointRadius: 2, pointHoverRadius: 4 },
-      { label: 'Outlier (σ-clip)', data: out,
-        backgroundColor: 'rgba(255,80,80,0.7)', pointRadius: 3 },
-    ]},
+    type: 'scatter', data: { datasets },
     options: {
       animation: false, responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { labels: { color:'#6e7f8d', font:{size:9} } } },
+      plugins: { legend: { labels: { color:'#8fa4b5', font:{size:10} } } },
       scales: {
-        x: { ticks:{color:'#6e7f8d',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'},
-             title:{display:true,text:'Depth (cm)',color:'#6e7f8d',font:{size:9}} },
-        y: { ticks:{color:'#6e7f8d',font:{size:9}}, grid:{color:'rgba(255,255,255,0.04)'} }
+        x: { ticks:{color:'#8fa4b5',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'},
+             title:{display:true,text:`Depth (${teDepthUnit})`,color:'#8fa4b5',font:{size:10}} },
+        y: { ticks:{color:'#8fa4b5',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'},
+             title:{display:true,text:'Concentration',color:'#8fa4b5',font:{size:10}} }
       }
     }
   });
-
-  const nOut = out.length;
-  const nFinal = Math.round((teRawN - nOut) / Math.max(1, step));
-  document.getElementById('te-row-badge').textContent =
-    `${teRawN} rows → ~${nFinal} after preprocessing (${nOut} σ-outliers)`;
+  const nFinal = Math.round((teRawN - totalOut) / Math.max(1, step));
+  const perDetail = perTeStats.map(s => `${s.elem}: ${s.nOut} outliers`).join(' · ');
+  document.getElementById('te-row-badge').innerHTML =
+    `${teRawN} rows \u2192 ~${nFinal} after preprocessing<br>` +
+    `<span style="font-size:9px">${perDetail}</span>`;
   updateRuntimeEstimate();
+}
+
+// ── TE scatter plot ──────────────────────────────────────────────────────
+let teScatterChart = null;
+
+function populateScatterSelectors() {
+  const panel = document.getElementById('te-scatter-panel');
+  if (!panel) return;
+  if (teRowData.length < 2) { panel.style.display = 'none'; return; }
+  panel.style.display = '';
+  const selX = document.getElementById('te-scatter-x');
+  const selY = document.getElementById('te-scatter-y');
+  if (!selX || !selY) return;
+  const opts = teRowData.map((r,i) => {
+    const elem = detectElemFromCol(r.col) || `TE${i+1}`;
+    return `<option value="${r.col}">${elem} (${r.col})</option>`;
+  }).join('');
+  selX.innerHTML = opts;
+  selY.innerHTML = opts;
+  if (teRowData.length >= 2) { selX.selectedIndex = 0; selY.selectedIndex = 1; }
+  updateScatterPlot();
+}
+
+function updateScatterPlot() {
+  const colX = document.getElementById('te-scatter-x')?.value;
+  const colY = document.getElementById('te-scatter-y')?.value;
+  const fitType = document.getElementById('te-scatter-fit')?.value || 'none';
+  if (!colX || !colY || colX === colY || !teRawData[colX] || !teRawData[colY]) return;
+
+  const xRaw = teRawData[colX].map(Number);
+  const yRaw = teRawData[colY].map(Number);
+  const pts = [];
+  for (let i = 0; i < Math.min(xRaw.length, yRaw.length); i++) {
+    if (isFinite(xRaw[i]) && isFinite(yRaw[i])) pts.push({x: xRaw[i], y: yRaw[i]});
+  }
+  if (pts.length < 3) return;
+
+  // Compute Pearson r
+  const xs = pts.map(p=>p.x), ys = pts.map(p=>p.y);
+  const n = xs.length;
+  const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
+  let sxx=0, syy=0, sxy=0;
+  for (let i=0;i<n;i++){sxx+=(xs[i]-mx)**2;syy+=(ys[i]-my)**2;sxy+=(xs[i]-mx)*(ys[i]-my);}
+  const r = sxy / Math.sqrt(sxx*syy);
+  const r2 = r*r;
+
+  const datasets = [
+    { label: 'Data', data: pts, type: 'scatter',
+      backgroundColor: 'rgba(76,201,160,0.4)', pointRadius: 2, pointHoverRadius: 4 },
+  ];
+
+  // Fit line
+  if (fitType === 'linear' && sxx > 0) {
+    const slope = sxy/sxx, inter = my - slope*mx;
+    const xMin = Math.min(...xs), xMax = Math.max(...xs);
+    datasets.push({ label: `Linear (r\u00b2=${r2.toFixed(3)})`,
+      data: [{x:xMin,y:slope*xMin+inter},{x:xMax,y:slope*xMax+inter}],
+      type: 'line', borderColor:'#f7a440', borderWidth:2, pointRadius:0, fill:false });
+  } else if (fitType === 'exp') {
+    // ln(y) = a + b*x → y = exp(a)*exp(b*x)
+    const lnys = ys.map(y => y > 0 ? Math.log(y) : NaN).filter(isFinite);
+    const validPts = pts.filter(p => p.y > 0);
+    if (validPts.length > 3) {
+      const vx = validPts.map(p=>p.x), vly = validPts.map(p=>Math.log(p.y));
+      const vmx = vx.reduce((a,b)=>a+b,0)/vx.length, vmy = vly.reduce((a,b)=>a+b,0)/vly.length;
+      let vss=0,vsp=0;
+      for(let i=0;i<vx.length;i++){vss+=(vx[i]-vmx)**2;vsp+=(vx[i]-vmx)*(vly[i]-vmy);}
+      if (vss>0) {
+        const b=vsp/vss, a=vmy-b*vmx;
+        const xMin=Math.min(...vx), xMax=Math.max(...vx);
+        const curve = Array.from({length:50},(_,i)=>{
+          const x=xMin+i*(xMax-xMin)/49; return {x, y:Math.exp(a+b*x)};});
+        datasets.push({ label: `Exp fit (r\u00b2=${r2.toFixed(3)})`,
+          data: curve, type: 'line', borderColor:'#a855f7', borderWidth:2,
+          pointRadius:0, fill:false, tension:0.3 });
+      }
+    }
+  }
+
+  const canvas = document.getElementById('te-scatter-chart');
+  if (!canvas) return;
+  if (teScatterChart) teScatterChart.destroy();
+  const elemX = detectElemFromCol(colX) || colX;
+  const elemY = detectElemFromCol(colY) || colY;
+  teScatterChart = new Chart(canvas, {
+    data: { datasets },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#8fa4b5', font:{size:10} } } },
+      scales: {
+        x: { title:{display:true,text:elemX,color:'#8fa4b5',font:{size:11}},
+             ticks:{color:'#8fa4b5',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} },
+        y: { title:{display:true,text:elemY,color:'#8fa4b5',font:{size:11}},
+             ticks:{color:'#8fa4b5',font:{size:10}}, grid:{color:'rgba(255,255,255,0.04)'} },
+      }
+    }
+  });
+  document.getElementById('te-scatter-stats').innerHTML =
+    `n=${n} · Pearson r = <strong>${r.toFixed(3)}</strong> · r\u00b2 = <strong>${r2.toFixed(3)}</strong>` +
+    (r > 0.5 ? ' · <span style="color:var(--accent)">positive correlation — consistent with shared drip rate control</span>'
+     : r < -0.3 ? ' · <span style="color:#ffa032">negative correlation — different processes likely dominate</span>'
+     : ' · <span style="color:var(--muted)">weak correlation — limited evidence for shared drip rate control</span>');
 }
 
 function applyPreprocessing() {
@@ -2151,10 +2985,12 @@ function buildSummary() {
     ['Cal. age range',   v('calage_min') + ' – ' + v('calage_max') + ' yrs BP'],
     ...teRows,
     ['Cave temp',        v('temp_C') + ' °C'],
+    ['Drip rate',        v('global_drip_rate') + ' drips/min'],
     ['Ca conc',          v('ca_conc') + ' ' + (document.getElementById('ca_unit')?.value||'ppb')],
     ['Realisations',     document.getElementById('generate_realisations')?.checked
                          ? v('n_realisations') : 'skipped'],
     ['Use cached proxy', document.getElementById('use_cached_proxy').checked ? 'Yes' : 'No'],
+    ['V grid',           `V_max=${v('v_max')} drips/min, V_res=${v('v_res')}`],
   ];
   document.getElementById('summaryContent').innerHTML =
     rows.map(([k,val]) =>
@@ -2196,6 +3032,15 @@ function runSanityChecks() {
     const n = i + 1;
     const p = `te${n}`;
 
+    // 0. Depth unit mismatch info
+    const daUnit = document.getElementById('da-depth-unit-sel')?.value || 'cm';
+    if (i === 0 && daUnit !== teDepthUnit) {
+      warnings.push({level: 'warn', html: warnHtml('warn',
+        'Depth unit conversion active',
+        `Depth/age CSV is in <strong>${daUnit}</strong> but TE data is in <strong>${teDepthUnit}</strong>. ` +
+        `TE depths will be automatically converted to ${daUnit} before processing.`)});
+    }
+
     // 1. Predicted vs observed speleothem concentration (model-correct)
     if (mode === 'full') {
       const aqVal    = parseFloat(document.getElementById(`${p}_aq_conc`)?.value) || 0;
@@ -2211,7 +3056,7 @@ function runSanityChecks() {
       const kpVal    = parseFloat(document.getElementById(`${p}_Kp`)?.value);
       const kpEff    = (kpVal === -1 || !isFinite(kpVal))
                        ? (THEO_KP[document.getElementById(`${p}_elem`)?.value] || 1) : kpVal;
-      const vRef     = getVRef(p);
+      const vRef     = getVRef();
       const tau      = 60.0 / vRef;
       const nS       = 1.0 - xf;
       const kd       = Math.exp(kdMn);
@@ -2325,6 +3170,8 @@ function collectParams() {
     col_depth:      cm.depth_age?.depth   || '',
     col_age:        cm.depth_age?.age     || '',
     col_age_err:    cm.depth_age?.age_err || '',
+    da_depth_unit:  document.getElementById('da-depth-unit-sel')?.value || 'cm',
+    te_depth_unit:  teDepthUnit,
     // TE list — one entry per configured trace element row
     te_list: teRowData.map(r => ({col_depth: teDepthCol, col_proxy: r.col, unit: r.unit})),
     // TE param cards (te1_, te2_, te3_, ... collected dynamically)
@@ -2332,7 +3179,7 @@ function collectParams() {
       const out = {};
       for (let i = 1; i <= teRowData.length; i++) {
         const p = `te${i}`;
-        ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','drip_rate','F','InertF','labile','aq_conc','aq_unit'].forEach(f => {
+        ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','cal_pct','F','InertF','labile','aq_conc','aq_unit'].forEach(f => {
           const el = document.getElementById(`${p}_${f}`);
           if (el) out[`${p}_${f}`] = el.value;
         });
@@ -2344,13 +3191,37 @@ function collectParams() {
     iso_col_proxy:  cm.isotope1?.proxy || '',
     // cave
     temp_C:   v('temp_C'),
+    global_drip_rate: v('global_drip_rate'),
     ca_conc:      v('ca_conc'),
     ca_unit:      document.getElementById('ca_unit')?.value || 'ppb',
+    // Concentration priors (stochastic mode)
+    ...(() => {
+      const out = {};
+      const caPr = concentrationPriors['ca'];
+      if (caPr) {
+        out['ca_prior_mu_ln']    = caPr.mu_ln;
+        out['ca_prior_sigma_ln'] = caPr.sigma_ln;
+        out['ca_prior_source']   = 'manual';
+      }
+      teRowData.forEach((_, i) => {
+        const p  = `te${i+1}`;
+        const pr = concentrationPriors[p];
+        if (pr) {
+          out[`${p}_prior_mu_ln`]    = pr.mu_ln;
+          out[`${p}_prior_sigma_ln`] = pr.sigma_ln;
+          out[`${p}_prior_source`]   = 'manual';
+        }
+      });
+      return out;
+    })(),
     // output
     n_realisations:       v('n_realisations'),
     rng_seed:             v('rng_seed'),
     generate_realisations: document.getElementById('generate_realisations')?.checked ?? true,
     analysis_mode:        analysisMode,
+    v_max:                parseFloat(document.getElementById('v_max')?.value) || 100,
+    v_res:                parseInt(document.getElementById('v_res')?.value) || 5000,
+    hiatus_zones:         hiatusZones.filter(z => z.from !== z.to),
     outlier_win_size:     parseInt(document.getElementById('te-winsize')?.value) || 50,
     semi_anchor:          v('semi_anchor'),
     semi_ref_min:         v('semi_ref_min'),
@@ -2402,6 +3273,18 @@ function pollStatus() {
         document.getElementById('resultsBtn').style.display = 'inline-flex';
         document.getElementById('badgeResults').style.display = 'inline';
         refreshDownloads(s.outputs);
+        // Load PDF heatmap data
+        fetch('/download/pdf_heatmap.json').then(r=>r.ok?r.json():null).then(d => {
+          if (d) { window._pdfHeatmapData = d; renderPdfHeatmap(); }
+        }).catch(()=>{});
+        // Load age model data
+        fetch('/download/age_model.json').then(r=>r.ok?r.json():null).then(d => {
+          if (d) { window._ageModelData = d; renderAgeModelChart(); }
+        }).catch(()=>{});
+        // Load hiatus zones from chart_data for results overlays
+        fetch('/chart_data').then(r=>r.ok?r.json():null).then(d => {
+          if (d && d.hiatus_zones) window._chartDataHiatusZones = d.hiatus_zones;
+        }).catch(()=>{});
       }
     }
   });
@@ -2431,13 +3314,16 @@ function setStatus(state, label) {
 let sfChart = null;
 
 function switchResultTab(name) {
-  ['ts','sf'].forEach(t => {
+  ['ts','sf','pdf','age'].forEach(t => {
     document.getElementById(`rtab-${t}`).style.display = t===name ? '' : 'none';
     const btn = document.getElementById(`tab-${t}`);
     btn.style.borderBottomColor = t===name ? 'var(--accent)' : 'transparent';
     btn.style.color = t===name ? 'var(--texthi)' : 'var(--muted)';
   });
   if (name==='sf') loadSFChart();
+  // Defer canvas renders to next frame so container has non-zero dimensions after display change
+  if (name==='pdf') requestAnimationFrame(() => renderPdfHeatmap());
+  if (name==='age') requestAnimationFrame(() => renderAgeModelChart());
 }
 
 function loadSFChart() {
@@ -2446,7 +3332,7 @@ function loadSFChart() {
     if (d.mode === 'semi') {
       const ctx = document.getElementById('sfChart').getContext('2d');
       if (sfChart) sfChart.destroy();
-      ctx.font = '13px DM Mono, monospace';
+      ctx.font = '13px Arial, sans-serif';
       ctx.fillStyle = '#6e7f8d';
       ctx.textAlign = 'center';
       const h = ctx.canvas.height;
@@ -2533,15 +3419,15 @@ function loadSFChart() {
           x: {
             min: 0, max: 3,
             title: {display:true, text:'Coefficient of Variation (CV = σ/μ)',
-                    color:'#6e7f8d', font:{size:11}},
-            ticks: {color:'#6e7f8d', font:{size:10}},
+                    color:'#8fa4b5', font:{size:11}},
+            ticks: {color:'#8fa4b5', font:{size:10}},
             grid:  {color:'rgba(255,255,255,0.05)'},
           },
           y: {
             min: 0, max: 60,
             title: {display:true, text:'Mean drip rate (drips min⁻¹)',
-                    color:'#6e7f8d', font:{size:11}},
-            ticks: {color:'#6e7f8d', font:{size:10}},
+                    color:'#8fa4b5', font:{size:11}},
+            ticks: {color:'#8fa4b5', font:{size:10}},
             grid:  {color:'rgba(255,255,255,0.05)'},
           }
         }
@@ -2580,103 +3466,309 @@ function loadChart() {
     if (d.error) return;
     const ctx = document.getElementById('dripChart').getContext('2d');
     if (chart) chart.destroy();
+
+    // Build {x, y} point arrays, using null for NaN to create gaps
+    const mkPts = arr => d.age.map((a, i) => {
+      const v = arr[i];
+      return {x: a, y: (v === null || v === undefined || !isFinite(v)) ? null : v};
+    });
+
+    // Hiatus zone overlay plugin
+    const tsHiatusPlugin = {
+      id: 'tsHiatus',
+      afterDraw(chart) {
+        const zones = d.hiatus_zones || [];
+        if (!zones.length) return;
+        const {ctx: c, chartArea: {left,right,top,bottom}, scales: {x}} = chart;
+        c.save();
+        zones.forEach(z => {
+          const xF = x.getPixelForValue(z.from), xT = x.getPixelForValue(z.to);
+          const xL = Math.min(xF, xT), xR = Math.max(xF, xT);
+          c.fillStyle = 'rgba(255,80,80,0.1)';
+          c.fillRect(xL, top, xR-xL, bottom-top);
+          c.strokeStyle = 'rgba(255,80,80,0.3)';
+          c.setLineDash([2,2]); c.lineWidth = 1;
+          c.beginPath(); c.moveTo(xL,top); c.lineTo(xL,bottom); c.stroke();
+          c.beginPath(); c.moveTo(xR,top); c.lineTo(xR,bottom); c.stroke();
+          c.fillStyle = 'rgba(255,80,80,0.5)'; c.font = '10px Arial';
+          c.textAlign = 'center';
+          c.fillText('hiatus', (xL+xR)/2, top + 14);
+        });
+        c.restore();
+      }
+    };
+
     chart = new Chart(ctx, {
       type: 'line',
       data: {
-        labels: d.age,
         datasets: [
-          {
-            label: 'pc95–pc05 range',
-            data: d.pc95,
-            fill: '-1',
-            backgroundColor: 'rgba(76,201,160,0.08)',
-            borderColor: 'transparent',
-            pointRadius: 0,
-            tension: 0.3,
-          },
-          {
-            label: 'pc05',
-            data: d.pc05,
-            borderColor: 'rgba(76,201,160,0.25)',
-            borderWidth: 1,
-            pointRadius: 0,
-            fill: false,
-            tension: 0.3,
-          },
-          {
-            label: 'IQR (25–75)',
-            data: d.pc75,
-            fill: '+1',
-            backgroundColor: 'rgba(76,201,160,0.15)',
-            borderColor: 'transparent',
-            pointRadius: 0,
-            tension: 0.3,
-          },
-          {
-            label: 'pc25',
-            data: d.pc25,
-            borderColor: 'rgba(76,201,160,0.35)',
-            borderWidth: 1,
-            pointRadius: 0,
-            fill: false,
-            tension: 0.3,
-          },
-          {
-            label: 'Median',
-            data: d.pc50,
-            borderColor: '#4cc9a0',
-            borderWidth: 2,
-            pointRadius: 0,
-            fill: false,
-            tension: 0.3,
-          },
-          ...(d.kd_lo && d.kd_hi ? [{
-            label: 'Kd −1σ',
-            data: d.kd_lo,
-            borderColor: 'rgba(200,180,80,0.45)',
-            borderWidth: 1,
-            borderDash: [3, 3],
-            pointRadius: 0,
-            fill: false,
-            tension: 0.3,
-          }, {
-            label: 'Kd +1σ',
-            data: d.kd_hi,
-            borderColor: 'rgba(200,180,80,0.45)',
-            borderWidth: 1,
-            borderDash: [3, 3],
-            pointRadius: 0,
-            fill: false,
-            tension: 0.3,
-          }] : []),
+          { label: 'pc95\u2013pc05 range', data: mkPts(d.pc95), fill: '-1',
+            backgroundColor: 'rgba(76,201,160,0.08)', borderColor: 'transparent',
+            pointRadius: 0, tension: 0.3, spanGaps: false },
+          { label: 'pc05', data: mkPts(d.pc05), borderColor: 'rgba(76,201,160,0.25)',
+            borderWidth: 1, pointRadius: 0, fill: false, tension: 0.3, spanGaps: false },
+          { label: 'IQR (25\u201375)', data: mkPts(d.pc75), fill: '+1',
+            backgroundColor: 'rgba(76,201,160,0.15)', borderColor: 'transparent',
+            pointRadius: 0, tension: 0.3, spanGaps: false },
+          { label: 'pc25', data: mkPts(d.pc25), borderColor: 'rgba(76,201,160,0.35)',
+            borderWidth: 1, pointRadius: 0, fill: false, tension: 0.3, spanGaps: false },
+          { label: 'Median', data: mkPts(d.pc50), borderColor: '#4cc9a0',
+            borderWidth: 2, pointRadius: 0, fill: false, tension: 0.3, spanGaps: false },
+          ...(d.kd_lo && d.kd_hi ? [
+            { label: 'Kd \u22121\u03c3', data: mkPts(d.kd_lo),
+              borderColor: 'rgba(200,180,80,0.45)', borderWidth: 1, borderDash: [3,3],
+              pointRadius: 0, fill: false, tension: 0.3, spanGaps: false },
+            { label: 'Kd +1\u03c3', data: mkPts(d.kd_hi),
+              borderColor: 'rgba(200,180,80,0.45)', borderWidth: 1, borderDash: [3,3],
+              pointRadius: 0, fill: false, tension: 0.3, spanGaps: false },
+          ] : []),
         ]
       },
       options: {
-        responsive: true,
-        maintainAspectRatio: false,
+        responsive: true, maintainAspectRatio: false, animation: false,
         interaction: { mode: 'index', intersect: false },
         plugins: {
-          legend: { labels: { color: '#6e7f8d', font: { family: 'DM Mono', size: 11 } } },
-          tooltip: { backgroundColor: '#161b22', borderColor: '#2a3441', borderWidth: 1,
-                     titleColor: '#cdd9e5', bodyColor: '#6e7f8d',
-                     titleFont: { family: 'DM Mono' }, bodyFont: { family: 'DM Mono' } }
+          legend: { labels: { color: '#8fa4b5', font: { size: 11 } } },
+          decimation: { enabled: true, algorithm: 'lttb', samples: 800 },
         },
         scales: {
-          x: { reverse: true, ticks: { color: '#6e7f8d', font: { family: 'DM Mono', size: 10 } },
+          x: { type: 'linear', reverse: true,
+               ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
-               title: { display: true, text: 'Age (yrs BP)', color: '#6e7f8d', font: { family: 'DM Mono' } } },
-          y: { ticks: { color: '#6e7f8d', font: { family: 'DM Mono', size: 10 } },
+               title: { display: true, text: 'Age (yrs BP)', color: '#8fa4b5', font: { size: 11 } } },
+          y: { type: 'linear',
+               ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
                title: { display: true,
-                        text: d.mode==='semi' ? 'Relative drip rate (% of reference)' : 'Drip rate (min⁻¹)',
-                        color: '#6e7f8d', font: { family: 'DM Mono' } } }
+                 text: d.mode === 'semi' ? 'Relative drip rate (% of reference)' : 'Drip rate (min\u207b\u00b9)',
+                 color: '#8fa4b5', font: { size: 11 } } }
         }
-      }
+      },
+      plugins: [tsHiatusPlugin],
     });
-  });
+  }).catch(e => console.error('loadChart error:', e));
 }
 
 // ── Downloads ────────────────────────────────────────────────────────────────
+// ── Colourmap helpers ─────────────────────────────────────────────────────
+const CMAPS = {
+  viridis:  [[68,1,84],[72,36,117],[65,68,135],[53,95,141],[42,120,142],[33,145,140],[34,168,132],[53,191,111],[94,211,67],[163,222,21],[253,231,37]],
+  inferno:  [[0,0,4],[22,11,57],[66,10,104],[106,23,110],[147,38,103],[188,55,84],[221,81,58],[243,118,27],[252,166,10],[246,215,70],[252,255,164]],
+  plasma:   [[13,8,135],[75,3,161],[126,3,168],[168,34,150],[198,62,118],[221,95,84],[236,130,55],[245,167,27],[246,207,18],[231,244,40],[240,249,33]],
+  magma:    [[0,0,4],[18,13,49],[51,16,104],[89,26,120],[128,40,118],[165,63,111],[199,90,103],[227,126,101],[248,170,109],[254,216,144],[252,253,191]],
+  cividis:  [[0,34,78],[0,57,100],[38,77,108],[73,96,111],[107,114,117],[140,132,120],[172,151,112],[202,172,93],[228,195,64],[248,222,30],[255,255,0]],
+  turbo:    [[48,18,59],[69,91,205],[32,158,245],[18,209,192],[66,243,114],[147,254,57],[220,237,30],[255,193,22],[250,131,13],[217,65,8],[122,4,3]],
+};
+
+function sampleCmap(name, t) {
+  const c = CMAPS[name] || CMAPS.viridis;
+  const n = c.length - 1;
+  const i = Math.min(Math.floor(t * n), n - 1);
+  const f = t * n - i;
+  return c[i].map((v, k) => Math.round(v + f * (c[i+1][k] - v)));
+}
+
+// ── PDF Heatmap rendering ────────────────────────────────────────────────
+function renderPdfHeatmap() {
+  const canvas = document.getElementById('pdfHeatmapCanvas');
+  if (!canvas || !window._pdfHeatmapData) return;
+  if (!canvas.parentElement.clientWidth || !canvas.parentElement.clientHeight) return;
+
+  const {V_pdf, V_span, ages} = window._pdfHeatmapData;
+  const nv = V_pdf.length, nt = V_pdf[0].length;
+  const cmap = document.getElementById('pdf-cmap')?.value || 'viridis';
+  const useLog = document.getElementById('pdf-log')?.checked || false;
+
+  // Normalize each timestep column to sum=1 (proper PDF)
+  const normPdf = [];
+  for (let v = 0; v < nv; v++) normPdf.push(new Array(nt).fill(0));
+  for (let t = 0; t < nt; t++) {
+    let colSum = 0;
+    for (let v = 0; v < nv; v++) colSum += (V_pdf[v][t] || 0);
+    if (colSum > 0) for (let v = 0; v < nv; v++) normPdf[v][t] = (V_pdf[v][t] || 0) / colSum;
+  }
+
+  let maxD = 0;
+  const data = [];
+  for (let v = 0; v < nv; v++) {
+    const row = [];
+    for (let t = 0; t < nt; t++) {
+      let val = normPdf[v][t];
+      if (useLog && val > 0) val = Math.log10(val + 1e-20);
+      row.push(val);
+      if (isFinite(val) && val > maxD) maxD = val;
+    }
+    data.push(row);
+  }
+  if (maxD <= 0) maxD = 1;
+
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth;
+  const H = canvas.parentElement.clientHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const ML = 60, MR = 40, MT = 10, MB = 35;
+  const pw = W - ML - MR, ph = H - MT - MB;
+
+  const tmpCanvas = document.createElement('canvas');
+  tmpCanvas.width = nt; tmpCanvas.height = nv;
+  const tmpCtx = tmpCanvas.getContext('2d');
+  const img = tmpCtx.createImageData(nt, nv);
+  for (let v = 0; v < nv; v++) {
+    for (let t = 0; t < nt; t++) {
+      const val = data[nv - 1 - v][t];
+      const norm = isFinite(val) && maxD > 0 ? Math.max(0, Math.min(1, val / maxD)) : 0;
+      const [r, g, b] = sampleCmap(cmap, norm);
+      const idx = (v * nt + t) * 4;
+      img.data[idx] = r; img.data[idx+1] = g; img.data[idx+2] = b; img.data[idx+3] = 255;
+    }
+  }
+  tmpCtx.putImageData(img, 0, 0);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tmpCanvas, ML, MT, pw, ph);
+
+  ctx.strokeStyle = '#8fa4b5'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(ML, MT); ctx.lineTo(ML, MT+ph); ctx.lineTo(ML+pw, MT+ph); ctx.stroke();
+  ctx.fillStyle = '#8fa4b5'; ctx.font = '11px Arial, sans-serif'; ctx.textAlign = 'center';
+  const ageMin = ages[0], ageMax = ages[nt-1];
+  for (let i = 0; i <= 6; i++) {
+    const frac = i / 6, age = ageMin + frac * (ageMax - ageMin), px = ML + frac * pw;
+    ctx.fillText(Math.round(age).toString(), px, MT + ph + 15);
+    ctx.beginPath(); ctx.moveTo(px, MT+ph); ctx.lineTo(px, MT+ph+4); ctx.stroke();
+  }
+  ctx.fillText('Age (yrs BP)', ML + pw/2, MT + ph + 30);
+  const vMin = V_span[0], vMax = V_span[nv-1];
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 5; i++) {
+    const frac = i / 5, v = vMin + frac * (vMax - vMin), py = MT + ph - frac * ph;
+    ctx.fillText(v.toFixed(0), ML - 5, py + 4);
+    ctx.beginPath(); ctx.moveTo(ML, py); ctx.lineTo(ML-3, py); ctx.stroke();
+  }
+  ctx.save(); ctx.translate(14, MT + ph/2); ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center';
+  ctx.fillText('Drip rate (min\u207b\u00b9)', 0, 0);
+  ctx.restore();
+
+  // Colorbar (right side)
+  const cbW = 12, cbH = ph, cbX = ML + pw + 4, cbY = MT;
+  for (let j = 0; j < cbH; j++) {
+    const norm = 1 - j / cbH;  // top=1, bottom=0
+    const [r, g, b] = sampleCmap(cmap, norm);
+    ctx.fillStyle = `rgb(${r},${g},${b})`;
+    ctx.fillRect(cbX, cbY + j, cbW, 1);
+  }
+  ctx.strokeStyle = '#8fa4b5'; ctx.lineWidth = 0.5;
+  ctx.strokeRect(cbX, cbY, cbW, cbH);
+  ctx.fillStyle = '#8fa4b5'; ctx.font = '9px Arial, sans-serif'; ctx.textAlign = 'left';
+  ctx.fillText('1.0', cbX + cbW + 3, cbY + 9);
+  ctx.fillText('0.5', cbX + cbW + 3, cbY + cbH/2 + 3);
+  ctx.fillText('0.0', cbX + cbW + 3, cbY + cbH - 1);
+  ctx.fillText('P', cbX + cbW + 3, cbY - 4);
+
+  const xr = document.getElementById('pdf-xrange');
+  const yr = document.getElementById('pdf-yrange');
+  if (xr) xr.textContent = `${nt} timesteps \u00b7 column-normalised PDF (0\u20131)`;
+  if (yr) yr.textContent = `${nv} V bins \u00b7 ${cmap}${useLog ? ' (log)' : ''}`;
+}
+
+// ── Age model chart ──────────────────────────────────────────────────────
+let ageModelChart = null;
+
+function renderAgeModelChart() {
+  if (!window._ageModelData) return;
+  const {depth, age_median, age_lo, age_hi, dated_depth, dated_age, dated_err} = window._ageModelData;
+  const canvas = document.getElementById('ageModelChart');
+  if (!canvas || !canvas.parentElement.clientWidth) return;  // skip if hidden
+  if (ageModelChart) ageModelChart.destroy();
+
+  // Subsample to ~500 points for Chart.js performance
+  const N = depth.length;
+  const step = Math.max(1, Math.floor(N / 500));
+  const subD = [], subA = [];
+  for (let i = 0; i < N; i += step) {
+    subD.push(depth[i]);
+    subA.push(age_median[i]);
+  }
+  // Always include last point
+  if (subD[subD.length-1] !== depth[N-1]) {
+    subD.push(depth[N-1]);
+    subA.push(age_median[N-1]);
+  }
+
+  const datasets = [];
+  // Median age model (subsampled)
+  datasets.push({
+    label: 'BayProX median',
+    data: subD.map((d, i) => ({x: d, y: subA[i]})),
+    type: 'line',
+    borderColor: 'rgba(76,201,160,0.9)', borderWidth: 2,
+    pointRadius: 0, fill: false,
+  });
+  // Dated points with error bars
+  if (dated_depth && dated_depth.length) {
+    const errBars = [];
+    for (let i = 0; i < dated_depth.length; i++) {
+      const e = dated_err ? dated_err[i] : 0;
+      if (e > 0) errBars.push({x:dated_depth[i],y:dated_age[i]-e},{x:dated_depth[i],y:dated_age[i]+e},{x:NaN,y:NaN});
+    }
+    if (errBars.length) datasets.push({
+      label: '±1σ error', data: errBars, type: 'line',
+      borderColor: 'rgba(247,164,64,0.4)', borderWidth: 1.5,
+      pointRadius: 0, fill: false, spanGaps: false,
+    });
+    datasets.push({
+      label: 'Dated points',
+      data: dated_depth.map((d,i) => ({x:d, y:dated_age[i]})),
+      type: 'scatter',
+      backgroundColor: 'rgba(247,164,64,0.9)', pointRadius: 5,
+    });
+  }
+
+  // Hiatus zone overlay plugin for results age model
+  const ageHiatusPlugin = {
+    id: 'ageModelHiatus',
+    afterDraw(chart) {
+      // Try loading hiatus zones from chart_data if available
+      const zones = window._chartDataHiatusZones || [];
+      if (!zones.length) return;
+      const {ctx: c, chartArea: {left,right,top,bottom}, scales: {y}} = chart;
+      c.save();
+      zones.forEach(z => {
+        const yF = y.getPixelForValue(z.from), yT = y.getPixelForValue(z.to);
+        const yTop = Math.min(yF, yT), yBot = Math.max(yF, yT);
+        c.fillStyle = 'rgba(255,80,80,0.12)';
+        c.fillRect(left, yTop, right-left, yBot-yTop);
+        c.strokeStyle = 'rgba(255,80,80,0.4)';
+        c.setLineDash([2,2]); c.lineWidth = 1;
+        c.beginPath(); c.moveTo(left,yTop); c.lineTo(right,yTop); c.stroke();
+        c.beginPath(); c.moveTo(left,yBot); c.lineTo(right,yBot); c.stroke();
+        c.fillStyle = 'rgba(255,80,80,0.6)'; c.font = '9px Arial, sans-serif';
+        c.textAlign = 'center';
+        c.fillText('hiatus', (left+right)/2, (yTop+yBot)/2 + 4);
+      });
+      c.restore();
+    }
+  };
+
+  ageModelChart = new Chart(canvas, {
+    data: {datasets},
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#cdd9e5', font:{size:10}, filter: i => !i.text.startsWith('_') } } },
+      scales: {
+        x: { type: 'linear', title:{display:true, text:'Depth (' + teDepthUnit + ')', color:'#8fa4b5', font:{size:11}},
+             grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8fa4b5',font:{size:10}} },
+        y: { type: 'linear', title:{display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:11}},
+             grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8fa4b5',font:{size:10}} },
+      }
+    },
+    plugins: [ageHiatusPlugin],
+  });
+}
+
 function refreshDownloads(files) {
   if (!files) {
     fetch('/status').then(r=>r.json()).then(s => refreshDownloads(s.outputs));
@@ -2690,6 +3782,12 @@ function refreshDownloads(files) {
   const descs = {
     'drip_rate_summary.csv':      'Percentile summary (pc05–pc95) at each time step',
     'drip_rate_realisations.csv': 'Full ensemble of realisations for RQA analysis',
+    'age_model.json':             'BayProX age-depth model (browser chart data)',
+    'age_model.csv':              'Age-depth model as CSV (depth, age_yBP)',
+    'pdf_heatmap.json':           'Drip rate PDF matrix (subsampled for browser)',
+    'input_summary.csv':          'All input parameters for this run (verification)',
+    'run_id.txt':                 'Unique run identifier (links outputs to inputs)',
+    'ProxyRecord.pkl':            'BayProX proxy record (reusable cache)',
   };
   list.innerHTML = files.map(fn => `
     <div class="output-item">
@@ -2715,13 +3813,50 @@ const THEO_KP = { 'Co': 4.4, 'Ni': 1.1, 'Cu': 44 };  // Lindeman et al. GCA 2022
 // Used for model comparison — the forward model works in data-native units.
 // The unit selector is informational only; the data is NOT converted before
 // entering the PDist / BayProX pipeline.
-function getObsMedianNative(teIdx) {
+function getCalPct(prefix) {
+  // Read calibration window percentage from slider (default 100 = full record)
+  const el = document.getElementById(prefix + '_cal_pct');
+  return el ? parseInt(el.value) || 100 : 100;
+}
+
+function getObsMedianNative(teIdx, calPct) {
+  // Returns the median of the proxy column, optionally restricted to the
+  // shallowest (most recent) calPct% of the depth range.
   const row = teRowData[teIdx];
   if (!row || !teRawData[row.col]) return null;
-  const vals = (teRawData[row.col]||[]).map(v=>parseFloat(v)).filter(isFinite);
-  if (!vals.length) return null;
-  vals.sort((a,b)=>a-b);
-  return vals[Math.floor(vals.length/2)];
+  const proxyVals = (teRawData[row.col]||[]).map(v=>parseFloat(v));
+  const depthVals = teRawDepth;
+
+  if (!proxyVals.length) return null;
+  calPct = calPct || 100;
+
+  if (calPct >= 100 || !depthVals || depthVals.length !== proxyVals.length) {
+    // Full record — original behaviour
+    const vals = proxyVals.filter(isFinite);
+    if (!vals.length) return null;
+    vals.sort((a,b)=>a-b);
+    return vals[Math.floor(vals.length/2)];
+  }
+
+  // Depth-windowed: shallowest calPct% of the depth range
+  const finiteDepths = depthVals.filter(isFinite);
+  if (!finiteDepths.length) return null;
+  const depMin = finiteDepths.reduce((a,b) => a < b ? a : b, Infinity);
+  const depMax = finiteDepths.reduce((a,b) => a > b ? a : b, -Infinity);
+  const depRange = depMax - depMin;
+  if (depRange <= 0) return null;
+
+  // "Most recent" = shallowest = smallest depth values
+  const depThreshold = depMin + depRange * (calPct / 100);
+  const windowVals = [];
+  for (let i = 0; i < proxyVals.length; i++) {
+    if (isFinite(proxyVals[i]) && isFinite(depthVals[i]) && depthVals[i] <= depThreshold) {
+      windowVals.push(proxyVals[i]);
+    }
+  }
+  if (!windowVals.length) return null;
+  windowVals.sort((a,b)=>a-b);
+  return windowVals[Math.floor(windowVals.length/2)];
 }
 
 function fmtPPB(v) {
@@ -2729,6 +3864,232 @@ function fmtPPB(v) {
   if (v>=1000) return (v/1000).toFixed(3)+' ppm';
   if (v>=1)    return v.toFixed(3)+' ppb';
   return (v*1000).toFixed(1)+' ppt';
+}
+
+// ── Concentration prior state and fitting ────────────────────────────────
+const concentrationPriors = {};   // keyed by 'ca', 'te1', 'te2', etc.
+
+function fitLognormal(values_ppb) {
+  const v = values_ppb.filter(x => isFinite(x) && x > 0);
+  if (v.length < 3) return null;
+  const lnv = v.map(Math.log);
+  const mu = lnv.reduce((a,b)=>a+b,0) / lnv.length;
+  const sigma = Math.sqrt(lnv.map(x=>(x-mu)**2).reduce((a,b)=>a+b,0) / (lnv.length-1));
+  return { mu_ln: mu, sigma_ln: sigma };
+}
+
+function fitLognormalFromMeanSd(mean_ppb, sd_ppb) {
+  if (mean_ppb <= 0 || sd_ppb <= 0) return null;
+  sd_ppb = Math.max(sd_ppb, mean_ppb * 0.01);
+  const sigma2 = Math.log(1 + (sd_ppb/mean_ppb)**2);
+  const mu = Math.log(mean_ppb) - 0.5*sigma2;
+  return { mu_ln: mu, sigma_ln: Math.sqrt(sigma2) };
+}
+
+function priorSummaryHTML(prior, label) {
+  if (!prior) return '';
+  const mean_ppb = Math.exp(prior.mu_ln + 0.5*prior.sigma_ln**2);
+  const cv = Math.sqrt(Math.exp(prior.sigma_ln**2) - 1) * 100;
+  return `<strong>${label} prior:</strong>
+    µ_ln=${prior.mu_ln.toFixed(3)}, σ_ln=${prior.sigma_ln.toFixed(3)} —
+    mean=${mean_ppb.toFixed(2)} ppb, CV=${cv.toFixed(1)}% (lognormal)`;
+}
+
+function describeDistribution(values_ppb, mu_ln, sigma_ln) {
+  const cv = Math.sqrt(Math.exp(sigma_ln**2) - 1);
+  let shape, fit, warning = null;
+  if (sigma_ln < 0.15) {
+    shape = 'approximately symmetric — low variability';
+    fit = 'Lognormal fitted but near-normal behaviour.';
+  } else if (sigma_ln < 0.4) {
+    shape = 'mildly right-skewed';
+    fit = 'Lognormal is a good fit. Moderate variability.';
+  } else if (sigma_ln < 0.8) {
+    shape = 'moderately right-skewed — typical for trace elements';
+    fit = 'Lognormal is appropriate. Long right tail reflects episodic higher-concentration events.';
+  } else if (sigma_ln < 1.3) {
+    shape = 'strongly right-skewed — high variability';
+    fit = 'High sigma_ln will substantially widen the posterior. Check for outliers.';
+    warning = 'CV > 80%. Review raw data for outliers.';
+  } else {
+    shape = 'very strongly skewed — possible outliers';
+    fit = 'Extreme skew — posterior reliability may be reduced.';
+    warning = '\u26a0 sigma_ln > 1.3. Consider removing outliers or using manual mean + SD.';
+  }
+  return { shape, fit, warning, cv };
+}
+
+function renderConcentrationPlot(values_ppb, prior, canvasId, descId, label) {
+  const v = values_ppb.filter(x => isFinite(x) && x > 0).sort((a,b) => a-b);
+  if (v.length < 3) return;
+  const { mu_ln, sigma_ln } = prior;
+  const { shape, fit, warning, cv } = describeDistribution(v, mu_ln, sigma_ln);
+  // Log-spaced histogram bins
+  const N_BINS = Math.min(20, Math.ceil(Math.sqrt(v.length)));
+  const logMin = Math.log(v[0]*0.95), logMax = Math.log(v[v.length-1]*1.05);
+  const binEdges = Array.from({length:N_BINS+1},(_, i)=>Math.exp(logMin+i*(logMax-logMin)/N_BINS));
+  const counts = new Array(N_BINS).fill(0);
+  v.forEach(x => { const i = binEdges.findIndex((e,j)=>j<N_BINS&&x>=binEdges[j]&&x<binEdges[j+1]);
+    if (i>=0) counts[i]++; });
+  const binWidths = binEdges.slice(1).map((e,i)=>e-binEdges[i]);
+  const densities = counts.map((c,i)=>c/(v.length*binWidths[i]));
+  const binCentres = binEdges.slice(1).map((e,i)=>(e+binEdges[i])/2);
+  // Lognormal PDF curve
+  const N_CURVE = 120;
+  const xCurve = Array.from({length:N_CURVE},(_, i)=>Math.exp(logMin+i*(logMax-logMin)/(N_CURVE-1)));
+  const pdfCurve = xCurve.map(x => {
+    const lx = Math.log(x);
+    return Math.exp(-0.5*((lx-mu_ln)/sigma_ln)**2) / (x*sigma_ln*Math.sqrt(2*Math.PI));
+  });
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const existing = Chart.getChart(canvas);
+  if (existing) existing.destroy();
+  const chart = new Chart(canvas, {
+    data: { datasets: [
+      { type:'bar', label:'Observed',
+        data: binCentres.map((x,i)=>({x, y:densities[i]})),
+        backgroundColor:'rgba(76,201,160,0.35)',
+        borderColor:'rgba(76,201,160,0.8)', borderWidth:1,
+        barPercentage:0.95, categoryPercentage:1.0 },
+      { type:'line', label:'Lognormal fit',
+        data: xCurve.map((x,i)=>({x, y:pdfCurve[i]})),
+        borderColor:'#f7a440', borderWidth:2,
+        pointRadius:0, tension:0.4, fill:false },
+    ]},
+    options: {
+      scales: {
+        x: { type:'linear',
+             title:{display:true, text:label+' (ppb)', color:'#8fa4b5', font:{size:10}},
+             ticks:{color:'#8fa4b5', font:{size:9},
+               callback: v=>v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(1)} },
+        y: { title:{display:true, text:'Density', color:'#8fa4b5', font:{size:10}},
+             ticks:{color:'#8fa4b5', font:{size:9}}, beginAtZero:true },
+      },
+      plugins: { legend:{labels:{color:'#cdd9e5',font:{size:10},boxWidth:12}} },
+      animation:false, responsive:true, maintainAspectRatio:false,
+    }
+  });
+  window[canvasId+'_chart'] = chart;
+  window[canvasId+'_logScale'] = false;
+  // Description block
+  const desc = document.getElementById(descId);
+  if (!desc) return;
+  const mean_ppb = Math.exp(mu_ln + 0.5*sigma_ln**2);
+  const med_ppb = Math.exp(mu_ln);
+  desc.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:8px">
+      <div><span style="color:var(--muted)">n</span><br><strong>${v.length}</strong></div>
+      <div><span style="color:var(--muted)">median</span><br><strong>${med_ppb.toFixed(2)} ppb</strong></div>
+      <div><span style="color:var(--muted)">mean</span><br><strong>${mean_ppb.toFixed(2)} ppb</strong></div>
+      <div><span style="color:var(--muted)">CV</span><br><strong>${(cv*100).toFixed(0)}%</strong></div>
+      <div><span style="color:var(--muted)">σ_ln</span><br><strong>${sigma_ln.toFixed(3)}</strong></div>
+      <div><span style="color:var(--muted)">µ_ln</span><br><strong>${mu_ln.toFixed(3)}</strong></div>
+      <div style="grid-column:3/-1"><span style="color:var(--muted)">shape</span><br>
+        <strong style="color:var(--accent)">${shape}</strong></div>
+    </div>
+    <div style="font-size:10px;color:var(--text);line-height:1.5;margin-bottom:4px">${fit}</div>
+    ${warning ? '<div style="font-size:10px;color:var(--danger)">'+warning+'</div>' : ''}`;
+  desc.style.display = '';
+}
+
+function toggleLogScale(canvasId) {
+  const ch = window[canvasId+'_chart'];
+  if (!ch) return;
+  const isLog = window[canvasId+'_logScale'] = !window[canvasId+'_logScale'];
+  ch.options.scales.x.type = isLog ? 'logarithmic' : 'linear';
+  ch.options.scales.x.ticks.callback = isLog
+    ? v => Number(v.toPrecision(2))
+    : v => v>=1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(1);
+  const btn = document.getElementById(canvasId+'_toggle');
+  if (btn) btn.textContent = isLog ? 'Linear x' : 'Log x';
+  ch.update();
+}
+
+// ── Ca mode switching ────────────────────────────────────────────────
+function setCaMode(mode) {
+  document.getElementById('ca-manual-block').style.display = mode==='manual' ? '' : 'none';
+  document.getElementById('ca-csv-block').style.display    = mode==='csv'    ? '' : 'none';
+  document.getElementById('ca-mode-manual').classList.toggle('active', mode==='manual');
+  document.getElementById('ca-mode-csv').classList.toggle('active', mode==='csv');
+  if (mode === 'manual') fitCaPriorFromManual();
+}
+
+function fitCaPriorFromManual() {
+  const mean_raw = parseFloat(document.getElementById('ca_conc')?.value);
+  const sd_raw   = parseFloat(document.getElementById('ca_conc_sd')?.value);
+  const unit     = document.getElementById('ca_unit')?.value || 'ppm';
+  const to_ppb   = UNIT_FACTOR[unit] || 1;
+  const el = document.getElementById('ca-prior-summary');
+  if (!isFinite(mean_raw) || mean_raw <= 0 || !isFinite(sd_raw) || sd_raw <= 0) {
+    concentrationPriors['ca'] = null;
+    if (el) el.style.display = 'none'; return;
+  }
+  concentrationPriors['ca'] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_raw*to_ppb);
+  if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors['ca'], 'Ca_aq'); el.style.display = ''; }
+}
+
+function fitCaPriorFromCsv() {
+  const col  = document.getElementById('ca_csv_col')?.value;
+  const unit = document.getElementById('ca_csv_unit')?.value || 'ppm';
+  if (!col || !window.caAqCsvData) return;
+  const to_ppb = UNIT_FACTOR[unit] || 1;
+  const vals = window.caAqCsvData[col].map(v=>parseFloat(v)*to_ppb).filter(v=>isFinite(v)&&v>0);
+  concentrationPriors['ca'] = fitLognormal(vals);
+  if (!concentrationPriors['ca']) return;
+  const mean_ppb = Math.exp(concentrationPriors['ca'].mu_ln + 0.5*concentrationPriors['ca'].sigma_ln**2);
+  const caUnit = document.getElementById('ca_unit')?.value || 'ppm';
+  document.getElementById('ca_conc').value = (mean_ppb / (UNIT_FACTOR[caUnit]||1)).toFixed(2);
+  const el = document.getElementById('ca-prior-summary');
+  if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors['ca'],
+    `Ca_aq (${vals.length} obs.)`); el.style.display = ''; }
+  document.getElementById('ca-dist-chart-wrap').style.display = '';
+  renderConcentrationPlot(vals, concentrationPriors['ca'], 'ca-dist-chart', 'ca-dist-desc', 'Ca_aq');
+  updateCaHint(); updateAllParamHints();
+}
+
+// ── TE_aq mode switching ─────────────────────────────────────────────
+function setAqMode(p, mode) {
+  const mb = document.getElementById(`${p}-aq-manual-block`);
+  const cb = document.getElementById(`${p}-aq-csv-block`);
+  if (mb) mb.style.display = mode==='manual' ? '' : 'none';
+  if (cb) cb.style.display = mode==='csv'    ? '' : 'none';
+  document.getElementById(`${p}-aq-mode-manual`)?.classList.toggle('active', mode==='manual');
+  document.getElementById(`${p}-aq-mode-csv`)?.classList.toggle('active', mode==='csv');
+  if (mode === 'manual') fitAqPriorFromManual(p);
+}
+
+function fitAqPriorFromManual(p) {
+  const mean_raw = parseFloat(document.getElementById(`${p}_aq_conc`)?.value);
+  const sd_raw   = parseFloat(document.getElementById(`${p}_aq_conc_sd`)?.value);
+  const unit     = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
+  const to_ppb   = UNIT_FACTOR[unit] || 1;
+  const el = document.getElementById(`${p}-aq-prior-summary`);
+  if (!isFinite(mean_raw) || mean_raw <= 0 || !isFinite(sd_raw) || sd_raw <= 0) {
+    concentrationPriors[p] = null;
+    if (el) el.style.display='none'; return;
+  }
+  concentrationPriors[p] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_raw*to_ppb);
+  if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors[p],
+    `[${p.toUpperCase()}_aq]`); el.style.display = ''; }
+}
+
+function fitAqPriorFromCsv(p) {
+  const col  = document.getElementById(`${p}_aq_csv_col`)?.value;
+  const unit = document.getElementById(`${p}_aq_csv_unit`)?.value || 'ppb';
+  if (!col || !window[`${p}AqCsvData`]) return;
+  const to_ppb = UNIT_FACTOR[unit] || 1;
+  const vals = window[`${p}AqCsvData`][col].map(v=>parseFloat(v)*to_ppb).filter(v=>isFinite(v)&&v>0);
+  concentrationPriors[p] = fitLognormal(vals);
+  if (!concentrationPriors[p]) return;
+  const el = document.getElementById(`${p}-aq-prior-summary`);
+  if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors[p],
+    `[${p.toUpperCase()}_aq] (${vals.length} obs.)`); el.style.display = ''; }
+  const wrap = document.getElementById(`${p}-dist-chart-wrap`);
+  if (wrap) wrap.style.display = '';
+  const elemLabel = document.getElementById(`${p}_elem`)?.value || p.toUpperCase();
+  renderConcentrationPlot(vals, concentrationPriors[p],
+    `${p}-dist-chart`, `${p}-dist-desc`, `[${elemLabel}_aq]`);
 }
 
 // ── Kd mode toggle: drip rate vs manual ──────────────────────────────────
@@ -2766,18 +4127,24 @@ function getKdMode(prefix) {
   return input?.dataset?.kdMode || 'driprate';
 }
 
-function getVRef(prefix) {
-  // Per-TE drip rate if available; fallback 10 for hints in manual mode
-  const el = document.getElementById(prefix + '_drip_rate');
+function getVRef() {
+  // Global monitored drip rate for all TEs
+  const el = document.getElementById('global_drip_rate');
   return el ? (parseFloat(el.value) || 10) : 10;
 }
 
 function autoCalcKd(prefix) {
   if (getKdMode(prefix) !== 'driprate') return;
+  const hint = document.getElementById(prefix + '_dr_hint');
+  const setHint = msg => { if (hint) hint.innerHTML = msg; };
 
   const idx    = parseInt(prefix.replace(/[^0-9]/g, '')) - 1;
-  const obs    = getObsMedianNative(idx);
-  if (obs === null || obs <= 0) return;
+  const calPct = getCalPct(prefix);
+  const obs    = getObsMedianNative(idx, calPct);
+  if (obs === null || obs <= 0) {
+    setHint('<span style="color:var(--muted)">Upload TE data to auto-calculate Kd</span>');
+    return;
+  }
 
   const xf     = parseFloat(document.getElementById(prefix + '_F')?.value) || 0;
   const xl     = parseFloat(document.getElementById(prefix + '_labile')?.value) || 0;
@@ -2792,34 +4159,54 @@ function autoCalcKd(prefix) {
   const caVal  = parseFloat(document.getElementById('ca_conc')?.value) || 0;
   const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
   const caPPB  = caVal * (UNIT_FACTOR[caUnit] || 1);
-  const vRef   = getVRef(prefix);
-  const tau    = 60.0 / vRef;  // seconds per drip
+  const vRef   = getVRef();
+  const tau    = 60.0 / vRef;
 
-  if (aqPPB <= 0 || caPPB <= 0 || kp <= 0) return;
+  if (aqPPB <= 0 || caPPB <= 0 || kp <= 0) {
+    setHint('<span style="color:#ffa032">Enter valid aq. conc., Ca, and Kp</span>');
+    return;
+  }
 
-  // K_0 = equilibrium [TE]_calcite using Kp (NOT Kd)
-  // Matches model.py: K_0 = Kp * Y_s * (Xa/Ya) * K_e
   const nS     = 1.0 - xf;
   const K0_ppm = kp * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
-  if (K0_ppm <= 0) return;
+  if (K0_ppm <= 0) {
+    setHint('<span style="color:#ffa032">K₀ ≤ 0 — check Kp and fractions</span>');
+    return;
+  }
 
   const dataUnit = teRowData[idx]?.unit || 'ppm';
   const obsPpm   = obs * ((UNIT_FACTOR[dataUnit] || 1) / 1000);
   const ratio    = obsPpm / K0_ppm;
+  const fastFloor = K0_ppm * xf;
 
-  // h(V) = K_0 * (1 - nS * E1)  →  E1 = (1 - ratio) / nS
-  const E1 = (1 - ratio) / nS;
-  if (E1 <= 0 || E1 >= 1 || !isFinite(E1)) return;
+  if (ratio >= 1.0) {
+    setHint(`<span style="color:#ffa032">⚠ Obs (${obsPpm.toFixed(3)} ppm) exceeds K₀ equilibrium (${K0_ppm.toFixed(1)} ppm) — reduce aq. conc or increase Ca</span>`);
+    return;
+  }
 
-  // Narrow-Gaussian approximation: E1 ≈ exp(-exp(k_mu) * tau)
-  // → exp(k_mu) = -ln(E1) / tau
-  // → k_mu = ln(-ln(E1) / tau)
+  let E1 = (1 - ratio) / nS;
+  let boundaryNote = '';
+  if (E1 >= 1.0) {
+    E1 = 0.999;
+    boundaryNote = ` ⚠ obs near fast-only limit (${fastFloor.toFixed(3)} ppm)`;
+  }
+  if (E1 <= 0.001) {
+    E1 = 0.001;
+    boundaryNote = ' ⚠ near equilibrium limit';
+  }
+
   const expKmu = -Math.log(E1) / tau;
-  if (expKmu <= 0 || !isFinite(expKmu)) return;
+  if (expKmu <= 0 || !isFinite(expKmu)) {
+    setHint('<span style="color:#ffa032">Cannot solve for Kd at this drip rate</span>');
+    return;
+  }
 
   const kdMn = Math.log(expKmu);
   document.getElementById(prefix + '_Kd_mn').value = kdMn.toFixed(3);
+  setHint(`τ=${tau.toFixed(1)}s · K₀=${K0_ppm.toFixed(1)} ppm · obs/K₀=${(ratio*100).toFixed(1)}% · ln(Kd)=${kdMn.toFixed(3)}`
+    + `<span style="color:#ffa032">${boundaryNote}</span>`);
 }
+
 
 function updateParamHints(prefix) {
   // Auto-calculate Kd first if enabled (before reading Kd_mn for hints)
@@ -2847,12 +4234,33 @@ function updateParamHints(prefix) {
   const kd     = isFinite(kdMn) ? Math.exp(kdMn) : null;
   const kdLo   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn-kdSd) : null;
   const kdHi   = (isFinite(kdMn)&&isFinite(kdSd)) ? Math.exp(kdMn+kdSd) : null;
-  const obs    = getObsMedianNative(idx);
+  const calPct = getCalPct(prefix);
+  const obs    = getObsMedianNative(idx, calPct);
 
   // Per-TE drip rate → residence time
-  const vRef   = getVRef(prefix);
+  const vRef   = getVRef();
   const kdMode = getKdMode(prefix);
   const tau    = 60.0 / vRef;                        // seconds per drip
+
+  // Calibration window hint
+  const calHint = document.getElementById(prefix + '_cal_hint');
+  if (calHint && kdMode === 'driprate') {
+    const row = teRowData[idx];
+    if (row && teRawData[row.col] && teRawDepth.length) {
+      const proxyVals = (teRawData[row.col]||[]).map(v=>parseFloat(v));
+      const finD = teRawDepth.filter(isFinite);
+      const dMin = finD.reduce((a,b) => a < b ? a : b, Infinity);
+      const dMax = finD.reduce((a,b) => a > b ? a : b, -Infinity);
+      const dThr = dMin + (dMax - dMin) * (calPct / 100);
+      let nWin = 0;
+      for (let i = 0; i < proxyVals.length; i++) {
+        if (isFinite(proxyVals[i]) && isFinite(teRawDepth[i]) && teRawDepth[i] <= dThr) nWin++;
+      }
+      const obsStr = obs !== null ? obs.toFixed(3) : '—';
+      calHint.innerHTML = `Using <strong>${nWin}</strong> points (depth ≤ ${dThr.toFixed(1)} ${teDepthUnit}) · `
+        + `median = <strong>${obsStr}</strong> ${row.unit || 'ppm'}`;
+    }
+  }
 
   // Model physics (matching model.py dr_pdfseries):
   //   K_0 = Kp × (XF+XL) × (aq/ca) × 400000 × K_e     [equilibrium, ppm]
@@ -2947,6 +4355,239 @@ function updateParamHints(prefix) {
       po.innerHTML = txt; po.style.display = '';
     } else { po.style.display = 'none'; }
   } else if (po) { po.style.display = 'none'; }
+
+  // Update h(V) diagnostic chart
+  renderHvChart(prefix);
+}
+
+// ── h(V) diagnostic chart — forward model curve vs data distribution ─────
+const _hvCharts = {};  // cache per prefix
+
+// ── Auto-set VMAX from h(V) vs data intersection ────────────────────────
+function autoSetVmax() {
+  // For the first configured TE, find where h(V) crosses the data p05
+  // and set VMAX to 3× that crossing point (or 2× current VMAX if no crossing)
+  const hint = document.getElementById('v_max_hint');
+  const idx = 0;  // first TE
+  const prefix = 'te1';
+  const row = teRowData[idx];
+  if (!row || !teRawData[row.col]) {
+    if (hint) hint.innerHTML = '<span style="color:#ffa032">Upload TE data first</span>';
+    return;
+  }
+
+  const kdMn  = parseFloat(document.getElementById(prefix+'_Kd_mn')?.value);
+  const xf    = parseFloat(document.getElementById(prefix+'_F')?.value) || 0;
+  const xl    = parseFloat(document.getElementById(prefix+'_labile')?.value) || 0;
+  const keVal = parseFloat(document.getElementById(prefix+'_K_e')?.value) || 1;
+  const kpVal = parseFloat(document.getElementById(prefix+'_Kp')?.value);
+  const kp    = (kpVal === -1 || !isFinite(kpVal))
+                ? (THEO_KP[document.getElementById(prefix+'_elem')?.value] || 1) : kpVal;
+  const aqVal = parseFloat(document.getElementById(prefix+'_aq_conc')?.value);
+  const aqUnit = document.getElementById(prefix+'_aq_unit')?.value || 'ppb';
+  const aqPPB = isFinite(aqVal) ? aqVal * (UNIT_FACTOR[aqUnit] || 1) : 0;
+  const caVal = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+  const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
+  const caPPB = caVal * (UNIT_FACTOR[caUnit] || 1);
+
+  if (!isFinite(kdMn) || aqPPB <= 0 || caPPB <= 0 || kp <= 0) {
+    if (hint) hint.innerHTML = '<span style="color:#ffa032">Set model parameters first</span>';
+    return;
+  }
+
+  const nS = 1.0 - xf;
+  const K0 = kp * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
+  const kd = Math.exp(kdMn);
+
+  // Get data p05 (lowest 5th percentile — the smallest concentration the model needs to reach)
+  const dataUnit = row.unit || 'ppm';
+  const unitScale = (UNIT_FACTOR[dataUnit] || 1) / 1000;
+  const vals = (teRawData[row.col] || []).map(v => parseFloat(v) * unitScale).filter(isFinite).sort((a,b) => a-b);
+  if (!vals.length) {
+    if (hint) hint.innerHTML = '<span style="color:#ffa032">No valid data</span>';
+    return;
+  }
+  const p05 = vals[Math.floor(vals.length * 0.05)];
+  const p95 = vals[Math.floor(vals.length * 0.95)];
+
+  // Find V where h(V) = p05 (this is the highest V the model needs)
+  // h(V) = K0*(1 - nS*exp(-kd*60/V))
+  // Binary search for V where h(V) ≈ p05
+  let lo = 0.01, hi = 100000;
+  for (let iter = 0; iter < 50; iter++) {
+    const mid = (lo + hi) / 2;
+    const tau = 60.0 / mid;
+    const h = K0 * (1 - nS * Math.exp(-kd * tau));
+    if (h > p05) lo = mid; else hi = mid;
+  }
+  const crossingV = (lo + hi) / 2;
+  // Also find V where h(V) = p95 (the lowest V the model needs)
+  lo = 0.001; hi = 100000;
+  for (let iter = 0; iter < 50; iter++) {
+    const mid = (lo + hi) / 2;
+    const tau = 60.0 / mid;
+    const h = K0 * (1 - nS * Math.exp(-kd * tau));
+    if (h > p95) lo = mid; else hi = mid;
+  }
+  const loV = (lo + hi) / 2;
+
+  // Set VMAX to 3× the crossing point, minimum 2× the data-relevant range
+  const suggestedVmax = Math.max(
+    Math.ceil(crossingV * 3),
+    Math.ceil(loV * 10),
+    5  // absolute minimum
+  );
+  // Round to nice number
+  const niceVmax = suggestedVmax <= 10 ? Math.ceil(suggestedVmax)
+    : suggestedVmax <= 100 ? Math.ceil(suggestedVmax / 5) * 5
+    : Math.ceil(suggestedVmax / 50) * 50;
+
+  document.getElementById('v_max').value = niceVmax;
+  if (hint) hint.innerHTML = `h(V) crosses data at V≈${crossingV.toFixed(1)} min⁻¹ → V<sub>max</sub>=${niceVmax}`;
+  // Refresh h(V) charts for all TEs
+  updateAllParamHints();
+}
+
+function renderHvChart(prefix) {
+  const canvas = document.getElementById(prefix + '_hv_chart');
+  if (!canvas) return;
+  const idx = parseInt(prefix.replace(/[^0-9]/g, '')) - 1;
+
+  // Read current parameters
+  const kdMn  = parseFloat(document.getElementById(prefix+'_Kd_mn')?.value);
+  const xf    = parseFloat(document.getElementById(prefix+'_F')?.value) || 0;
+  const xl    = parseFloat(document.getElementById(prefix+'_labile')?.value) || 0;
+  const keVal = parseFloat(document.getElementById(prefix+'_K_e')?.value) || 1;
+  const kpVal = parseFloat(document.getElementById(prefix+'_Kp')?.value);
+  const kp    = (kpVal === -1 || !isFinite(kpVal))
+                ? (THEO_KP[document.getElementById(prefix+'_elem')?.value] || 1) : kpVal;
+  const aqVal = parseFloat(document.getElementById(prefix+'_aq_conc')?.value);
+  const aqUnit = document.getElementById(prefix+'_aq_unit')?.value || 'ppb';
+  const aqPPB = isFinite(aqVal) ? aqVal * (UNIT_FACTOR[aqUnit] || 1) : 0;
+  const caVal = parseFloat(document.getElementById('ca_conc')?.value) || 0;
+  const caUnit = document.getElementById('ca_unit')?.value || 'ppb';
+  const caPPB = caVal * (UNIT_FACTOR[caUnit] || 1);
+
+  if (!isFinite(kdMn) || aqPPB <= 0 || caPPB <= 0 || kp <= 0) {
+    if (_hvCharts[prefix]) { _hvCharts[prefix].destroy(); delete _hvCharts[prefix]; }
+    return;
+  }
+
+  const nS = 1.0 - xf;
+  const K0 = kp * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
+  const kd = Math.exp(kdMn);
+  const vMax = parseFloat(document.getElementById('v_max')?.value) || 100;
+
+  // Compute h(V) for 100 V values
+  const N = 100;
+  const hvData = [];
+  for (let i = 0; i < N; i++) {
+    const V = 0.5 + i * (vMax - 0.5) / (N - 1);  // drips/min
+    const tau = 60.0 / V;
+    const E1 = Math.exp(-kd * tau);
+    const h = K0 * (1 - nS * E1);  // ppm
+    hvData.push({x: V, y: h});
+  }
+
+  // Data distribution from uploaded TE data
+  const row = teRowData[idx];
+  const dataUnit = row?.unit || 'ppm';
+  const unitScale = (UNIT_FACTOR[dataUnit] || 1) / 1000;  // to ppm
+  let p25 = null, p50 = null, p75 = null, dMin = null, dMax = null;
+  if (row && teRawData[row.col]) {
+    const vals = (teRawData[row.col] || []).map(v => parseFloat(v) * unitScale)
+                  .filter(isFinite).sort((a,b) => a - b);
+    if (vals.length >= 3) {
+      p25  = vals[Math.floor(vals.length * 0.25)];
+      p50  = vals[Math.floor(vals.length * 0.50)];
+      p75  = vals[Math.floor(vals.length * 0.75)];
+      dMin = vals[Math.floor(vals.length * 0.05)];
+      dMax = vals[Math.floor(vals.length * 0.95)];
+    }
+  }
+
+  // Build datasets
+  const datasets = [
+    { label: 'h(V) — forward model',
+      data: hvData, type: 'line',
+      borderColor: 'rgba(76,201,160,0.9)', borderWidth: 2,
+      pointRadius: 0, tension: 0.3, fill: false, yAxisID: 'y' },
+  ];
+
+  // Data distribution bands (horizontal lines across full V range)
+  if (p50 !== null) {
+    // IQR band
+    const bandPts = [{x: 0.5, y: p25}, {x: vMax, y: p25}, {x: vMax, y: p75}, {x: 0.5, y: p75}];
+    datasets.push({
+      label: 'Data IQR (p25–p75)',
+      data: [{x: 0.5, y: p25}, {x: vMax, y: p25}],
+      type: 'line', borderColor: 'rgba(247,164,64,0.3)', borderWidth: 0,
+      pointRadius: 0, fill: { target: {value: p75}, above: 'rgba(247,164,64,0.12)', below: 'rgba(247,164,64,0.12)' },
+      yAxisID: 'y',
+    });
+    // p5-p95 band
+    datasets.push({
+      label: 'Data range (p5–p95)',
+      data: [{x: 0.5, y: dMin}, {x: vMax, y: dMin}],
+      type: 'line', borderColor: 'rgba(247,164,64,0.15)', borderWidth: 0,
+      pointRadius: 0, fill: { target: {value: dMax}, above: 'rgba(247,164,64,0.06)', below: 'rgba(247,164,64,0.06)' },
+      yAxisID: 'y',
+    });
+    // Median line
+    datasets.push({
+      label: `Observed median (${p50.toFixed(3)} ppm)`,
+      data: [{x: 0.5, y: p50}, {x: vMax, y: p50}],
+      type: 'line', borderColor: '#f7a440', borderWidth: 1.5,
+      borderDash: [4,3], pointRadius: 0, fill: false, yAxisID: 'y',
+    });
+  }
+
+  // Equilibrium ceiling line
+  datasets.push({
+    label: `K\u2080 equilibrium (${K0.toFixed(1)} ppm)`,
+    data: [{x: 0.5, y: K0}, {x: vMax, y: K0}],
+    type: 'line', borderColor: 'rgba(76,201,160,0.3)', borderWidth: 1,
+    borderDash: [6,3], pointRadius: 0, fill: false, yAxisID: 'y',
+  });
+
+  // Autoscale y-axis to focus on the data range + relevant h(V) overlap
+  // Priority: show the data distribution clearly; K0 ceiling may be off-chart
+  let yMin = 0, yMax;
+  if (p50 !== null) {
+    // Scale to data range with generous padding
+    const dataTop = dMax * 1.5;
+    const dataBot = Math.max(0, dMin * 0.5);
+    // Include h(V) values that are within 3× the data range
+    const relevantH = hvData.map(p => p.y).filter(y => y <= dataTop * 2);
+    const hMax = relevantH.length ? Math.max(...relevantH) : dataTop;
+    yMax = Math.max(dataTop, Math.min(hMax * 1.1, K0 * 1.1));
+    yMin = dataBot;
+  } else {
+    // No data uploaded — show full model range
+    yMax = K0 * 1.1;
+  }
+
+  if (_hvCharts[prefix]) _hvCharts[prefix].destroy();
+  _hvCharts[prefix] = new Chart(canvas, {
+    data: { datasets },
+    options: {
+      animation: false, responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#cdd9e5', font: {size: 9}, boxWidth: 10,
+          filter: item => !item.text.startsWith('_') } },
+      },
+      scales: {
+        x: { type: 'linear', min: 0, max: vMax,
+             title: { display: true, text: 'Drip rate (min\u207b\u00b9)', color: '#8fa4b5', font: {size: 10} },
+             ticks: { color: '#8fa4b5', font: {size: 9} },
+             grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { type: 'linear', min: yMin, max: yMax,
+             title: { display: true, text: '[TE] calcite (ppm)', color: '#8fa4b5', font: {size: 10} },
+             ticks: { color: '#8fa4b5', font: {size: 9} },
+             grid: { color: 'rgba(255,255,255,0.04)' } },
+      },
+    },
+  });
 }
 
 function updateCaHint() {
@@ -2966,22 +4607,67 @@ function updateAllParamHints() {
   updateCaHint();
 }
 
+// Elements that support theoretical Kp (have lattice strain params in model.py kp_theory)
+const KP_THEORY_SUPPORTED = ['Cu', 'Ni', 'Co'];
+
+// Literature Kp guidance for elements without Wang & Xu support
+// Sources: Huang & Fairchild 2001, Day & Henderson 2013, Tremaine & Froelich 2013
+const KP_LITERATURE = {
+  'Zn': { range: '4–20',   suggest: 8,   ref: 'Marchitto 2006; Sinclair 2006' },
+  'Cd': { range: '1–50',   suggest: 10,  ref: 'Lorens 1981; Rimstidt+ 1998' },
+  'Pb': { range: '1–5',    suggest: 2.5, ref: 'Rimstidt+ 1998; Gascoyne 1983' },
+  'V':  { range: '0.1–2',  suggest: 0.5, ref: 'Huang+ 2001 (est.)' },
+  'Mn': { range: '5–30',   suggest: 10,  ref: 'Lorens 1981; Dromgoole & Walter 1990', caveat: '\u26a0 Mn is strongly redox-controlled — use with caution as drip rate proxy' },
+  'Fe': { range: '1–20',   suggest: 4,   ref: 'Dromgoole & Walter 1990 (est.)', caveat: '\u26a0 Fe is strongly redox-controlled and often colloidal — use with caution' },
+  'Al': { range: '0.01–1', suggest: 0.1, ref: 'colloid/detrital dominated — Kp poorly defined' },
+};
+
 function updateTheoKp(prefix) {
   const kpInput = document.getElementById(prefix + '_Kp');
   const theoField = document.getElementById(prefix + '_Kp_theo');
   const val = parseFloat(kpInput.value);
+  const elem = document.getElementById(prefix + '_elem').value;
+
   if (val === -1 || kpInput.value.trim() === '-1') {
-    // Get element for this TE
-    const elem = document.getElementById(prefix + '_elem').value;
     if (THEO_KP[elem] !== undefined) {
+      // Empirical from Lindeman — best available
       theoField.value = 'Kp = ' + THEO_KP[elem] + ' (Lindeman 2022)';
+      theoField.style.opacity = '0.7';
+      theoField.style.color = '';
+    } else if (KP_THEORY_SUPPORTED.includes(elem)) {
+      // Wang & Xu lattice strain — will auto-calculate
+      theoField.value = 'auto-calc via Wang & Xu (2001)';
+      theoField.style.opacity = '0.7';
+      theoField.style.color = '';
+    } else if (KP_LITERATURE[elem]) {
+      // Has literature guidance — show it and auto-fill
+      const lit = KP_LITERATURE[elem];
+      kpInput.value = lit.suggest;
+      theoField.value = 'Range ' + lit.range + ' (' + lit.ref + ')';
+      if (lit.caveat) theoField.value = lit.caveat + ' | ' + theoField.value;
+      theoField.style.opacity = '0.9';
+      theoField.style.color = '#f7a440';
     } else {
-      theoField.value = 'Kp = theoretical (Wang & Xu 2001)';
+      theoField.value = '\u26a0 No Kp data for ' + elem + ' \u2014 enter manually';
+      theoField.style.opacity = '1';
+      theoField.style.color = '#ffa032';
     }
-    theoField.style.opacity = '0.7';
   } else {
-    theoField.value = '';
-    theoField.style.opacity = '0.4';
+    // User has set a manual value — show literature range if available
+    if (KP_LITERATURE[elem]) {
+      const lit = KP_LITERATURE[elem];
+      theoField.value = (lit.caveat ? lit.caveat + ' | ' : '') + 'lit. range: ' + lit.range + ' (' + lit.ref + ')';
+      theoField.style.opacity = '0.6';
+      theoField.style.color = '';
+    } else if (THEO_KP[elem] !== undefined) {
+      theoField.value = 'empirical: ' + THEO_KP[elem] + ' (Lindeman 2022)';
+      theoField.style.opacity = '0.5';
+      theoField.style.color = '';
+    } else {
+      theoField.value = '';
+      theoField.style.opacity = '0.4';
+      theoField.style.color = '';
+    }
   }
 }
 
@@ -3002,19 +4688,25 @@ function updateLabile(prefix) {
 const MOL_WT = {
   'Ni': 58.693, 'Co': 58.933, 'Cu': 63.546, 'V': 50.942,
   'Zn': 65.38,  'Cd': 112.411,'Al': 26.982, 'Pb': 207.2,
+  'Mn': 54.938, 'Fe': 55.845,
   'La': 138.905,'Ce': 140.116,'other': null
 };
 // Speleothem-specific inorganic Kd values from Lindeman et al. GCA 2022
 const KP_DEFAULT = {
   'Ni': 1.1, 'Co': 4.4, 'Cu': 44,
-  'V': -1, 'Zn': -1, 'Cd': -1, 'Al': -1,
-  'Pb': -1, 'La': -1, 'Ce': -1, 'other': -1
+  'Zn': 8, 'Cd': 10, 'Pb': 2.5, 'V': 0.5,
+  'Mn': 10, 'Fe': 4, 'Al': 0.1, 'other': -1
 };
 function updateMolWt(prefix, elem) {
   const wt = MOL_WT[elem];
   if (wt !== null && wt !== undefined) {
     document.getElementById(prefix + '_mol_wt').value = wt;
   }
+  // Update aqueous concentration label to show current element
+  const aqLabel = document.getElementById(prefix + '_aq_elem_label');
+  if (aqLabel) aqLabel.textContent = elem;
+  // Also update dynamic spans in dropzone labels
+  document.querySelectorAll('.' + prefix + '-aq-elem-dyn').forEach(el => el.textContent = elem);
   // Set Kp default for this element
   const kp = KP_DEFAULT[elem] !== undefined ? KP_DEFAULT[elem] : -1;
   document.getElementById(prefix + '_Kp').value = kp;
@@ -3051,14 +4743,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 @app.route('/')
 def index():
-    return Response(HTML, mimetype='text/html')
+    resp = Response(HTML, mimetype='text/html')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
 
 
 @app.route('/upload', methods=['POST'])
 def upload():
     """Accept CSV uploads for depth/age, trace elements, and isotopes."""
     results = {}
-    for key in ['depth_age', 'trace_elem1', 'trace_elem2', 'isotope1', 'isotope2']:
+    for key in ['depth_age', 'trace_elem1', 'trace_elem2', 'isotope1', 'isotope2',
+                'ca_aq', 'te1_aq', 'te2_aq', 'te3_aq', 'te4_aq']:
         f = request.files.get(key)
         if f and f.filename:
             path = os.path.join(UPLOAD_FOLDER, key + '.csv')
@@ -3071,8 +4768,8 @@ def upload():
                     'rows': len(df),
                     'preview': df.head(3).to_dict(orient='records'),
                 }
-                # For depth_age and trace_elem1, return full data
-                if key in ('depth_age', 'trace_elem1'):
+                # For depth_age, trace_elem1, and monitoring CSVs, return full data
+                if key in ('depth_age', 'trace_elem1') or key.endswith('_aq'):
                     result_entry['data'] = df.to_dict(orient='list')
                 results[key] = result_entry
             except Exception as e:
@@ -3303,6 +5000,28 @@ def _run_model(params):
             log(f'Loaded {len(TE_data)} trace element(s)')
             if has_iso: log(f'Loaded isotope: {len(x_iso)} points')
 
+            # ── 1b. Depth unit harmonisation ──────────────────────────────────
+            # Ensure TE depths are in the same unit as depth_age depths.
+            _da_unit = params.get('da_depth_unit', 'cm')
+            _te_unit = params.get('te_depth_unit', 'cm')
+            _depth_scale = 1.0
+            if _da_unit != _te_unit:
+                if _te_unit == 'mm' and _da_unit == 'cm':
+                    _depth_scale = 0.1   # mm → cm
+                elif _te_unit == 'cm' and _da_unit == 'mm':
+                    _depth_scale = 10.0  # cm → mm
+                log(f'⚠ Depth unit mismatch: depth_age={_da_unit}, TE={_te_unit} → '
+                    f'scaling TE depths by {_depth_scale}')
+                TE_data = [(_x * _depth_scale, _y, _rk) for _x, _y, _rk in TE_data]
+                x_TE1 = TE_data[0][0]  # refresh alias
+                if has_iso and x_iso is not None:
+                    x_iso = x_iso * _depth_scale
+                    log(f'  Also scaled isotope depths by {_depth_scale}')
+            else:
+                log(f'Depth units match: {_da_unit} (no conversion needed)')
+            log(f'Depth_age range: {dating_depth.min():.2f}–{dating_depth.max():.2f} {_da_unit}')
+            log(f'TE1 depth range: {x_TE1.min():.2f}–{x_TE1.max():.2f} {_da_unit} (after conversion)')
+
             # ── 2. Unified depth grid ────────────────────────────────────────
             _set_stage('Building unified depth grid', 5)
             if has_iso:
@@ -3415,7 +5134,21 @@ def _run_model(params):
         _set_stage('Computing drip rate PDF (TE1)', 65)
         log('Computing drip rate PDF for TE1 …')
 
-        from drip_rate_util import driprates
+        from driprates_stochastic import driprates
+
+        # ── Apply user VMAX / VRES overrides ─────────────────────────────
+        # model.py and model_stochastic.py do `from params import VMAX, VMIN, VRES`
+        # at module load — they hold local copies. Monkeypatch both modules directly.
+        import params as _params_mod
+        import model_stochastic as _ms_mod
+        _user_vmax = float(params.get('v_max', 100))
+        _user_vres = int(params.get('v_res', 5000))
+        _user_vmin = _user_vmax / _user_vres  # match params.py: VMIN = VMAX / VRES
+        for _mod in [_params_mod, model, _ms_mod]:
+            _mod.VMAX = _user_vmax
+            _mod.VMIN = _user_vmin
+            _mod.VRES = _user_vres
+        log(f'V grid: VMAX={_user_vmax}, VRES={_user_vres}, VMIN={_user_vmin:.6f}')
 
         # ── Monkeypatch te_pdfseries to prevent proxyspan in-place mutation ──
         # model.te_pdfseries does X_s = PDist.proxyspan; X_s /= (1E3 * mol_wt)
@@ -3443,7 +5176,8 @@ def _run_model(params):
         # ── Inline mini-test: reproduce dr_pdfseries for 1 timestep ──────
         # This bypasses model.py entirely to pinpoint NaN source.
         def _inline_test(pd_obj, te_dict, kd_mn, kd_sd, k_e):
-            from params import VMIN, VMAX, VRES, KRES, KLIM
+            from params import KRES, KLIM
+            VMIN, VMAX, VRES = _user_vmin, _user_vmax, _user_vres
             _ps = pd_obj.proxyspan.copy()
             _pm = pd_obj.pdfmat
             _mw = te_dict['mol_wt']
@@ -3524,7 +5258,7 @@ def _run_model(params):
         # ── Diagnostic: dump raw TE params as received from UI ────────────
         for _di in range(len(params.get('te_list') or [{'col_proxy':'?'}])):
             _dp = f'te{_di+1}'
-            _dkeys = ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','drip_rate','F','InertF','labile','aq_conc','aq_unit']
+            _dkeys = ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','cal_pct','F','InertF','labile','aq_conc','aq_unit']
             _dvals = {k: params.get(f'{_dp}_{k}', '?') for k in _dkeys}
             log(f'Raw params {_dp}: {_dvals}')
         log(f'Raw params ca_conc={params.get("ca_conc","?")} ca_unit={params.get("ca_unit","?")}')
@@ -3551,27 +5285,43 @@ def _run_model(params):
         def _aq(row, idx):
             """aq_conc in ppb for driprates().
             In semi mode: back-calculate aq_conc (ppb) from the observed proxy median
-            using the correct formula: pred = Kd*XL*(aq_ppb/ca_ppb)*CA_CALCITE_PPM
-            => aq_ppb = obs_ppm * ca_ppb / (Kd * XL * CA_CALCITE_PPM)
-            This centres the forward model on the data range so the PDF has
-            support. The subsequent normalisation to % of max is unaffected.
+            using the correct Kp-based kinetic model:
+              h(V) = Kp*(XF+XL)*(aq/ca)*400000*K_e * (1 - nS*exp(-Kd*tau))
+            Solve for aq_ppb so that h(V_ref) = obs_ppm at a reference drip rate.
             """
             if _analysis_mode == 'semi':
                 obs_native = _obs_median_native.get(row)
                 if obs_native and obs_native > 0:
+                    kp_  = float(params.get(row + '_Kp', 1))
+                    if kp_ < 0:
+                        kp_ = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44}.get(
+                            params.get(row + '_elem', ''), 1)
                     kd_  = float(np.exp(float(params[row + '_Kd_mn'])))
+                    ke_  = float(params.get(row + '_K_e', 1))
+                    xf_  = float(params.get(row + '_F', 0.01))
                     xl_  = max(float(params[row + '_labile']) if params.get(row + '_labile')
                                else 1.0 - float(params.get(row + '_InertF', 0))
                                         - float(params.get(row + '_F', 0)), 0.01)
-                    # Convert obs to ppm (model prediction axis is ppm)
+                    nS_  = 1.0 - xf_
+                    # Reference drip rate for the kinetic inversion (10 drips/min default)
+                    tau_ = 6.0   # seconds (= 60/10)
+                    E1_  = float(np.exp(-kd_ * tau_))
+                    kin_factor = 1.0 - nS_ * E1_   # fraction of K0 reached at V_ref
+
+                    # Convert obs to ppm
                     _te_entries = params.get('te_list') or []
                     _unt = _te_entries[idx].get('unit', 'ppm') \
                            if idx < len(_te_entries) else params.get(row + '_unit', 'ppm')
                     obs_ppm  = obs_native * _unit_to_ppb(_unt) / 1000.0
                     ca_ppb_  = float(params['ca_conc']) * _unit_to_ppb(params.get('ca_unit','ppb'))
-                    implied  = obs_ppm * ca_ppb_ / max(kd_ * xl_ * CA_CALCITE_PPM, 1e-20)
+
+                    # Solve: obs = Kp*(XF+XL)*(aq/ca)*400000*K_e * kin_factor
+                    # => aq = obs * ca / (Kp*(XF+XL)*400000*K_e*kin_factor)
+                    denom = max(kp_ * (xf_ + xl_) * CA_CALCITE_PPM * ke_ * kin_factor, 1e-20)
+                    implied  = obs_ppm * ca_ppb_ / denom
                     log(f'Semi-quant {row}: obs={obs_native:.4f} (native), '
                         f'obs_ppm={obs_ppm:.4f}, ca_ppb={ca_ppb_:.1f}, '
+                        f'Kp={kp_}, kin_factor={kin_factor:.4f}, '
                         f'implied aq_conc={implied:.4f} ppb')
                     return implied
                 log(f'Semi-quant {row}: no proxy median — using entered aq_conc')
@@ -3579,20 +5329,74 @@ def _run_model(params):
             return float(params[row + '_aq_conc']) * _unit_to_ppb(params.get(row + '_aq_unit', 'ppb'))
 
         def make_te(pdist, row, idx):
-            return {
-                'elem':    params[row + '_elem'],
+            _kp_val = float(params[row + '_Kp'])
+            _elem   = params[row + '_elem']
+            # Resolve Kp=-1 (theoretical): model.py kp_theory only supports Cu, Ni, Co
+            _KP_THEORY_ELEMS = {'Cu', 'Ni', 'Co'}
+            if _kp_val == -1:
+                if _elem not in _KP_THEORY_ELEMS:
+                    # No theoretical Kp — use THEO_KP empirical values or raise error
+                    _empirical = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44}
+                    if _elem in _empirical:
+                        _kp_val = _empirical[_elem]
+                        log(f'  Kp=-1 for {_elem}: resolved to empirical {_kp_val}')
+                    else:
+                        raise ValueError(
+                            f'Kp=-1 (theoretical) is not supported for {_elem}. '
+                            f'Supported elements: {", ".join(sorted(_KP_THEORY_ELEMS))}. '
+                            f'Please enter a numeric Kp value for {_elem}.')
+
+            te = {
+                'elem':    _elem,
                 'mol_wt':  float(params[row + '_mol_wt']),
-                'Kp':      float(params[row + '_Kp']),
+                'Kp':      _kp_val,
                 'Temp_C':  float(params['temp_C']),
                 'F':       float(params[row + '_F']),
                 'InertF':  float(params[row + '_InertF']),
                 'aq_conc': np.float64(_aq(row, idx)),
                 'ca_conc': np.float64(
-                    # Pass real ca_conc in both modes so Xa/Ya molar ratio is correct.
                     float(params['ca_conc']) * _unit_to_ppb(params.get('ca_unit', 'ppb'))
                 ),
                 'PDist':   pdist,
             }
+
+            # Attach concentration priors if supplied (stochastic mode)
+            try:
+                from concentration_prior import ConcentrationPrior
+                if 'ca_prior_mu_ln' in params and 'ca_prior_sigma_ln' in params:
+                    te['ca_prior'] = ConcentrationPrior(
+                        mu_ln    = float(params['ca_prior_mu_ln']),
+                        sigma_ln = float(params['ca_prior_sigma_ln']),
+                        unit     = 'ppb',
+                        source   = params.get('ca_prior_source', 'manual'),
+                    )
+                _aq_mu_key  = f'{row}_prior_mu_ln'
+                _aq_sig_key = f'{row}_prior_sigma_ln'
+                if _aq_mu_key in params and _aq_sig_key in params:
+                    te['aq_prior'] = ConcentrationPrior(
+                        mu_ln    = float(params[_aq_mu_key]),
+                        sigma_ln = float(params[_aq_sig_key]),
+                        unit     = 'ppb',
+                        source   = params.get(f'{row}_prior_source', 'manual'),
+                    )
+            except ImportError:
+                pass  # concentration_prior.py not available — scalar only
+
+            # Log stochastic status
+            if 'ca_prior' in te:
+                log(f'  ├─ [Ca_aq] STOCHASTIC: µ_ln={te["ca_prior"].mu_ln:.3f}, '
+                    f'σ_ln={te["ca_prior"].sigma_ln:.3f}, '
+                    f'mean={te["ca_prior"].mean_ppb:.1f} ppb')
+            else:
+                log(f'  ├─ [Ca_aq] fixed: {te["ca_conc"]:.1f} ppb')
+            if 'aq_prior' in te:
+                log(f'  ├─ [TE_aq] STOCHASTIC: µ_ln={te["aq_prior"].mu_ln:.3f}, '
+                    f'σ_ln={te["aq_prior"].sigma_ln:.3f}, '
+                    f'mean={te["aq_prior"].mean_ppb:.3f} ppb')
+            else:
+                log(f'  ├─ [TE_aq] fixed: {te["aq_conc"]:.4f} ppb')
+
+            return te
 
         # ── Run inline diagnostic test before the real driprates call ─────
         try:
@@ -3602,7 +5406,7 @@ def _run_model(params):
                          float(params.get('te1_K_e', 1)))
         except Exception as _e:
             log(f'  [TEST] Exception: {_e}')
-            import traceback; log(traceback.format_exc())
+            log(traceback.format_exc())
 
         # Loop over all TE PDists
         V_pdf_list = []
@@ -3837,7 +5641,28 @@ def _run_model(params):
             realisations = None
             log('Realisations skipped (generate_realisations=False)')
 
-        # ── 10. Save outputs ────────────────────────────────────────────────
+        # ── 10. Apply hiatus exclusion zones ────────────────────────────────
+        _hiatus_zones = params.get('hiatus_zones', [])
+        if _hiatus_zones:
+            _n_masked = 0
+            for _hz in _hiatus_zones:
+                _hf = float(_hz.get('from', 0))
+                _ht = float(_hz.get('to', 0))
+                _hlo, _hhi = min(_hf, _ht), max(_hf, _ht)
+                _hmask = (V_age >= _hlo) & (V_age <= _hhi)
+                _n_this = int(_hmask.sum())
+                _n_masked += _n_this
+                for _p in V_pcs:
+                    V_pcs[_p][_hmask] = np.nan
+                _kd_med_lo[_hmask] = np.nan
+                _kd_med_hi[_hmask] = np.nan
+                V_pdf[:, _hmask] = 0.0  # zero out PDF in hiatus zones
+                if realisations is not None:
+                    realisations[:, _hmask] = np.nan
+                log(f'Hiatus zone {_hlo:.0f}–{_hhi:.0f} yrs BP: masked {_n_this} timesteps')
+            log(f'Total hiatus-masked timesteps: {_n_masked}')
+
+        # ── 11. Save outputs ────────────────────────────────────────────────
         _set_stage('Saving outputs', 96)
 
         # Summary CSV
@@ -3877,16 +5702,23 @@ def _run_model(params):
         # Temporal quantiles of pc50 for spread on scatter
         _mu_lo = float(np.nanpercentile(_med, 25))
         _mu_hi = float(np.nanpercentile(_med, 75))
+        # NaN → None for JSON serialisation
+        def _to_json_list(arr):
+            return [None if (isinstance(v, float) and not np.isfinite(v)) else float(v)
+                    for v in arr]
+
         chart_data = {
             'mode':  _analysis_mode,
             'age':   V_age.tolist(),
-            'pc05':  V_pcs[5].tolist(),
-            'pc25':  V_pcs[25].tolist(),
-            'pc50':  V_pcs[50].tolist(),
-            'pc75':  V_pcs[75].tolist(),
-            'pc95':  V_pcs[95].tolist(),
-            'kd_lo': _kd_med_lo.tolist(),
-            'kd_hi': _kd_med_hi.tolist(),
+            'pc05':  _to_json_list(V_pcs[5]),
+            'pc25':  _to_json_list(V_pcs[25]),
+            'pc50':  _to_json_list(V_pcs[50]),
+            'pc75':  _to_json_list(V_pcs[75]),
+            'pc95':  _to_json_list(V_pcs[95]),
+            'kd_lo': _to_json_list(_kd_med_lo),
+            'kd_hi': _to_json_list(_kd_med_hi),
+            'hiatus_zones': [{'from': float(z.get('from',0)), 'to': float(z.get('to',0))}
+                             for z in _hiatus_zones] if _hiatus_zones else [],
             'sf': None if _analysis_mode == 'semi' else {
                 'mean': _mu, 'cv': _cv,
                 'mean_lo': _mu_lo, 'mean_hi': _mu_hi,
@@ -3900,6 +5732,174 @@ def _run_model(params):
         _outputs = ['drip_rate_summary.csv']
         if realisations is not None:
             _outputs.append('drip_rate_realisations.csv')
+
+        # ── Run ID (timestamp-based) ────────────────────────────────
+        # ── Run ID (timestamp-based) ────────────────────────────────
+        _run_id = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
+        _run_id_path = os.path.join(OUTPUT_FOLDER, 'run_id.txt')
+        with open(_run_id_path, 'w') as f:
+            f.write(_run_id)
+        _outputs.append('run_id.txt')
+        log(f'Run ID: {_run_id}')
+
+        # ── Age model JSON (for browser chart) ──────────────────────
+        try:
+            _age_data = {'depth': [], 'age_median': [], 'age_lo': None, 'age_hi': None,
+                         'dated_depth': [], 'dated_age': [], 'dated_err': []}
+            _pd0 = PDist_TEs[0]
+            _age_data['age_median'] = _pd0.calbp.tolist()
+
+            # ── Build depth grid ─────────────────────────────────────
+            # Strategy: read depth_age.csv dated points, interpolate depth=f(age)
+            _da_csv = os.path.join(UPLOAD_FOLDER, 'depth_age.csv')
+            _da_depths, _da_ages, _da_errs = [], [], []
+            if os.path.isfile(_da_csv):
+                _dadf = pd.read_csv(_da_csv)
+                _dcol_da = params.get('col_depth', '')
+                _acol_da = params.get('col_age', '')
+                _ecol_da = params.get('col_age_err', '')
+                log(f'Age model: reading depth_age.csv, col_depth={_dcol_da!r}, col_age={_acol_da!r}, col_err={_ecol_da!r}')
+                log(f'Age model: available columns: {list(_dadf.columns)}')
+
+                if _dcol_da and _dcol_da in _dadf.columns and _acol_da and _acol_da in _dadf.columns:
+                    _da_d = pd.to_numeric(_dadf[_dcol_da], errors='coerce')
+                    _da_a = pd.to_numeric(_dadf[_acol_da], errors='coerce')
+                    _valid = _da_d.notna() & _da_a.notna()
+                    _da_depths = _da_d[_valid].tolist()
+                    _da_ages   = _da_a[_valid].tolist()
+                    if _ecol_da and _ecol_da in _dadf.columns:
+                        _da_errs = pd.to_numeric(_dadf[_ecol_da], errors='coerce')[_valid].tolist()
+
+                    # Interpolate depth = f(age) using the dated points
+                    if len(_da_depths) >= 2:
+                        from scipy.interpolate import interp1d as _interp
+                        _sort = np.argsort(_da_ages)
+                        _f_depth = _interp(
+                            np.array(_da_ages)[_sort], np.array(_da_depths)[_sort],
+                            kind='linear', bounds_error=False,
+                            fill_value=(_da_depths[_sort[0]], _da_depths[_sort[-1]]))
+                        _age_data['depth'] = _f_depth(_pd0.calbp).tolist()
+                        log(f'Age model: interpolated depth grid from {len(_da_depths)} dated points')
+
+            # Fallback: try TE CSV depth column
+            if not _age_data['depth']:
+                _depth_csv = os.path.join(UPLOAD_FOLDER, 'trace_elem1.csv')
+                if os.path.isfile(_depth_csv):
+                    _tdf = pd.read_csv(_depth_csv)
+                    # Try multiple strategies to find depth column
+                    _dcol = ''
+                    _te_entries = params.get('te_list') or []
+                    if _te_entries and isinstance(_te_entries[0], dict):
+                        _dcol = _te_entries[0].get('col_depth', '')
+                    if not _dcol:
+                        # Guess from column names
+                        for _guess in ['depth','Depth','DEPTH','dist','Dist','distance']:
+                            if _guess in _tdf.columns:
+                                _dcol = _guess; break
+                    if _dcol and _dcol in _tdf.columns:
+                        _depths = pd.to_numeric(_tdf[_dcol], errors='coerce').dropna().values
+                        if len(_depths) > 0:
+                            _dmin, _dmax = float(_depths.min()), float(_depths.max())
+                            _age_data['depth'] = np.linspace(_dmin, _dmax, len(_pd0.calbp)).tolist()
+                            log(f'Age model: linear depth grid from TE CSV [{_dmin:.1f}, {_dmax:.1f}]')
+
+            # Last fallback: sequential indices
+            if not _age_data['depth']:
+                _age_data['depth'] = list(range(len(_pd0.calbp)))
+                log('Age model: using sequential indices for depth (no depth column found)')
+
+            # Dated points for overlay
+            _age_data['dated_depth'] = _da_depths
+            _age_data['dated_age']   = _da_ages
+            _age_data['dated_err']   = _da_errs
+
+            _am_path = os.path.join(OUTPUT_FOLDER, 'age_model.json')
+            with open(_am_path, 'w') as f:
+                json.dump(_age_data, f)
+            _outputs.append('age_model.json')
+            log(f'Saved age_model.json ({len(_age_data["depth"])} depth pts, {len(_da_depths)} dated pts)')
+            # Also save as CSV
+            _am_csv = os.path.join(OUTPUT_FOLDER, 'age_model.csv')
+            pd.DataFrame({'depth': _age_data['depth'],
+                          'age_yBP': _age_data['age_median']}).to_csv(_am_csv, index=False)
+            _outputs.append('age_model.csv')
+            log('Saved age_model.csv')
+        except Exception as _e:
+            log(f'Could not save age model: {_e}')
+            log(traceback.format_exc())
+
+        # ── PDF heatmap JSON (subsampled for browser) ────────────────
+        try:
+            # Subsample the V_pdf matrix for manageable browser rendering
+            _max_v = 200   # max V bins
+            _max_t = 500   # max time steps
+            _v_step = max(1, V_pdf.shape[0] // _max_v)
+            _t_step = max(1, V_pdf.shape[1] // _max_t)
+            _sub_pdf = V_pdf[::_v_step, ::_t_step]
+            _sub_v   = V_span[::_v_step]
+            _sub_age = V_age[::_t_step]
+            _hm_data = {
+                'V_pdf':  _sub_pdf.tolist(),
+                'V_span': _sub_v.tolist(),
+                'ages':   _sub_age.tolist(),
+            }
+            _hm_path = os.path.join(OUTPUT_FOLDER, 'pdf_heatmap.json')
+            with open(_hm_path, 'w') as f:
+                json.dump(_hm_data, f)
+            _outputs.append('pdf_heatmap.json')
+            log(f'Saved pdf_heatmap.json ({_sub_pdf.shape[0]}×{_sub_pdf.shape[1]} subsampled)')
+        except Exception as _e:
+            log(f'Could not save PDF heatmap: {_e}')
+
+        # ── Input summary CSV ────────────────────────────────────────
+        try:
+            _summary_rows = [
+                ('run_id', _run_id),
+                ('timestamp', datetime.datetime.now().isoformat()),
+                ('analysis_mode', _analysis_mode),
+                ('station_name', params.get('station_name', '')),
+                ('cave_temperature_C', params.get('temp_C', '')),
+                ('global_drip_rate', params.get('global_drip_rate', '')),
+                ('da_depth_unit', params.get('da_depth_unit', 'cm')),
+                ('te_depth_unit', params.get('te_depth_unit', 'cm')),
+                ('ca_conc', params.get('ca_conc', '')),
+                ('ca_unit', params.get('ca_unit', '')),
+                ('calage_min', params.get('calage_min', '')),
+                ('calage_max', params.get('calage_max', '')),
+                ('n_realisations', params.get('n_realisations', '')),
+                ('rng_seed', params.get('rng_seed', '')),
+                ('outlier_win_size', params.get('outlier_win_size', '')),
+                ('v_max', params.get('v_max', 100)),
+                ('v_res', params.get('v_res', 5000)),
+                ('hiatus_zones', json.dumps(params.get('hiatus_zones', []))),
+            ]
+            # Per-TE params
+            for _i in range(len(params.get('te_list', [{}]))):
+                _rk = f'te{_i+1}'
+                for _k in ['elem','mol_wt','Kp','Kd_mn','Kd_sd','K_e','cal_pct',
+                            'F','InertF','labile','aq_conc','aq_unit']:
+                    _summary_rows.append((f'{_rk}_{_k}', params.get(f'{_rk}_{_k}', '')))
+                # Stochastic priors if present
+                for _pk in ['prior_mu_ln', 'prior_sigma_ln', 'prior_source']:
+                    _key = f'{_rk}_{_pk}'
+                    if _key in params:
+                        _summary_rows.append((_key, params[_key]))
+            for _pk in ['ca_prior_mu_ln', 'ca_prior_sigma_ln', 'ca_prior_source']:
+                if _pk in params:
+                    _summary_rows.append((_pk, params[_pk]))
+
+            _is_path = os.path.join(OUTPUT_FOLDER, 'input_summary.csv')
+            pd.DataFrame(_summary_rows, columns=['parameter', 'value']).to_csv(_is_path, index=False)
+            _outputs.append('input_summary.csv')
+            log('Saved input_summary.csv')
+        except Exception as _e:
+            log(f'Could not save input summary: {_e}')
+
+        # Include ProxyRecord.pkl in downloads if present
+        _pkl_path = os.path.join(OUTPUT_FOLDER, 'ProxyRecord.pkl')
+        if os.path.isfile(_pkl_path):
+            _outputs.append('ProxyRecord.pkl')
+
         run_state['outputs'] = _outputs
         _set_stage('Complete', 100)
         log('✓ Run complete.')
