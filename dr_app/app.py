@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v41)</title>
+<title>Drip Rate Estimator (v43)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -973,12 +973,12 @@ HTML = r'''<!DOCTYPE html>
               <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
                 <div>
                   <label style="font-size:10px;color:var(--muted)">Mean [Ca_aq]</label>
-                  <input type="number" id="ca_conc" value="62" step="0.1"
+                  <input type="number" id="ca_conc" value="66.46" step="0.1"
                          oninput="updateCaHint();updateAllParamHints();fitCaPriorFromManual()">
                 </div>
                 <div>
                   <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
-                  <input type="number" id="ca_conc_sd" placeholder="blank = fixed"
+                  <input type="number" id="ca_conc_sd" value="3.98" placeholder="blank = fixed"
                          step="0.1" oninput="fitCaPriorFromManual()">
                 </div>
                 <div>
@@ -1420,33 +1420,74 @@ HTML = r'''<!DOCTYPE html>
         <div style="font-size:12px; line-height:1.9; color:var(--text)">
           This tool implements a novel kinetic proxy approach that harnesses the dissociation
           of organic-metal complexes (OMC) in cave dripwater to reconstruct past drip rates —
-          and thus precipitation — from stalagmite trace metals (Co, Ni). The underlying model
-          links the concentration of trace elements in speleothem calcite to past drip rates
-          via the kinetics of metal-organic dissociation, calibrated through monitoring data
-          and refined using Monte Carlo propagation of paleo-temperature uncertainty.<br><br>
+          and thus precipitation — from stalagmite trace metals. The underlying model
+          links the concentration of trace elements in speleothem calcite to past fluid residence
+          times via the kinetics of metal-organic dissociation, calibrated through monitoring data
+          and refined using Monte Carlo propagation of paleo-temperature uncertainty. While
+          developed for speleothems, the approach generalises to any mineral deposit formed from
+          waters containing OMC with sufficiently slow dissociation kinetics — see below.<br><br>
           The method was developed and validated using stalagmite HS4 from Heshang Cave, China,
           reconstructing Holocene rainfall for the Yangtze region and providing new insights
           into East Asian Summer Monsoon dynamics over the past 9,500 years. The probabilistic
           reconstruction framework — including the full ensemble of drip rate realisations
           available for download — enables recurrence quantification analysis (RQA) and other
           nonlinear time series methods.<br><br>
-          <strong>Generalisation to thin-film residence time (τ)</strong><br>
+          <strong>Generalisation beyond stalagmite drip rates</strong><br>
           While the default output is expressed as drip rate (drips min⁻¹), the fundamental
           quantity recovered by the model is the thin-film residence time, τ = 60/<em>d</em> (s).
           For stalagmites, τ maps directly to drip rate because each drop replaces the thin
-          film on the apex. However, the method generalises to other carbonate deposit types
-          where the kinetic accumulation window is not cleanly defined by direct
-          drip-replenishment:<br>
+          film on the apex — but this is merely the simplest case of a general principle:
+          wherever organic–metal complexes (OMC) are present in an aqueous system, their
+          dissociation kinetics encode the timescale of fluid turnover.<br><br>
+
+          <strong style="color:var(--accent)">Carbonate depositional settings</strong>
           <div style="margin:8px 0 8px 12px;padding:8px 12px;border-left:2px solid var(--border);font-size:11.5px;line-height:1.8">
-            <strong>Flowstones &amp; stalactites</strong> — τ represents the fluid residence time
-            on the mineral surface. The kinetic window is set by film thickness, flow velocity,
-            and surface geometry rather than discrete drip events.<br>
-            <strong>Sub-aqueous deposits</strong> — τ represents the equilibration timescale of
-            the thin boundary layer with bulk solution via diffusion.<br>
+            <strong>Stalagmites</strong> — τ = drip interval. Each drop replaces the thin film
+            at the apex; the kinetic window is defined by drip-replenishment.<br>
+            <strong>Stalactites</strong> — τ represents the fluid residence time as the film
+            migrates along the soda-straw or curtain surface. The kinetic window is set by
+            film thickness, flow path length, and gravity-driven velocity.<br>
+            <strong>Flowstones</strong> — τ is the sheet-flow residence time across the mineral
+            surface, governed by slope, roughness, and volumetric flux.<br>
+            <strong>Sub-aqueous carbonates</strong> — τ represents the equilibration timescale
+            of the thin boundary layer with bulk solution via diffusion, applicable to
+            lacustrine tufas, pool deposits, and submarine cements.<br>
             <strong>Long integration periods</strong> — where the kinetic accumulation window
             <em>M</em> exceeds the reservoir mixing time, τ approximates bulk fluid residence
-            time. In this regime, calibration to volumetric flow requires reservoir volume:
+            time. Calibration to volumetric flow then requires reservoir volume:
             <em>Q</em> = <em>V</em><sub>reservoir</sub> / τ (m³ s⁻¹).
+          </div>
+
+          <strong style="color:var(--accent)">Beyond carbonates</strong>
+          <div style="margin:8px 0 8px 12px;padding:8px 12px;border-left:2px solid var(--border);font-size:11.5px;line-height:1.8">
+            Organic ligands capable of forming kinetically inert metal complexes are ubiquitous
+            in Earth's aqueous compartments — rivers, lakes, estuaries, groundwater, soils,
+            ocean margins, and hydrothermal systems. Any mineral phase that incorporates
+            trace metals from such waters is, in principle, a recorder of fluid residence time
+            via the same dissociation-kinetic mechanism. The only fundamental requirement is
+            that the OMC dissociation timescale is sufficiently slow relative to the fluid
+            turnover rate to produce a measurable kinetic signal — i.e., that the system is
+            not at secular equilibrium with respect to metal release.<br><br>
+            Even at secular equilibrium, the method resolves a <em>minimum</em> fluid residence
+            time (or equivalently, a maximum flow rate): the observation that TE concentrations
+            have reached the equilibrium ceiling K₀ constrains τ to be at least several
+            multiples of the dissociation half-life. This provides a one-sided bound on
+            paleohydrology that is still quantitatively useful — analogous to how radiocarbon
+            provides a minimum age when a sample is beyond the dating range.
+          </div>
+
+          <strong style="color:var(--accent)">Toward absolute paleohydrology</strong>
+          <div style="margin:8px 0 8px 12px;padding:8px 12px;border-left:2px solid var(--border);font-size:11.5px;line-height:1.8">
+            Conventional paleohydrology relies on empirical transfer functions or semi-quantitative
+            indices — proxies that track <em>relative</em> wetness or aridity without a
+            mechanistic connection to physical flow rates. The kinetic approach here grounds
+            hydrological reconstruction in the same class of absolute physical measurement
+            that underpins geochronology: a rate law (OMC dissociation) with known kinetic
+            parameters, operating over a measurable timescale (τ), recorded in a datable
+            mineral archive. Just as radiometric decay provides an absolute clock, OMC
+            dissociation kinetics provide an absolute flowmeter — extending paleohydrology
+            from relative proxy interpretation into the methodological framework of
+            geochronometry.
           </div>
           Use the τ (s) toggle in the Output Explorer to display results as residence time
           instead of drip rate.
@@ -1548,7 +1589,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v41</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v43</div>
   </div>
 
 </div>
@@ -1828,8 +1869,8 @@ function renderTERows() {
 // Kd_mn = ln(Kd_NOM); users refine using the "implied ln(Kd)" hint.
 // aq_conc are order-of-magnitude starting points — cave-specific.
 const ELEM_DEFAULTS = {
-  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 4.370, K_e: 1.0 },
-  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.00001, InertF: 0.40, aq_conc: 0.300, K_e: 1.0 },
+  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 4.34, aq_conc_sd: 1.19, K_e: 1.0 },
+  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.00001, InertF: 0.40, aq_conc: 0.47, aq_conc_sd: 0.075, K_e: 1.0 },
   'Cu': { Kd_mn: -0.083, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
 };
 const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };
@@ -2012,7 +2053,7 @@ function makeTEParamCard(n, detectedElem) {
             </div>
             <div>
               <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
-              <input type="number" id="${p}_aq_conc_sd" placeholder="blank = fixed"
+              <input type="number" id="${p}_aq_conc_sd" ${d.aq_conc_sd ? 'value="'+d.aq_conc_sd+'"' : ''} placeholder="blank = fixed"
                      step="0.001" oninput="fitAqPriorFromManual('${p}')">
             </div>
           </div>
@@ -4909,8 +4950,13 @@ function updateMolWt(prefix, elem) {
     const el = document.getElementById(prefix + '_' + f);
     if (el) el.value = v;
   }
+  // Set aq_conc_sd if available, otherwise clear it
+  const sdEl = document.getElementById(prefix + '_aq_conc_sd');
+  if (sdEl) sdEl.value = d.aq_conc_sd || '';
   updateLabile(prefix);
   updateParamHints(prefix);
+  // Refit stochastic prior from new defaults
+  if (typeof fitAqPriorFromManual === 'function') fitAqPriorFromManual(prefix);
 }
 
 // ── Utilities ────────────────────────────────────────────────────────────────
@@ -4924,9 +4970,12 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v41 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v43 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
+  // Fit stochastic priors from default concentrations
+  fitCaPriorFromManual();
+  for (let i = 1; i <= teRowData.length; i++) fitAqPriorFromManual('te' + i);
 });
 </script>
 </body>
