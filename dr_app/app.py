@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v39)</title>
+<title>Drip Rate Estimator (v40)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -1263,7 +1263,7 @@ HTML = r'''<!DOCTYPE html>
       <div id="rtab-pdf" style="display:none">
         <div class="card">
           <div class="card-title">🌈 Drip Rate Probability Density</div>
-          <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center">
+          <div style="display:flex;gap:10px;margin-bottom:10px;align-items:center;flex-wrap:wrap">
             <label style="font-size:10px;color:var(--muted)">Colour map:</label>
             <select id="pdf-cmap" onchange="renderPdfHeatmap()"
                     style="font-size:11px;padding:3px 8px">
@@ -1277,6 +1277,9 @@ HTML = r'''<!DOCTYPE html>
             <label style="font-size:10px;color:var(--muted);margin-left:10px">Log density:</label>
             <input type="checkbox" id="pdf-log" onchange="renderPdfHeatmap()"
                    style="accent-color:var(--accent)">
+            <label style="font-size:10px;color:var(--muted);margin-left:10px">Percentiles:</label>
+            <input type="checkbox" id="pdf-overlay" onchange="renderPdfHeatmap()"
+                   style="accent-color:var(--accent)" checked>
           </div>
           <div style="height:400px;position:relative">
             <canvas id="pdfHeatmapCanvas" style="width:100%;height:100%"></canvas>
@@ -1508,7 +1511,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v39</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v40</div>
   </div>
 
 </div>
@@ -3322,24 +3325,25 @@ function switchResultTab(name) {
 }
 
 function loadPdfHeatmap() {
-  fetch('/data/pdf_heatmap.json')
-    .then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(d => {
-      window._pdfHeatmapData = d;
-      // Small delay for layout reflow after tab becomes visible
-      setTimeout(renderPdfHeatmap, 80);
-    })
-    .catch(e => {
-      console.warn('PDF heatmap load:', e);
-      const c = document.getElementById('pdfHeatmapCanvas');
-      if (c) {
-        const ctx = c.getContext('2d');
-        c.width = c.parentElement.clientWidth || 400;
-        c.height = c.parentElement.clientHeight || 300;
-        ctx.fillStyle = '#8fa4b5'; ctx.font = '13px Arial'; ctx.textAlign = 'center';
-        ctx.fillText('No PDF data — run the model first', c.width/2, c.height/2);
-      }
-    });
+  Promise.all([
+    fetch('/data/pdf_heatmap.json').then(r => { if (!r.ok) throw new Error(r.status); return r.json(); }),
+    fetch('/chart_data').then(r => r.ok ? r.json() : null).catch(() => null),
+  ]).then(([hm, cd]) => {
+    window._pdfHeatmapData = hm;
+    window._pdfOverlayData = cd;  // percentiles for overlay
+    if (cd && cd.hiatus_zones) window._chartDataHiatusZones = cd.hiatus_zones;
+    setTimeout(renderPdfHeatmap, 80);
+  }).catch(e => {
+    console.warn('PDF heatmap load:', e);
+    const c = document.getElementById('pdfHeatmapCanvas');
+    if (c) {
+      const ctx = c.getContext('2d');
+      c.width = c.parentElement.clientWidth || 400;
+      c.height = c.parentElement.clientHeight || 300;
+      ctx.fillStyle = '#8fa4b5'; ctx.font = '13px Arial'; ctx.textAlign = 'center';
+      ctx.fillText('No PDF data — run the model first', c.width/2, c.height/2);
+    }
+  });
 }
 
 function loadAgeModel() {
@@ -3666,7 +3670,8 @@ function renderPdfHeatmap() {
   const img = tmpCtx.createImageData(nt, nv);
   for (let v = 0; v < nv; v++) {
     for (let t = 0; t < nt; t++) {
-      const val = data[nv - 1 - v][t];
+      // Reverse x: oldest on left, youngest on right (matches time series)
+      const val = data[nv - 1 - v][nt - 1 - t];
       const norm = isFinite(val) && maxD > 0 ? Math.max(0, Math.min(1, val / maxD)) : 0;
       const [r, g, b] = sampleCmap(cmap, norm);
       const idx = (v * nt + t) * 4;
@@ -3677,12 +3682,14 @@ function renderPdfHeatmap() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(tmpCanvas, ML, MT, pw, ph);
 
+  // Axes (reversed: oldest left, youngest right)
   ctx.strokeStyle = '#8fa4b5'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(ML, MT); ctx.lineTo(ML, MT+ph); ctx.lineTo(ML+pw, MT+ph); ctx.stroke();
   ctx.fillStyle = '#8fa4b5'; ctx.font = '11px Arial, sans-serif'; ctx.textAlign = 'center';
   const ageMin = ages[0], ageMax = ages[nt-1];
   for (let i = 0; i <= 6; i++) {
-    const frac = i / 6, age = ageMin + frac * (ageMax - ageMin), px = ML + frac * pw;
+    // frac=0 → left → oldest; frac=1 → right → youngest
+    const frac = i / 6, age = ageMax - frac * (ageMax - ageMin), px = ML + frac * pw;
     ctx.fillText(Math.round(age).toString(), px, MT + ph + 15);
     ctx.beginPath(); ctx.moveTo(px, MT+ph); ctx.lineTo(px, MT+ph+4); ctx.stroke();
   }
@@ -3691,13 +3698,79 @@ function renderPdfHeatmap() {
   ctx.textAlign = 'right';
   for (let i = 0; i <= 5; i++) {
     const frac = i / 5, v = vMin + frac * (vMax - vMin), py = MT + ph - frac * ph;
-    ctx.fillText(v.toFixed(0), ML - 5, py + 4);
+    ctx.fillText(v.toFixed(1), ML - 5, py + 4);
     ctx.beginPath(); ctx.moveTo(ML, py); ctx.lineTo(ML-3, py); ctx.stroke();
   }
   ctx.save(); ctx.translate(14, MT + ph/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign = 'center';
   ctx.fillText('Drip rate (min\u207b\u00b9)', 0, 0);
   ctx.restore();
+
+  // ── Percentile overlay ────────────────────────────────────────────
+  const showOverlay = document.getElementById('pdf-overlay')?.checked;
+  const cd = window._pdfOverlayData;
+  if (showOverlay && cd && cd.age && cd.pc50) {
+    // Map age → pixel x (reversed: high age = left)
+    const ageToPx = a => ML + (1 - (a - ageMin) / (ageMax - ageMin)) * pw;
+    // Map drip rate → pixel y
+    const vToPy = v => MT + ph - ((v - vMin) / (vMax - vMin)) * ph;
+
+    // Subsample to ~500 points for smooth lines
+    const step = Math.max(1, Math.floor(cd.age.length / 500));
+
+    function drawLine(arr, color, width, dash) {
+      ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = width;
+      ctx.setLineDash(dash || []);
+      let started = false;
+      for (let i = 0; i < cd.age.length; i += step) {
+        const v = arr[i];
+        if (v === null || v === undefined || !isFinite(v)) { started = false; continue; }
+        const px = ageToPx(cd.age[i]), py = vToPy(v);
+        // Clip to plot area
+        if (py < MT || py > MT + ph) { started = false; continue; }
+        if (!started) { ctx.moveTo(px, py); started = true; }
+        else ctx.lineTo(px, py);
+      }
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+
+    // IQR fill
+    ctx.beginPath();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    let pts25 = [], pts75 = [];
+    for (let i = 0; i < cd.age.length; i += step) {
+      const v25 = cd.pc25[i], v75 = cd.pc75[i];
+      if (v25 != null && v75 != null && isFinite(v25) && isFinite(v75)) {
+        pts25.push({px: ageToPx(cd.age[i]), py: vToPy(v25)});
+        pts75.push({px: ageToPx(cd.age[i]), py: vToPy(v75)});
+      }
+    }
+    if (pts25.length > 2) {
+      ctx.beginPath();
+      pts25.forEach((p, i) => i === 0 ? ctx.moveTo(p.px, p.py) : ctx.lineTo(p.px, p.py));
+      [...pts75].reverse().forEach(p => ctx.lineTo(p.px, p.py));
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    // Lines: pc05, pc25, median, pc75, pc95
+    if (cd.pc05) drawLine(cd.pc05, 'rgba(255,255,255,0.2)', 0.8, [2,2]);
+    if (cd.pc25) drawLine(cd.pc25, 'rgba(255,255,255,0.3)', 0.8);
+    if (cd.pc50) drawLine(cd.pc50, 'rgba(255,255,255,0.9)', 1.5);
+    if (cd.pc75) drawLine(cd.pc75, 'rgba(255,255,255,0.3)', 0.8);
+    if (cd.pc95) drawLine(cd.pc95, 'rgba(255,255,255,0.2)', 0.8, [2,2]);
+
+    // Legend
+    ctx.fillStyle = 'rgba(255,255,255,0.7)'; ctx.font = '9px Arial'; ctx.textAlign = 'left';
+    const lx = ML + 8, ly = MT + 12;
+    ctx.fillStyle = 'rgba(255,255,255,0.9)';
+    ctx.fillRect(lx, ly, 2, 8); ctx.fillText('Median', lx + 6, ly + 8);
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.fillRect(lx, ly + 12, 2, 8); ctx.fillText('IQR', lx + 6, ly + 20);
+    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+    ctx.fillRect(lx, ly + 24, 2, 8); ctx.fillText('5–95%', lx + 6, ly + 32);
+  }
 
   // Colorbar (right side)
   const cbW = 12, cbH = ph, cbX = ML + pw + 4, cbY = MT;
@@ -4785,7 +4858,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v39 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v40 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
 });
