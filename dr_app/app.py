@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v45)</title>
+<title>Drip Rate Estimator (v46)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -961,6 +961,15 @@ HTML = r'''<!DOCTYPE html>
               Used to compute ln(Kd) from observed TE concentrations via kinetic inversion.
             </div>
           </div>
+          <div class="field">
+            <label>Monitoring sampling rate (yr⁻¹)
+              <span style="color:var(--muted);font-weight:400;font-size:9px;cursor:help"
+                    title="Number of dripwater samples per year in the monitoring programme. Used to correct concentration SDs for the integration time of each speleothem measurement: σ_eff = σ_monitoring / √(T × f_s). Leave blank to use raw SDs."> (?)</span>
+            </label>
+            <input type="number" id="monitoring_freq" value="" placeholder="e.g. 12" step="1" min="1"
+                   oninput="updateIntegrationCorrection()">
+            <div id="integ_hint" style="font-size:9.5px;color:var(--muted);margin-top:3px;min-height:13px;line-height:1.4"></div>
+          </div>
           <div class="field" style="grid-column:1/-1">
             <label style="font-size:11px;font-weight:600;color:var(--texthi);margin-bottom:6px">
               Ca aqueous concentration
@@ -982,9 +991,12 @@ HTML = r'''<!DOCTYPE html>
                          oninput="updateCaHint();updateAllParamHints();fitCaPriorFromManual()">
                 </div>
                 <div>
-                  <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
+                  <label style="font-size:10px;color:var(--muted)">Std dev (monitoring)
+                    <span style="cursor:help;font-size:8px" title="Enter the standard deviation from dripwater monitoring. If monitoring sampling rate is set, this will be corrected for the integration time of each speleothem sample: σ_eff = σ / √(T × f_s)."> (?)</span>
+                  </label>
                   <input type="number" id="ca_conc_sd" placeholder="blank = fixed"
                          step="0.1" oninput="fitCaPriorFromManual()">
+                  <div id="ca_sd_correction" style="font-size:9px;color:var(--accent);margin-top:2px;min-height:12px"></div>
                 </div>
                 <div>
                   <label style="font-size:10px;color:var(--muted)">Unit</label>
@@ -1594,7 +1606,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v45</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v46</div>
   </div>
 
 </div>
@@ -1695,6 +1707,7 @@ function uploadFile(key, file, el) {
             }
           }
           renderAgePlot();
+          updateIntegrationCorrection();  // age model now available for T calculation
         }
       }
     })
@@ -2057,9 +2070,12 @@ function makeTEParamCard(n, detectedElem) {
                      oninput="updateParamHints('${p}');fitAqPriorFromManual('${p}')">
             </div>
             <div>
-              <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
+              <label style="font-size:10px;color:var(--muted)">Std dev (monitoring)
+                <span style="cursor:help;font-size:8px" title="Monitoring SD. If sampling rate is set in Cave Conditions, this is corrected for integration time: σ_eff = σ / √(T × f_s)."> (?)</span>
+              </label>
               <input type="number" id="${p}_aq_conc_sd" ${d.aq_conc_sd ? 'value="'+d.aq_conc_sd+'"' : ''} placeholder="blank = fixed"
                      step="0.001" oninput="fitAqPriorFromManual('${p}')">
+              <div id="${p}_sd_correction" style="font-size:9px;color:var(--accent);margin-top:2px;min-height:12px"></div>
             </div>
           </div>
           <select id="${p}_aq_unit" style="margin-top:4px;width:100%"
@@ -4268,18 +4284,129 @@ function setCaMode(mode) {
   if (mode === 'manual') fitCaPriorFromManual();
 }
 
+// ── Integration-time correction for concentration SDs ────────────────────
+// Each speleothem sample integrates T years of deposition. Monitoring SD
+// overestimates the uncertainty of the time-averaged signal by √(T × f_s).
+// σ_eff = σ_monitoring / √(T × f_s)
+
+function getMedianIntegrationTime() {
+  // Compute median Δage between consecutive TE sample points from age model
+  // Returns null if age model not available
+  if (!window._ageModelData && !agePlotData) return null;
+
+  // Try results age model first (higher resolution)
+  if (window._ageModelData && window._ageModelData.age_median) {
+    const ages = window._ageModelData.age_median;
+    if (ages.length > 2) {
+      const deltas = [];
+      for (let i = 1; i < ages.length; i++) {
+        const d = Math.abs(ages[i] - ages[i-1]);
+        if (isFinite(d) && d > 0) deltas.push(d);
+      }
+      if (deltas.length) {
+        deltas.sort((a,b) => a-b);
+        return deltas[Math.floor(deltas.length/2)];
+      }
+    }
+  }
+
+  // Fallback: estimate from age range and number of TE points
+  if (agePlotData) {
+    const ageCol = document.getElementById('sel-depth_age-age')?.value;
+    if (ageCol && agePlotData[ageCol]) {
+      const ages = agePlotData[ageCol].map(Number).filter(isFinite);
+      if (ages.length >= 2) {
+        const ageRange = Math.max(...ages) - Math.min(...ages);
+        const nPts = teRawN || 100;
+        return ageRange / nPts;
+      }
+    }
+  }
+  return null;
+}
+
+function getEffectiveSd(sd_raw, monFreq, integTime) {
+  // σ_eff = σ_monitoring / √(T × f_s)
+  if (!isFinite(sd_raw) || sd_raw <= 0) return null;
+  if (!isFinite(monFreq) || monFreq <= 0) return sd_raw;  // no correction
+  if (!isFinite(integTime) || integTime <= 0) return sd_raw;
+  const nAvg = integTime * monFreq;
+  if (nAvg <= 1) return sd_raw;
+  return sd_raw / Math.sqrt(nAvg);
+}
+
+function updateIntegrationCorrection() {
+  const freq = parseFloat(document.getElementById('monitoring_freq')?.value);
+  const T = getMedianIntegrationTime();
+  const hint = document.getElementById('integ_hint');
+
+  if (!isFinite(freq) || freq <= 0) {
+    if (hint) hint.innerHTML = '';
+    // Clear all correction displays
+    const caCorr = document.getElementById('ca_sd_correction');
+    if (caCorr) caCorr.innerHTML = '';
+    for (let i = 1; i <= teRowData.length; i++) {
+      const el = document.getElementById('te' + i + '_sd_correction');
+      if (el) el.innerHTML = '';
+    }
+    return;
+  }
+
+  if (T !== null && isFinite(T)) {
+    const nAvg = Math.round(T * freq);
+    const reduction = Math.sqrt(nAvg);
+    if (hint) hint.innerHTML = 'Median sample integration: <strong>' + T.toFixed(1) +
+      ' yr</strong> \u00d7 ' + freq.toFixed(0) + '/yr = ' + nAvg +
+      ' obs \u2192 \u03c3<sub>eff</sub> = \u03c3/' + reduction.toFixed(1);
+  } else {
+    if (hint) hint.innerHTML = 'Upload age model data to compute integration time automatically.';
+  }
+
+  // Update correction displays on Ca and TE SD fields
+  updateSdCorrectionDisplay('ca_conc_sd', 'ca_sd_correction', freq, T);
+  for (let i = 1; i <= teRowData.length; i++) {
+    updateSdCorrectionDisplay('te' + i + '_aq_conc_sd', 'te' + i + '_sd_correction', freq, T);
+  }
+
+  // Refit priors with corrected SDs
+  fitCaPriorFromManual();
+  for (let i = 1; i <= teRowData.length; i++) fitAqPriorFromManual('te' + i);
+}
+
+function updateSdCorrectionDisplay(sdFieldId, corrDisplayId, freq, T) {
+  const el = document.getElementById(corrDisplayId);
+  if (!el) return;
+  const sd = parseFloat(document.getElementById(sdFieldId)?.value);
+  if (!isFinite(sd) || sd <= 0 || !isFinite(freq) || freq <= 0) { el.innerHTML = ''; return; }
+  if (T === null || !isFinite(T) || T <= 0) { el.innerHTML = ''; return; }
+  const sdEff = getEffectiveSd(sd, freq, T);
+  const nAvg = Math.round(T * freq);
+  el.innerHTML = '\u03c3<sub>eff</sub> = ' + sdEff.toFixed(4) +
+    ' (/' + Math.sqrt(nAvg).toFixed(0) + ')';
+}
+
 function fitCaPriorFromManual() {
   const mean_raw = parseFloat(document.getElementById('ca_conc')?.value);
   const sd_raw   = parseFloat(document.getElementById('ca_conc_sd')?.value);
   const unit     = document.getElementById('ca_unit')?.value || 'ppm';
   const to_ppb   = UNIT_FACTOR[unit] || 1;
   const el = document.getElementById('ca-prior-summary');
+
   if (!isFinite(mean_raw) || mean_raw <= 0 || !isFinite(sd_raw) || sd_raw <= 0) {
     concentrationPriors['ca'] = null;
     if (el) el.style.display = 'none'; return;
   }
-  concentrationPriors['ca'] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_raw*to_ppb);
+
+  // Apply integration-time correction if monitoring frequency is set
+  const freq = parseFloat(document.getElementById('monitoring_freq')?.value);
+  const T = getMedianIntegrationTime();
+  const sd_eff = getEffectiveSd(sd_raw, freq, T);
+
+  concentrationPriors['ca'] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_eff*to_ppb);
   if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors['ca'], 'Ca_aq'); el.style.display = ''; }
+
+  // Update correction display
+  updateSdCorrectionDisplay('ca_conc_sd', 'ca_sd_correction', freq, T);
 }
 
 function fitCaPriorFromCsv() {
@@ -4318,13 +4445,23 @@ function fitAqPriorFromManual(p) {
   const unit     = document.getElementById(`${p}_aq_unit`)?.value || 'ppb';
   const to_ppb   = UNIT_FACTOR[unit] || 1;
   const el = document.getElementById(`${p}-aq-prior-summary`);
+
   if (!isFinite(mean_raw) || mean_raw <= 0 || !isFinite(sd_raw) || sd_raw <= 0) {
     concentrationPriors[p] = null;
     if (el) el.style.display='none'; return;
   }
-  concentrationPriors[p] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_raw*to_ppb);
+
+  // Apply integration-time correction if monitoring frequency is set
+  const freq = parseFloat(document.getElementById('monitoring_freq')?.value);
+  const T = getMedianIntegrationTime();
+  const sd_eff = getEffectiveSd(sd_raw, freq, T);
+
+  concentrationPriors[p] = fitLognormalFromMeanSd(mean_raw*to_ppb, sd_eff*to_ppb);
   if (el) { el.innerHTML = priorSummaryHTML(concentrationPriors[p],
-    `[${p.toUpperCase()}_aq]`); el.style.display = ''; }
+    `[${document.getElementById(p+'_elem')?.value||'TE'}]_aq`); el.style.display = ''; }
+
+  // Update correction display
+  updateSdCorrectionDisplay(p + '_aq_conc_sd', p + '_sd_correction', freq, T);
 }
 
 function fitAqPriorFromCsv(p) {
@@ -4991,7 +5128,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v45 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v46 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
   // Fit stochastic priors from default concentrations
