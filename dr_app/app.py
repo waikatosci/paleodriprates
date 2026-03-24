@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v44)</title>
+<title>Drip Rate Estimator (v45)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -902,9 +902,11 @@ HTML = r'''<!DOCTYPE html>
         </div>
         <div id="mode-callout-semi" style="display:none;font-size:11px;color:var(--muted);line-height:1.7">
           Element fractions and Kd values still control the <em>shape</em> of the response and should
-          be set from literature. Solution chemistry inputs are hidden. Output is normalised to a
-          reference value — either the record maximum or an optional user-supplied anchor drip rate
-          (e.g. from modern monitoring).
+          be set from literature. TE aqueous concentrations are back-calculated from the observed
+          proxy median at the global drip rate. Ca concentration is used internally for K₀ scaling
+          but the output is normalised, so moderate Ca uncertainty does not propagate to the result.
+          Output is normalised to a reference value — either the record maximum or an optional
+          user-supplied anchor drip rate (e.g. from modern monitoring).
           <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div class="field">
               <label>Anchor drip rate <span style="font-weight:400;color:var(--muted)">(optional, drips min⁻¹)</span></label>
@@ -959,9 +961,12 @@ HTML = r'''<!DOCTYPE html>
               Used to compute ln(Kd) from observed TE concentrations via kinetic inversion.
             </div>
           </div>
-          <div class="field fullonly" style="grid-column:1/-1">
+          <div class="field" style="grid-column:1/-1">
             <label style="font-size:11px;font-weight:600;color:var(--texthi);margin-bottom:6px">
-              Ca aqueous concentration</label>
+              Ca aqueous concentration
+              <span id="ca-semi-note" style="display:none;font-weight:400;font-size:10px;color:var(--muted)">
+                &nbsp;(used internally for K₀ scaling — not required to be precise in semi-quant mode)</span>
+            </label>
             <div style="display:flex;gap:6px;margin-bottom:8px">
               <button id="ca-mode-manual" class="mode-btn active"
                       onclick="setCaMode('manual')">Manual entry</button>
@@ -1589,7 +1594,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v44</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v45</div>
   </div>
 
 </div>
@@ -2740,11 +2745,26 @@ function setAnalysisMode(mode) {
   document.querySelectorAll('.fullonly').forEach(el => {
     el.style.display = isFull ? '' : 'none';
   });
+  // Ca semi-quant note
+  const caSemiNote = document.getElementById('ca-semi-note');
+  if (caSemiNote) caSemiNote.style.display = isFull ? 'none' : '';
   // Update Smart & Friedrich tab availability
   const sfTab = document.getElementById('tab-sf');
   if (sfTab) {
     sfTab.style.opacity = isFull ? '1' : '0.4';
     sfTab.title = isFull ? '' : 'Smart & Friedrich classification requires Full Quantification mode';
+  }
+  // Clear stochastic priors when switching modes to prevent leakage
+  if (!isFull) {
+    concentrationPriors['ca'] = null;
+    for (let i = 1; i <= teRowData.length; i++) concentrationPriors['te' + i] = null;
+    // Clear SD fields in semi mode to prevent accidental stochastic runs
+    const caSd = document.getElementById('ca_conc_sd');
+    if (caSd) caSd.value = '';
+    for (let i = 1; i <= teRowData.length; i++) {
+      const sd = document.getElementById('te' + i + '_aq_conc_sd');
+      if (sd) sd.value = '';
+    }
   }
 }
 
@@ -3279,8 +3299,9 @@ function collectParams() {
     global_drip_rate: v('global_drip_rate'),
     ca_conc:      v('ca_conc'),
     ca_unit:      document.getElementById('ca_unit')?.value || 'ppb',
-    // Concentration priors (stochastic mode)
+    // Concentration priors (stochastic mode — full quant only)
     ...(() => {
+      if (analysisMode !== 'full') return {};  // No priors in semi mode
       const out = {};
       const caPr = concentrationPriors['ca'];
       if (caPr) {
@@ -4970,7 +4991,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v44 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v45 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
   // Fit stochastic priors from default concentrations
@@ -5516,22 +5537,45 @@ def _run_model(params):
             log(f'Raw params {_dp}: {_dvals}')
         log(f'Raw params ca_conc={params.get("ca_conc","?")} ca_unit={params.get("ca_unit","?")}')
 
-        # Build a lookup of observed median concentrations (ppb) per TE row key
-        # Used in semi mode to auto-scale aq_conc so the PDF has support in data range.
-        # Load proxy medians (native units, unconverted) for semi-quant auto-scaling
+        # Build a lookup of observed median concentrations (native units) per TE row key
+        # In semi mode, uses the calibration window (cal_pct) to restrict to recent deposition.
         _obs_median_native = {}
         try:
             _te_csv = os.path.join(UPLOAD_FOLDER, 'trace_elem1.csv')
             if os.path.isfile(_te_csv):
                 _te_df = pd.read_csv(_te_csv)
-                for _i, _te in enumerate(params.get('te_list', []) or
+                # Get depth column for calibration window filtering
+                _te_depth_col = None
+                _te_entries = params.get('te_list') or []
+                if _te_entries:
+                    _te_depth_col = _te_entries[0].get('col_depth', '')
+                if not _te_depth_col:
+                    _te_depth_col = params.get('te1_col_depth', '')
+
+                for _i, _te in enumerate(_te_entries or
                                          [{'col_proxy': params.get('te1_col_proxy',''),
                                            'unit': params.get('te1_unit','ppm')}]):
                     _col = _te.get('col_proxy','')
+                    _rk = f'te{_i+1}'
                     if _col and _col in _te_df.columns:
-                        _vals = pd.to_numeric(_te_df[_col], errors='coerce').dropna()
-                        if len(_vals):
-                            _obs_median_native[f'te{_i+1}'] = float(_vals.median())
+                        _proxy_vals = pd.to_numeric(_te_df[_col], errors='coerce')
+
+                        # Apply calibration window (shallowest X% of depth range)
+                        _cal_pct = float(params.get(f'{_rk}_cal_pct', 100))
+                        if _cal_pct < 100 and _te_depth_col and _te_depth_col in _te_df.columns:
+                            _dep = pd.to_numeric(_te_df[_te_depth_col], errors='coerce')
+                            _dep_min = _dep.min()
+                            _dep_max = _dep.max()
+                            _dep_thr = _dep_min + (_dep_max - _dep_min) * _cal_pct / 100.0
+                            _mask = (_dep <= _dep_thr) & _proxy_vals.notna()
+                            _win_vals = _proxy_vals[_mask].dropna()
+                            log(f'Semi-quant {_rk}: cal_pct={_cal_pct}%, depth≤{_dep_thr:.2f}, '
+                                f'{len(_win_vals)} points in window')
+                        else:
+                            _win_vals = _proxy_vals.dropna()
+
+                        if len(_win_vals):
+                            _obs_median_native[_rk] = float(_win_vals.median())
         except Exception as _e:
             log(f'Semi-quant: could not read proxy medians ({_e})')
 
@@ -5540,7 +5584,7 @@ def _run_model(params):
             In semi mode: back-calculate aq_conc (ppb) from the observed proxy median
             using the correct Kp-based kinetic model:
               h(V) = Kp*(XF+XL)*(aq/ca)*400000*K_e * (1 - nS*exp(-Kd*tau))
-            Solve for aq_ppb so that h(V_ref) = obs_ppm at a reference drip rate.
+            Solve for aq_ppb so that h(V_ref) = obs_ppm at the global drip rate.
             """
             if _analysis_mode == 'semi':
                 obs_native = _obs_median_native.get(row)
@@ -5551,13 +5595,14 @@ def _run_model(params):
                             params.get(row + '_elem', ''), 1)
                     kd_  = float(np.exp(float(params[row + '_Kd_mn'])))
                     ke_  = float(params.get(row + '_K_e', 1))
-                    xf_  = float(params.get(row + '_F', 0.01))
+                    xf_  = float(params.get(row + '_F', 0.00001))
                     xl_  = max(float(params[row + '_labile']) if params.get(row + '_labile')
                                else 1.0 - float(params.get(row + '_InertF', 0))
                                         - float(params.get(row + '_F', 0)), 0.01)
                     nS_  = 1.0 - xf_
-                    # Reference drip rate for the kinetic inversion (10 drips/min default)
-                    tau_ = 6.0   # seconds (= 60/10)
+                    # Use global drip rate for reference tau
+                    _vref = float(params.get('global_drip_rate', 10))
+                    tau_ = 60.0 / max(_vref, 0.01)
                     E1_  = float(np.exp(-kd_ * tau_))
                     kin_factor = 1.0 - nS_ * E1_   # fraction of K0 reached at V_ref
 
@@ -5574,7 +5619,8 @@ def _run_model(params):
                     implied  = obs_ppm * ca_ppb_ / denom
                     log(f'Semi-quant {row}: obs={obs_native:.4f} (native), '
                         f'obs_ppm={obs_ppm:.4f}, ca_ppb={ca_ppb_:.1f}, '
-                        f'Kp={kp_}, kin_factor={kin_factor:.4f}, '
+                        f'Kp={kp_}, V_ref={_vref}, tau={tau_:.1f}s, '
+                        f'kin_factor={kin_factor:.4f}, '
                         f'implied aq_conc={implied:.4f} ppb')
                     return implied
                 log(f'Semi-quant {row}: no proxy median — using entered aq_conc')
