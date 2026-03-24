@@ -103,7 +103,9 @@ The repository includes example input files from **stalagmite HS4, Heshang Cave,
 ### Step 2 — Accept defaults and run
 
 All model parameters are pre-configured with sensible defaults for HS4:
-- Cave temperature, Ca concentration, and element-specific Kp/Kd values auto-populate
+- Cave temperature, Ca concentration (66.46 ppm), and element-specific Kp/Kd values auto-populate
+- Aqueous TE concentrations from Heshang Cave monitoring: Co = 0.47 ppb, Ni = 4.34 ppb
+- Concentrations are fixed (no stochastic priors) by default — this produces the tightest, most physically interpretable reconstruction
 - The element selector detects Co and Ni from the column headers
 
 Simply navigate to **Run Model** and click **Run Model**. Typical runtime is 10–15 minutes for two trace elements over ~10,000 years.
@@ -167,6 +169,8 @@ You need **two CSV files**:
    - **ln(Kd)** — dissociation rate constant (auto-calculated from drip rate when in drip-rate mode)
    - **Calibration window** — % of recent deposition used to anchor Kd
 4. Check the **h(V) diagnostic chart** — your observed data should fall within the model curve
+
+> **Note on concentration uncertainty:** The default run uses fixed mean concentrations for Ca and TE aqueous phases. The Std dev fields beside each concentration input are intentionally left blank. Entering standard deviations activates stochastic marginalisation over log-normal concentration priors, which can substantially inflate uncertainty envelopes and shift the median reconstruction (see Supplementary Information). The fixed-concentration approach is recommended for standard use; stochastic priors should only be explored as a sensitivity test.
 
 ### Step 3 — Run Model
 
