@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v43)</title>
+<title>Drip Rate Estimator (v44)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -978,7 +978,7 @@ HTML = r'''<!DOCTYPE html>
                 </div>
                 <div>
                   <label style="font-size:10px;color:var(--muted)">Std dev (optional)</label>
-                  <input type="number" id="ca_conc_sd" value="3.98" placeholder="blank = fixed"
+                  <input type="number" id="ca_conc_sd" placeholder="blank = fixed"
                          step="0.1" oninput="fitCaPriorFromManual()">
                 </div>
                 <div>
@@ -1589,7 +1589,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v43</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v44</div>
   </div>
 
 </div>
@@ -1869,8 +1869,8 @@ function renderTERows() {
 // Kd_mn = ln(Kd_NOM); users refine using the "implied ln(Kd)" hint.
 // aq_conc are order-of-magnitude starting points — cave-specific.
 const ELEM_DEFAULTS = {
-  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 4.34, aq_conc_sd: 1.19, K_e: 1.0 },
-  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.00001, InertF: 0.40, aq_conc: 0.47, aq_conc_sd: 0.075, K_e: 1.0 },
+  'Ni': { Kd_mn: -3.540, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 4.34, K_e: 1.0 },
+  'Co': { Kd_mn: -0.891, Kd_sd: 1.385, F: 0.00001, InertF: 0.40, aq_conc: 0.47, K_e: 1.0 },
   'Cu': { Kd_mn: -0.083, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
 };
 const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.385, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };
@@ -4970,7 +4970,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v43 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v44 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
   // Fit stochastic priors from default concentrations
