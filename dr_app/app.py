@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v46)</title>
+<title>Drip Rate Estimator (v47)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -614,8 +614,27 @@ HTML = r'''<!DOCTYPE html>
         Expected format: comma-separated CSV with a header row. Depth in <strong>cm</strong>, age in <strong>years BP</strong>. Select the concentration unit your data is in — the unit label is used for parameter hints only; data enters the model unconverted. Isotope data is <strong>optional</strong>.
       </div>
 
+      <!-- Reconstruction mode selector -->
+      <div class="card" style="padding:12px 16px">
+        <div class="card-title" style="margin-bottom:8px">🔧 Reconstruction Mode</div>
+        <div style="display:flex;gap:8px">
+          <button id="recon-mode-age" onclick="setReconMode('age')"
+                  class="btn btn-primary"
+                  style="text-align:left;padding:10px 14px;height:auto;display:flex;flex-direction:column;gap:3px;flex:1">
+            <span style="font-size:12px;font-weight:600">With age model</span>
+            <span style="font-size:10px;opacity:0.75;font-weight:400">Full reconstruction: depth → age via U-Th dating. Outputs drip rate vs age (yrs BP).</span>
+          </button>
+          <button id="recon-mode-depth" onclick="setReconMode('depth')"
+                  class="btn btn-ghost"
+                  style="text-align:left;padding:10px 14px;height:auto;display:flex;flex-direction:column;gap:3px;flex:1">
+            <span style="font-size:12px;font-weight:600">Depth only</span>
+            <span style="font-size:10px;opacity:0.75;font-weight:400">Proxy uncertainty only: no age model needed. Outputs drip rate vs depth.</span>
+          </button>
+        </div>
+      </div>
+
       <!-- Depth / Age -->
-      <div class="card">
+      <div class="card" id="depth-age-card">
         <div class="card-title">📅 Depth / Age Model</div>
         <div class="upload-grid">
           <div>
@@ -1606,7 +1625,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v46</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v47</div>
   </div>
 
 </div>
@@ -2499,7 +2518,7 @@ function renderAgePlot() {
         scales: {
           x: {
             type: 'linear',
-            title: {display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:11}},
+            title: {display:true, text: xAxisLabel(), color:'#8fa4b5', font:{size:11}},
             grid: {color:'rgba(255,255,255,0.05)'},
             ticks: {color:'#8fa4b5', font:{size:10}},
           },
@@ -2552,6 +2571,11 @@ function syncExtrapFromFields() {
 
 // ── Analysis mode ────────────────────────────────────────────────────────
 let analysisMode = 'full';
+let reconMode = 'age';  // 'age' = with age model, 'depth' = depth only
+
+function xAxisLabel() {
+  return reconMode === 'age' ? 'Age (yrs BP)' : 'Depth (' + (document.getElementById('da-depth-unit-sel')?.value || 'cm') + ')';
+}
 
 // ── Growth rate & hiatus detection ──────────────────────────────────────
 let growthRateChart = null;
@@ -2658,7 +2682,7 @@ function renderGrowthRateChart() {
         filter: item => !(item.text || '').startsWith('_') } } },
       scales: {
         x: { type: 'linear',
-             title: {display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:10}},
+             title: {display:true, text: xAxisLabel(), color:'#8fa4b5', font:{size:10}},
              ticks: {color:'#8fa4b5', font:{size:10}},
              grid: {color:'rgba(255,255,255,0.04)'} },
         y: { type: 'linear', min: 0,
@@ -2781,6 +2805,47 @@ function setAnalysisMode(mode) {
       const sd = document.getElementById('te' + i + '_aq_conc_sd');
       if (sd) sd.value = '';
     }
+  }
+}
+
+function setReconMode(mode) {
+  reconMode = mode;
+  const withAge = mode === 'age';
+  document.getElementById('recon-mode-age').className = withAge ? 'btn btn-primary' : 'btn btn-ghost';
+  document.getElementById('recon-mode-depth').className = withAge ? 'btn btn-ghost' : 'btn btn-primary';
+  // Show/hide depth-age card
+  document.getElementById('depth-age-card').style.display = withAge ? '' : 'none';
+  // Update calage labels
+  const calMinLabel = document.querySelector('label[for="calage_min"], #calage_min_label');
+  const calMaxLabel = document.querySelector('label[for="calage_max"], #calage_max_label');
+  // Use parent label elements
+  const calMinInput = document.getElementById('calage_min');
+  const calMaxInput = document.getElementById('calage_max');
+  if (calMinInput && calMinInput.parentElement) {
+    const lbl = calMinInput.parentElement.querySelector('label');
+    if (lbl) lbl.innerHTML = withAge
+      ? 'Calibration age min (yrs BP)<span style="color:var(--muted);font-weight:400;font-size:10px"> — auto from plot</span>'
+      : 'Depth range min<span style="color:var(--muted);font-weight:400;font-size:10px"> — from TE data</span>';
+  }
+  if (calMaxInput && calMaxInput.parentElement) {
+    const lbl = calMaxInput.parentElement.querySelector('label');
+    if (lbl) lbl.innerHTML = withAge
+      ? 'Calibration age max (yrs BP)<span style="color:var(--muted);font-weight:400;font-size:10px"> — auto from plot</span>'
+      : 'Depth range max<span style="color:var(--muted);font-weight:400;font-size:10px"> — from TE data</span>';
+  }
+  // Show/hide age model results tab
+  const ageTab = document.getElementById('tab-age');
+  if (ageTab) ageTab.style.display = withAge ? '' : 'none';
+  // Show/hide elements with class .age-only
+  document.querySelectorAll('.age-only').forEach(el => {
+    el.style.display = withAge ? '' : 'none';
+  });
+  // In depth-only mode, auto-populate calage fields from TE depth range
+  if (!withAge && teRawDepth.length > 0) {
+    const dMin = Math.min(...teRawDepth);
+    const dMax = Math.max(...teRawDepth);
+    document.getElementById('calage_min').value = Math.floor(dMin);
+    document.getElementById('calage_max').value = Math.ceil(dMax);
   }
 }
 
@@ -3103,7 +3168,8 @@ function buildSummary() {
   const rows = [
     ['Station',          v('station_name')],
     ['Analysis mode',    modeLabel],
-    ['Cal. age range',   v('calage_min') + ' – ' + v('calage_max') + ' yrs BP'],
+    [reconMode === 'age' ? 'Cal. age range' : 'Depth range',
+     v('calage_min') + ' – ' + v('calage_max') + (reconMode === 'age' ? ' yrs BP' : ' ' + (document.getElementById('da-depth-unit-sel')?.value||'cm'))],
     ...teRows,
     ['Cave temp',        v('temp_C') + ' °C'],
     ['Drip rate',        v('global_drip_rate') + ' drips/min'],
@@ -3341,6 +3407,7 @@ function collectParams() {
     rng_seed:             v('rng_seed'),
     generate_realisations: document.getElementById('generate_realisations')?.checked ?? true,
     analysis_mode:        analysisMode,
+    with_age:             reconMode === 'age' ? 'yes' : 'no',
     v_max:                parseFloat(document.getElementById('v_max')?.value) || 100,
     v_res:                parseInt(document.getElementById('v_res')?.value) || 5000,
     hiatus_zones:         hiatusZones.filter(z => z.from !== z.to),
@@ -3713,7 +3780,7 @@ function loadChart() {
           x: { type: 'linear', reverse: true,
                ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
-               title: { display: true, text: 'Age (yrs BP)', color: '#8fa4b5', font: { size: 11 } } },
+               title: { display: true, text: xAxisLabel(), color: '#8fa4b5', font: { size: 11 } } },
           y: { type: 'linear',
                ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
@@ -3835,7 +3902,7 @@ function renderPdfHeatmap() {
     ctx.fillText(Math.round(age).toString(), px, MT + ph + 15);
     ctx.beginPath(); ctx.moveTo(px, MT+ph); ctx.lineTo(px, MT+ph+4); ctx.stroke();
   }
-  ctx.fillText('Age (yrs BP)', ML + pw/2, MT + ph + 30);
+  ctx.fillText(xAxisLabel(), ML + pw/2, MT + ph + 30);
   const vMin = V_span[0], vMax = V_span[nv-1];
   const useTau = yAxisMode === 'tau';
   ctx.textAlign = 'right';
@@ -4030,7 +4097,7 @@ function renderAgeModelChart() {
       scales: {
         x: { type: 'linear', title:{display:true, text:'Depth (' + teDepthUnit + ')', color:'#8fa4b5', font:{size:11}},
              grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8fa4b5',font:{size:10}} },
-        y: { type: 'linear', title:{display:true, text:'Age (yrs BP)', color:'#8fa4b5', font:{size:11}},
+        y: { type: 'linear', title:{display:true, text: xAxisLabel(), color:'#8fa4b5', font:{size:11}},
              grid:{color:'rgba(255,255,255,0.05)'}, ticks:{color:'#8fa4b5',font:{size:10}} },
       }
     },
@@ -5128,9 +5195,10 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v46 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v47 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
+  setReconMode(reconMode);
   // Fit stochastic priors from default concentrations
   fitCaPriorFromManual();
   for (let i = 1; i <= teRowData.length; i++) fitAqPriorFromManual('te' + i);
@@ -5367,11 +5435,8 @@ def _run_model(params):
                 mask = ~np.isnan(x) & ~np.isnan(y)
                 return x[mask], y[mask]
 
-            depth_age_path = os.path.join(UPLOAD_FOLDER, 'depth_age.csv')
-            da_df = pd.read_csv(depth_age_path)
-            dating_depth     = da_df[params['col_depth']].to_numpy(dtype=float)
-            dating_age       = da_df[params['col_age']].to_numpy(dtype=float)
-            dating_age_error = da_df[params['col_age_err']].to_numpy(dtype=float) / 2.
+            _with_age = params.get('with_age', 'yes').lower() == 'yes'
+            log(f'Reconstruction mode: {"with age model" if _with_age else "depth only"}')
 
             # Build TE list from te_list param (new dynamic system)
             # Falls back to legacy te1_col_*/te2_col_* if te_list absent
@@ -5397,41 +5462,68 @@ def _run_model(params):
             # convenience aliases used by later stages
             x_TE1, y_TE1 = TE_data[0][0], TE_data[0][1]
 
+            if _with_age:
+                # ── Standard path: load depth_age CSV ─────────────────────────
+                depth_age_path = os.path.join(UPLOAD_FOLDER, 'depth_age.csv')
+                da_df = pd.read_csv(depth_age_path)
+                dating_depth     = da_df[params['col_depth']].to_numpy(dtype=float)
+                dating_age       = da_df[params['col_age']].to_numpy(dtype=float)
+                dating_age_error = da_df[params['col_age_err']].to_numpy(dtype=float) / 2.
+                log(f'Loaded depth/age: {len(dating_depth)} points')
+            else:
+                # ── Depth-only: trivial identity age model ────────────────────
+                # depth = age, error = user-supplied depth uncertainty or 0
+                _depth_err = float(params.get('depth_error', 0))
+                # Use TE depth range endpoints as "dating" points
+                _all_te_depths = np.sort(np.concatenate([_x for _x, _y, _rk in TE_data]))
+                # Create ~20 evenly spaced control points spanning the depth range
+                _n_ctrl = min(20, len(_all_te_depths))
+                dating_depth = np.linspace(_all_te_depths.min(), _all_te_depths.max(), _n_ctrl)
+                dating_age   = dating_depth.copy()   # identity mapping: age = depth
+                dating_age_error = np.full_like(dating_depth, _depth_err / 2.)
+                log(f'Depth-only mode: trivial age model with {_n_ctrl} control points, '
+                    f'depth range {dating_depth.min():.2f}–{dating_depth.max():.2f}, '
+                    f'depth error={_depth_err}')
+
+            log(f'Loaded {len(TE_data)} trace element(s)')
+
             _iso_path = os.path.join(UPLOAD_FOLDER, 'isotope1.csv')
             has_iso = (os.path.isfile(_iso_path)
                        and bool(params.get('iso_col_depth'))
                        and bool(params.get('iso_col_proxy')))
             if has_iso:
                 x_iso, y_iso = load('isotope1', params['iso_col_depth'], params['iso_col_proxy'])
+                log(f'Loaded isotope: {len(x_iso)} points')
             else:
                 x_iso, y_iso = None, None
                 log('Isotope file not found — running without isotope')
 
-            log(f'Loaded depth/age: {len(dating_depth)} points')
-            log(f'Loaded {len(TE_data)} trace element(s)')
-            if has_iso: log(f'Loaded isotope: {len(x_iso)} points')
-
             # ── 1b. Depth unit harmonisation ──────────────────────────────────
-            # Ensure TE depths are in the same unit as depth_age depths.
-            _da_unit = params.get('da_depth_unit', 'cm')
-            _te_unit = params.get('te_depth_unit', 'cm')
-            _depth_scale = 1.0
-            if _da_unit != _te_unit:
-                if _te_unit == 'mm' and _da_unit == 'cm':
-                    _depth_scale = 0.1   # mm → cm
-                elif _te_unit == 'cm' and _da_unit == 'mm':
-                    _depth_scale = 10.0  # cm → mm
-                log(f'⚠ Depth unit mismatch: depth_age={_da_unit}, TE={_te_unit} → '
-                    f'scaling TE depths by {_depth_scale}')
-                TE_data = [(_x * _depth_scale, _y, _rk) for _x, _y, _rk in TE_data]
-                x_TE1 = TE_data[0][0]  # refresh alias
-                if has_iso and x_iso is not None:
-                    x_iso = x_iso * _depth_scale
-                    log(f'  Also scaled isotope depths by {_depth_scale}')
+            # In depth-only mode, dating_depth was derived from TE depths — no conversion needed.
+            if _with_age:
+                # Ensure TE depths are in the same unit as depth_age depths.
+                _da_unit = params.get('da_depth_unit', 'cm')
+                _te_unit = params.get('te_depth_unit', 'cm')
+                _depth_scale = 1.0
+                if _da_unit != _te_unit:
+                    if _te_unit == 'mm' and _da_unit == 'cm':
+                        _depth_scale = 0.1   # mm → cm
+                    elif _te_unit == 'cm' and _da_unit == 'mm':
+                        _depth_scale = 10.0  # cm → mm
+                    log(f'⚠ Depth unit mismatch: depth_age={_da_unit}, TE={_te_unit} → '
+                        f'scaling TE depths by {_depth_scale}')
+                    TE_data = [(_x * _depth_scale, _y, _rk) for _x, _y, _rk in TE_data]
+                    x_TE1 = TE_data[0][0]  # refresh alias
+                    if has_iso and x_iso is not None:
+                        x_iso = x_iso * _depth_scale
+                        log(f'  Also scaled isotope depths by {_depth_scale}')
+                else:
+                    log(f'Depth units match: {_da_unit} (no conversion needed)')
+                log(f'Depth_age range: {dating_depth.min():.2f}–{dating_depth.max():.2f} {_da_unit}')
+                log(f'TE1 depth range: {x_TE1.min():.2f}–{x_TE1.max():.2f} {_da_unit} (after conversion)')
             else:
-                log(f'Depth units match: {_da_unit} (no conversion needed)')
-            log(f'Depth_age range: {dating_depth.min():.2f}–{dating_depth.max():.2f} {_da_unit}')
-            log(f'TE1 depth range: {x_TE1.min():.2f}–{x_TE1.max():.2f} {_da_unit} (after conversion)')
+                _da_unit = params.get('te_depth_unit', 'cm')
+                log(f'Depth-only mode: TE depth range {x_TE1.min():.2f}–{x_TE1.max():.2f} {_da_unit}')
 
             # ── 2. Unified depth grid ────────────────────────────────────────
             _set_stage('Building unified depth grid', 5)
@@ -6102,8 +6194,9 @@ def _run_model(params):
         _set_stage('Saving outputs', 96)
 
         # Summary CSV
+        _x_col = 'age' if _with_age else 'depth'
         summary_path = os.path.join(OUTPUT_FOLDER, 'drip_rate_summary.csv')
-        df_out = pd.DataFrame({'age': V_age})
+        df_out = pd.DataFrame({_x_col: V_age})
         for p in pcs:
             df_out[f'pc{p:02d}'] = V_pcs[p]
         df_out.to_csv(summary_path, index=False)
@@ -6112,7 +6205,7 @@ def _run_model(params):
         # Realisations CSV (only if generated)
         if realisations is not None:
             real_path = os.path.join(OUTPUT_FOLDER, 'drip_rate_realisations.csv')
-            header = 'age,' + ','.join([f'r{j}' for j in range(n_real)])
+            header = _x_col + ',' + ','.join([f'r{j}' for j in range(n_real)])
             out_arr = np.vstack([V_age, realisations]).T
             np.savetxt(real_path, out_arr, delimiter=',',
                        header=header, comments='')
@@ -6250,16 +6343,19 @@ def _run_model(params):
             _age_data['dated_err']   = _da_errs
 
             _am_path = os.path.join(OUTPUT_FOLDER, 'age_model.json')
-            with open(_am_path, 'w') as f:
-                json.dump(_age_data, f)
-            _outputs.append('age_model.json')
-            log(f'Saved age_model.json ({len(_age_data["depth"])} depth pts, {len(_da_depths)} dated pts)')
-            # Also save as CSV
-            _am_csv = os.path.join(OUTPUT_FOLDER, 'age_model.csv')
-            pd.DataFrame({'depth': _age_data['depth'],
-                          'age_yBP': _age_data['age_median']}).to_csv(_am_csv, index=False)
-            _outputs.append('age_model.csv')
-            log('Saved age_model.csv')
+            if _with_age:
+                with open(_am_path, 'w') as f:
+                    json.dump(_age_data, f)
+                _outputs.append('age_model.json')
+                log(f'Saved age_model.json ({len(_age_data["depth"])} depth pts, {len(_da_depths)} dated pts)')
+                # Also save as CSV
+                _am_csv = os.path.join(OUTPUT_FOLDER, 'age_model.csv')
+                pd.DataFrame({'depth': _age_data['depth'],
+                              'age_yBP': _age_data['age_median']}).to_csv(_am_csv, index=False)
+                _outputs.append('age_model.csv')
+                log('Saved age_model.csv')
+            else:
+                log('Depth-only mode: age model output skipped')
         except Exception as _e:
             log(f'Could not save age model: {_e}')
             log(traceback.format_exc())
@@ -6314,6 +6410,7 @@ def _run_model(params):
                 ('run_id', _run_id),
                 ('timestamp', datetime.datetime.now().isoformat()),
                 ('analysis_mode', _analysis_mode),
+                ('with_age', 'yes' if _with_age else 'no'),
                 ('station_name', params.get('station_name', '')),
                 ('cave_temperature_C', params.get('temp_C', '')),
                 ('global_drip_rate', params.get('global_drip_rate', '')),
