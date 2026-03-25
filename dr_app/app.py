@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v47)</title>
+<title>Drip Rate Estimator (v52)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -1625,7 +1625,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v47</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v52</div>
   </div>
 
 </div>
@@ -3777,7 +3777,7 @@ function loadChart() {
           decimation: { enabled: true, algorithm: 'lttb', samples: 800 },
         },
         scales: {
-          x: { type: 'linear', reverse: true,
+          x: { type: 'linear', reverse: reconMode === 'age',
                ticks: { color: '#8fa4b5', font: { size: 10 } },
                grid: { color: 'rgba(42,52,65,0.6)' },
                title: { display: true, text: xAxisLabel(), color: '#8fa4b5', font: { size: 11 } } },
@@ -3879,8 +3879,9 @@ function renderPdfHeatmap() {
   const img = tmpCtx.createImageData(nt, nv);
   for (let v = 0; v < nv; v++) {
     for (let t = 0; t < nt; t++) {
-      // Reverse x: oldest on left, youngest on right (matches time series)
-      const val = data[nv - 1 - v][nt - 1 - t];
+      // Reverse x in age mode (oldest on left), normal in depth mode (shallow on left)
+      const _xReverse = reconMode === 'age';
+      const val = data[nv - 1 - v][_xReverse ? (nt - 1 - t) : t];
       const norm = isFinite(val) && maxD > 0 ? Math.max(0, Math.min(1, val / maxD)) : 0;
       const [r, g, b] = sampleCmap(cmap, norm);
       const idx = (v * nt + t) * 4;
@@ -3891,14 +3892,17 @@ function renderPdfHeatmap() {
   ctx.imageSmoothingEnabled = false;
   ctx.drawImage(tmpCanvas, ML, MT, pw, ph);
 
-  // Axes (reversed: oldest left, youngest right)
+  // Axes (direction depends on mode)
   ctx.strokeStyle = '#8fa4b5'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(ML, MT); ctx.lineTo(ML, MT+ph); ctx.lineTo(ML+pw, MT+ph); ctx.stroke();
   ctx.fillStyle = '#8fa4b5'; ctx.font = '11px Arial, sans-serif'; ctx.textAlign = 'center';
   const ageMin = ages[0], ageMax = ages[nt-1];
+  const _xRev = reconMode === 'age';
   for (let i = 0; i <= 6; i++) {
-    // frac=0 → left → oldest; frac=1 → right → youngest
-    const frac = i / 6, age = ageMax - frac * (ageMax - ageMin), px = ML + frac * pw;
+    const frac = i / 6;
+    const age = _xRev ? (ageMax - frac * (ageMax - ageMin))
+                      : (ageMin + frac * (ageMax - ageMin));
+    const px = ML + frac * pw;
     ctx.fillText(Math.round(age).toString(), px, MT + ph + 15);
     ctx.beginPath(); ctx.moveTo(px, MT+ph); ctx.lineTo(px, MT+ph+4); ctx.stroke();
   }
@@ -3921,8 +3925,10 @@ function renderPdfHeatmap() {
   const showOverlay = document.getElementById('pdf-overlay')?.checked;
   const cd = window._pdfOverlayData;
   if (showOverlay && cd && cd.age && cd.pc50) {
-    // Map age → pixel x (reversed: high age = left)
-    const ageToPx = a => ML + (1 - (a - ageMin) / (ageMax - ageMin)) * pw;
+    // Map age/depth → pixel x (direction depends on mode)
+    const ageToPx = reconMode === 'age'
+      ? (a => ML + (1 - (a - ageMin) / (ageMax - ageMin)) * pw)
+      : (a => ML + ((a - ageMin) / (ageMax - ageMin)) * pw);
     // Map drip rate → pixel y
     const vToPy = v => MT + ph - ((v - vMin) / (vMax - vMin)) * ph;
 
@@ -5195,7 +5201,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v47 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c PaleoDripRates v52 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
   setReconMode(reconMode);
@@ -5387,6 +5393,8 @@ def _run_model(params):
         proxy_pkl = os.path.join(OUTPUT_FOLDER, 'ProxyRecord.pkl')
         use_cache = params.get('use_cached_proxy') and os.path.exists(proxy_pkl)
 
+        _with_age = params.get('with_age', 'yes').lower() == 'yes'
+
         if use_cache:
             # ── Fast path: load cached PDist objects, skip data/BayProX ────
             _set_stage('Loading cached proxy record', 15)
@@ -5435,7 +5443,6 @@ def _run_model(params):
                 mask = ~np.isnan(x) & ~np.isnan(y)
                 return x[mask], y[mask]
 
-            _with_age = params.get('with_age', 'yes').lower() == 'yes'
             log(f'Reconstruction mode: {"with age model" if _with_age else "depth only"}')
 
             # Build TE list from te_list param (new dynamic system)
@@ -5471,19 +5478,12 @@ def _run_model(params):
                 dating_age_error = da_df[params['col_age_err']].to_numpy(dtype=float) / 2.
                 log(f'Loaded depth/age: {len(dating_depth)} points')
             else:
-                # ── Depth-only: trivial identity age model ────────────────────
-                # depth = age, error = user-supplied depth uncertainty or 0
-                _depth_err = float(params.get('depth_error', 0))
-                # Use TE depth range endpoints as "dating" points
+                # ── Depth-only: no age model needed ──────────────────────────
+                # Override calage from TE depth range (BayProX is bypassed)
                 _all_te_depths = np.sort(np.concatenate([_x for _x, _y, _rk in TE_data]))
-                # Create ~20 evenly spaced control points spanning the depth range
-                _n_ctrl = min(20, len(_all_te_depths))
-                dating_depth = np.linspace(_all_te_depths.min(), _all_te_depths.max(), _n_ctrl)
-                dating_age   = dating_depth.copy()   # identity mapping: age = depth
-                dating_age_error = np.full_like(dating_depth, _depth_err / 2.)
-                log(f'Depth-only mode: trivial age model with {_n_ctrl} control points, '
-                    f'depth range {dating_depth.min():.2f}–{dating_depth.max():.2f}, '
-                    f'depth error={_depth_err}')
+                params['calage_min'] = str(int(np.floor(_all_te_depths.min())))
+                params['calage_max'] = str(int(np.ceil(_all_te_depths.max())) + 1)
+                log(f'Depth-only mode: depth range {_all_te_depths.min():.2f}–{_all_te_depths.max():.2f}')
 
             log(f'Loaded {len(TE_data)} trace element(s)')
 
@@ -5556,82 +5556,190 @@ def _run_model(params):
             if has_iso:
                 y_iso = clean(x_iso, y_iso, 'ISO')
 
-            # ── 4. Age model ─────────────────────────────────────────────────
+            # ── 4. Age model / grid ───────────────────────────────────────────
             _set_stage('Building age model', 10)
             CALAGE_MIN = int(params['calage_min'])
             CALAGE_MAX = int(params['calage_max'])
             calage = np.arange(CALAGE_MIN, CALAGE_MAX, sampling_res)
 
-            info = dat.SampleInfo(name=params['station_name'],
-                                  datatype='none', archive='Speleothem')
-            DT1 = dat.DatingTable(depth=dating_depth, age=dating_age,
-                                  ageerror=dating_age_error,
-                                  datingmethod='U/Th', sampleinfo=info)
-            DT1.calibration()
+            if _with_age:
+                # ── 4a. BayProX age model setup ──────────────────────────────
+                info = dat.SampleInfo(name=params['station_name'],
+                                      datatype='none', archive='Speleothem')
+                DT1 = dat.DatingTable(depth=dating_depth, age=dating_age,
+                                      ageerror=dating_age_error,
+                                      datingmethod='U/Th', sampleinfo=info)
+                DT1.calibration()
 
-            # ── 5. BayProX proxy record ──────────────────────────────────────
-            _set_stage('Computing proxy record', 15)
-            log('Starting BayProX proxy record computation …')
+                # ── 5. BayProX proxy record ──────────────────────────────────
+                _set_stage('Computing proxy record', 15)
+                log('Starting BayProX proxy record computation …')
 
-            PD_unif = dat.ProxyDepth(depth=unified_depth,
-                                     proxy=np.zeros(len(unified_depth)),
-                                     proxyerror=0., sampleinfo=info)
-            pr_rem_var = np.linspace(0., 0.20, 100)
-            pr_rem_res = np.zeros(100)
-            for i in range(100):
-                pr_rem_res[i] = preremvar_optimize_residual(
-                    pr_rem_var[i], DT1, PD_unif, calage, max_degree, method, -1)
-            pre_remvar = pr_rem_var[np.argmin(pr_rem_res)] * DT1.ageerror.std()
-            log(f'Optimal prior remainder variance: {pre_remvar:.4f}')
+                PD_unif = dat.ProxyDepth(depth=unified_depth,
+                                         proxy=np.zeros(len(unified_depth)),
+                                         proxyerror=0., sampleinfo=info)
+
+                # Optimize prior remainder variance from age error structure
+                pr_rem_var = np.linspace(0., 0.20, 100)
+                pr_rem_res = np.zeros(100)
+                for i in range(100):
+                    pr_rem_res[i] = preremvar_optimize_residual(
+                        pr_rem_var[i], DT1, PD_unif, calage, max_degree, method, -1)
+                pre_remvar = pr_rem_var[np.argmin(pr_rem_res)] * DT1.ageerror.std()
+                log(f'Optimal prior remainder variance: {pre_remvar:.4f}')
+
             _set_stage('Computing proxy distributions', 25)
 
-            def get_pdist(x, y, dtype, limits_mode='te'):
-                f_y = interp1d(x, y, kind='linear',
-                               bounds_error=False, fill_value=np.nan)
-                y_u = f_y(unified_depth)
-                info_i = dat.SampleInfo(name=params['station_name'],
-                                        datatype=dtype, archive='Speleothem')
-                PD = dat.ProxyDepth(depth=unified_depth, proxy=y_u,
-                                    proxyerror=0., sampleinfo=info_i)
-                DWF = ad.DWF(DT1)
-                DWF(PD.depth, calBP_axis=calage, max_degree=max_degree,
-                    pre_remvar=pre_remvar, method=method, verbose=0)
-                PDist = prx.ProxyDistributions(DWF)
-                if limits_mode == 'te':
-                    _y_valid = PD.proxy[np.isfinite(PD.proxy)]
+            if not _with_age:
+                # ── Depth-only: construct PDist directly, bypassing BayProX ──
+                # BayProX's DWF machinery requires real age uncertainty to produce
+                # non-degenerate weight functions. In depth-only mode, we build
+                # PDist objects directly: at each depth grid point, a Gaussian PDF
+                # centred on the interpolated proxy value.
+                log('Depth-only mode: constructing PDist directly (BayProX bypassed)')
+
+                class _DirectPDist:
+                    """Minimal ProxyDistributions-compatible object."""
+                    pass
+
+                def get_pdist_direct(x, y, dtype, res=500):
+                    f_y = interp1d(x, y, kind='linear',
+                                   bounds_error=False, fill_value=np.nan)
+                    y_u = f_y(unified_depth)
+
+                    # Map unified_depth to integer "calage" axis
+                    calage_int = calage.astype(int) if calage.dtype != int else calage
+                    # Interpolate proxy onto calage grid
+                    f_y_cal = interp1d(unified_depth, y_u, kind='linear',
+                                       bounds_error=False, fill_value=np.nan)
+                    y_cal = f_y_cal(calage)
+
+                    _y_valid = y_u[np.isfinite(y_u)]
+                    if len(_y_valid) == 0:
+                        log(f'  WARNING: no valid data for {dtype}')
+                        return None
+
+                    # Proxy span: 0 to generous upper bound
                     p25, p50, p75 = np.percentile(_y_valid, [25, 50, 75])
-                    limits = [0., p50 + 10. * (p75 - p25)]
-                    log(f'  PDist limits ({dtype}): p25={p25:.4f} p50={p50:.4f} p75={p75:.4f} '
-                        f'→ [{limits[0]:.4f}, {limits[1]:.4f}]  '
-                        f'data range: [{np.nanmin(_y_valid):.4f}, {np.nanmax(_y_valid):.4f}]')
+                    upper = max(p50 + 10. * (p75 - p25), np.nanmax(_y_valid) * 1.5)
+                    proxyspan = np.linspace(0., upper, res)
+                    dp = proxyspan[1] - proxyspan[0]  # bin width
+
+                    # Gaussian width: local scatter from data, floor at 1% of range
+                    _data_range = np.nanmax(_y_valid) - np.nanmin(_y_valid)
+                    _sigma_floor = max(0.01 * _data_range, 1e-6)
+                    # Global sigma from MAD of residuals around local trend
+                    _diffs = np.abs(np.diff(_y_valid))
+                    _sigma = max(np.median(_diffs) * 1.4826 if len(_diffs) > 0 else _sigma_floor,
+                                 _sigma_floor)
+
+                    log(f'  PDist direct ({dtype}): {len(calage)} grid pts, '
+                        f'proxyspan [0, {upper:.4f}], σ={_sigma:.4f}, '
+                        f'data range [{np.nanmin(_y_valid):.4f}, {np.nanmax(_y_valid):.4f}]')
+
+                    # Build pdfmat: Gaussian at each calage point
+                    pdfmat = np.zeros((res, len(calage)))
+                    for i in range(len(calage)):
+                        val = y_cal[i]
+                        if np.isfinite(val):
+                            pdf = np.exp(-0.5 * ((proxyspan - val) / _sigma) ** 2)
+                            pdf_sum = pdf.sum() * dp
+                            if pdf_sum > 0:
+                                pdf /= pdf_sum  # normalise to integrate to 1
+                            pdfmat[:, i] = pdf
+                        # else: leave as zeros (NaN depth point)
+
+                    # CDF from PDF
+                    cdfmat = np.zeros_like(pdfmat)
+                    bj = 0.5 * np.r_[proxyspan[1] - proxyspan[0],
+                                     proxyspan[2:] - proxyspan[:-2],
+                                     proxyspan[-1] - proxyspan[-2]]
+                    for i in range(len(calage)):
+                        cdfmat[:, i] = np.cumsum(pdfmat[:, i] * bj)
+
+                    pd = _DirectPDist()
+                    pd.calbp = calage_int
+                    pd.proxyspan = proxyspan
+                    pd.pdfmat = pdfmat
+                    pd.cdfmat = cdfmat
+                    pd.res = res
+                    pd.verbose = 0
+
+                    _finite = np.isfinite(pdfmat).sum()
+                    _nonzero = (pdfmat > 0).sum()
+                    log(f'  PDist: pdfmat shape={pdfmat.shape}, '
+                        f'finite={_finite}/{pdfmat.size}, nonzero={_nonzero}')
+                    return pd
+
+                PDist_TEs = []
+                _n_te = len(TE_data)
+                for _i, (_x, _y, _rk) in enumerate(TE_data):
+                    _pct_lo = 25 + int(20 * _i / _n_te)
+                    _set_stage(f'Computing proxy distributions ({_rk.upper()})', _pct_lo)
+                    log(f'Computing {_rk.upper()} proxy distribution (direct) …')
+                    PDist_TEs.append(get_pdist_direct(_x, _y, 'concentration'))
+                PDist_TE1 = PDist_TEs[0]
+                PDist_TE2 = PDist_TEs[1] if len(PDist_TEs) > 1 else None
+
+                if has_iso:
+                    _set_stage('Computing proxy distributions (isotope)', 60)
+                    PDist_iso = get_pdist_direct(x_iso, y_iso, 'isotope')
                 else:
-                    limits = PDist.get_limits(DWF, PD, 3.)
-                    log(f'  PDist limits ({dtype}): auto → [{limits[0]:.4f}, {limits[1]:.4f}]')
-                PDist.get_pdf(DWF, PD, res=500, limits=limits)
-                return PDist
+                    PDist_iso = None
 
-            PDist_TEs = []
-            _n_te = len(TE_data)
-            for _i, (_x, _y, _rk) in enumerate(TE_data):
-                _pct_lo = 25 + int(20 * _i / _n_te)
-                _pct_hi = 25 + int(20 * (_i+1) / _n_te)
-                _set_stage(f'Computing proxy distributions ({_rk.upper()})', _pct_lo)
-                log(f'Computing {_rk.upper()} proxy distribution …')
-                PDist_TEs.append(get_pdist(_x, _y, 'concentration', 'te'))
-            PDist_TE1 = PDist_TEs[0]  # keep alias
-            PDist_TE2 = PDist_TEs[1] if len(PDist_TEs) > 1 else None
+                # Skip pickle cache in depth-only mode — _DirectPDist is a local
+                # class and can't be serialized. Construction is fast (~1s) anyway.
+                log('Depth-only mode: proxy record not cached (direct construction is fast)')
 
-            if has_iso:
-                _set_stage('Computing proxy distributions (isotope)', 60)
-                log('Computing isotope proxy distribution …')
-                PDist_iso = get_pdist(x_iso, y_iso, 'isotope', 'iso')
             else:
-                PDist_iso = None
+                # ── Standard path: BayProX proxy record ──────────────────────
+                def get_pdist(x, y, dtype, limits_mode='te'):
+                    f_y = interp1d(x, y, kind='linear',
+                                   bounds_error=False, fill_value=np.nan)
+                    y_u = f_y(unified_depth)
+                    info_i = dat.SampleInfo(name=params['station_name'],
+                                            datatype=dtype, archive='Speleothem')
+                    PD = dat.ProxyDepth(depth=unified_depth, proxy=y_u,
+                                        proxyerror=0., sampleinfo=info_i)
+                    DWF = ad.DWF(DT1)
+                    DWF(PD.depth, calBP_axis=calage, max_degree=max_degree,
+                        pre_remvar=pre_remvar, method=method, verbose=0)
+                    PDist = prx.ProxyDistributions(DWF)
+                    if limits_mode == 'te':
+                        _y_valid = PD.proxy[np.isfinite(PD.proxy)]
+                        p25, p50, p75 = np.percentile(_y_valid, [25, 50, 75])
+                        limits = [0., p50 + 10. * (p75 - p25)]
+                        log(f'  PDist limits ({dtype}): p25={p25:.4f} p50={p50:.4f} p75={p75:.4f} '
+                            f'→ [{limits[0]:.4f}, {limits[1]:.4f}]  '
+                            f'data range: [{np.nanmin(_y_valid):.4f}, {np.nanmax(_y_valid):.4f}]')
+                    else:
+                        limits = PDist.get_limits(DWF, PD, 3.)
+                        log(f'  PDist limits ({dtype}): auto → [{limits[0]:.4f}, {limits[1]:.4f}]')
+                    PDist.get_pdf(DWF, PD, res=500, limits=limits)
+                    return PDist
 
-            _pkl_list = PDist_TEs + ([PDist_iso] if PDist_iso is not None else [])
-            with open(proxy_pkl, 'wb') as f:
-                pickle.dump(_pkl_list, f)
-            log('Proxy record saved to ProxyRecord.pkl')
+                PDist_TEs = []
+                _n_te = len(TE_data)
+                for _i, (_x, _y, _rk) in enumerate(TE_data):
+                    _pct_lo = 25 + int(20 * _i / _n_te)
+                    _pct_hi = 25 + int(20 * (_i+1) / _n_te)
+                    _set_stage(f'Computing proxy distributions ({_rk.upper()})', _pct_lo)
+                    log(f'Computing {_rk.upper()} proxy distribution …')
+                    PDist_TEs.append(get_pdist(_x, _y, 'concentration', 'te'))
+                PDist_TE1 = PDist_TEs[0]  # keep alias
+                PDist_TE2 = PDist_TEs[1] if len(PDist_TEs) > 1 else None
+
+                if has_iso:
+                    _set_stage('Computing proxy distributions (isotope)', 60)
+                    log('Computing isotope proxy distribution …')
+                    PDist_iso = get_pdist(x_iso, y_iso, 'isotope', 'iso')
+                else:
+                    PDist_iso = None
+
+                _pkl_list = PDist_TEs + ([PDist_iso] if PDist_iso is not None else [])
+                with open(proxy_pkl, 'wb') as f:
+                    pickle.dump(_pkl_list, f)
+                log('Proxy record saved to ProxyRecord.pkl')
 
         # ── 6. Drip rate PDFs ───────────────────────────────────────────────
         _set_stage('Computing drip rate PDF (TE1)', 65)
@@ -6272,7 +6380,8 @@ def _run_model(params):
         log(f'Run ID: {_run_id}')
 
         # ── Age model JSON (for browser chart) ──────────────────────
-        try:
+        if _with_age:
+          try:
             _age_data = {'depth': [], 'age_median': [], 'age_lo': None, 'age_hi': None,
                          'dated_depth': [], 'dated_age': [], 'dated_err': []}
             _pd0 = PDist_TEs[0]
@@ -6356,9 +6465,11 @@ def _run_model(params):
                 log('Saved age_model.csv')
             else:
                 log('Depth-only mode: age model output skipped')
-        except Exception as _e:
+          except Exception as _e:
             log(f'Could not save age model: {_e}')
             log(traceback.format_exc())
+        else:
+            log('Depth-only mode: age model output skipped')
 
         # ── PDF heatmap JSON (subsampled for browser) ────────────────
         try:
