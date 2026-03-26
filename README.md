@@ -1,4 +1,4 @@
-# 💧 Dr Paleo — PaleodripRates
+# 💧 Dr Paleo — Paleodriprates
 
 Kinetic proxy for stalagmite drip rate and precipitation reconstruction.
 
