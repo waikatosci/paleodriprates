@@ -1,7 +1,7 @@
 """
-Drip Rate Estimator - Flask Web Application
-============================================
-Provides a browser-based interface for the speleothem drip rate
+💧 Dr Paleo — Drip Rate Estimator
+==================================
+Browser-based interface for the speleothem drip rate
 reconstruction pipeline (replaces the Excel-based workflow).
 """
 
@@ -43,7 +43,7 @@ HTML = r'''<!DOCTYPE html>
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>Drip Rate Estimator (v52)</title>
+<title>Dr Paleo (v54)</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
   :root {
@@ -553,7 +553,7 @@ HTML = r'''<!DOCTYPE html>
 
   <!-- ── Header ── -->
   <header>
-    <span class="logo">⬡ DripRate</span>
+    <span class="logo">💧 Dr Paleo</span>
     <span class="subtitle">Speleothem Palaeoclimate Reconstruction</span>
     <span id="statusPill" class="status-pill idle">
       <span class="dot"></span> Idle
@@ -1625,7 +1625,7 @@ HTML = r'''<!DOCTYPE html>
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
     </div>
-    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">Build v52</div>
+    <div style="text-align:right;font-size:9px;color:var(--muted);margin-top:4px" id="build-stamp">💧 Dr Paleo v54</div>
   </div>
 
 </div>
@@ -3268,7 +3268,7 @@ function runSanityChecks() {
               `Kinetic prediction: <code>${predNative.toFixed(3)} ${dataUnit}</code>
                &nbsp;·&nbsp; Observed median: <code>${obsNative.toFixed(3)} ${dataUnit}</code>
                &nbsp;·&nbsp; ${ratio.toFixed(1)}× ${dir}.<br>
-               <span style="color:var(--muted)">Adjust drip rate, Kd, or solution chemistry.</span>`)
+               <span style="color:var(--muted)">Dr Paleo suggests: adjust drip rate, Kd, or solution chemistry.</span>`)
             });
           }
         }
@@ -3321,7 +3321,7 @@ function startRun() {
   if (!ok) {
     const proceed = confirm(
       "Parameter warnings detected (see above).\n\n"
-      + "The run may produce empty or NaN results.\n\n"
+      + "Dr Paleo says: the run may produce empty or NaN results.\n\n"
       + "Proceed anyway?"
     );
     if (!proceed) return;
@@ -3332,7 +3332,7 @@ function startRun() {
   document.getElementById('runBtn').disabled = true;
   document.getElementById('resultsBtn').style.display = 'none';
   document.getElementById('logBox').innerHTML = '';
-  setStatus('running', 'Running');
+  setStatus('running', 'Dr Paleo is thinking…');
   runStartTime = Date.now();
 
   fetch('/run', {
@@ -3342,7 +3342,7 @@ function startRun() {
   })
   .then(r => r.json())
   .then(d => {
-    if (d.error) { alert(d.error); resetRunBtn(); return; }
+    if (d.error) { alert('Dr Paleo says: ' + d.error); resetRunBtn(); return; }
     pollTimer = setInterval(pollStatus, 1500);
   });
 }
@@ -3432,16 +3432,16 @@ function pollStatus() {
       const etaEl = document.getElementById('etaLabel');
       if (s.progress >= 5) {
         const remaining = (elapsed / s.progress) * (100 - s.progress);
-        etaEl.textContent = 'ETA ~' + fmtTime(remaining);
+        etaEl.textContent = 'Dr Paleo estimates ~' + fmtTime(remaining) + ' remaining';
       } else if (elapsed > 2) {
-        etaEl.textContent = 'Elapsed: ' + fmtTime(elapsed);
+        etaEl.textContent = 'Dr Paleo has been working for ' + fmtTime(elapsed);
       } else {
-        etaEl.textContent = 'Starting…';
+        etaEl.textContent = 'Dr Paleo is warming up…';
       }
     } else if (!s.running && s.done) {
       const elapsed = runStartTime ? (Date.now() - runStartTime) / 1000 : 0;
       if (elapsed > 0)
-        document.getElementById('etaLabel').textContent = 'Completed in ' + fmtTime(elapsed);
+        document.getElementById('etaLabel').textContent = 'Dr Paleo finished in ' + fmtTime(elapsed);
     }
 
     // log
@@ -3456,9 +3456,9 @@ function pollStatus() {
       clearInterval(pollTimer);
       document.getElementById('runBtn').disabled = false;
       if (s.error) {
-        setStatus('error', 'Error');
+        setStatus('error', 'Dr Paleo hit a snag');
       } else {
-        setStatus('done', 'Complete');
+        setStatus('done', 'Dr Paleo is done!');
         document.getElementById('resultsBtn').style.display = 'inline-flex';
         document.getElementById('badgeResults').style.display = 'inline';
         refreshDownloads(s.outputs);
@@ -3473,7 +3473,7 @@ function pollStatus() {
 
 function resetRunBtn() {
   document.getElementById('runBtn').disabled = false;
-  setStatus('idle', 'Idle');
+  setStatus('idle', 'Ready');
 }
 
 // ── Status pill ──────────────────────────────────────────────────────────────
@@ -4147,7 +4147,7 @@ function refreshDownloads(files) {
 // When Kp = -1, compute and show theoretical value in adjacent read-only field.
 // Note: for Co and Ni the model uses empirical (Lindeman) values; for other elements
 // the Wang & Xu lattice-strain formula is used.
-const THEO_KP = { 'Co': 4.4, 'Ni': 1.1, 'Cu': 44 };  // Lindeman et al. GCA 2022
+const THEO_KP = { 'Co': 4.4, 'Ni': 1.1, 'Cu': 44, 'Zn': 8, 'Cd': 10, 'Pb': 2.5, 'V': 0.5, 'Mn': 10, 'Fe': 4, 'Al': 0.1 };  // Lindeman et al. GCA 2022 + literature defaults
 
 // ── Reactive parameter hints ────────────────────────────────────────────
 
@@ -4626,14 +4626,14 @@ function autoCalcKd(prefix) {
   const tau    = 60.0 / vRef;
 
   if (aqPPB <= 0 || caPPB <= 0 || kp <= 0) {
-    setHint('<span style="color:#ffa032">Enter valid aq. conc., Ca, and Kp</span>');
+    setHint('<span style="color:#ffa032">Dr Paleo needs valid aq. conc., Ca, and Kp</span>');
     return;
   }
 
   const nS     = 1.0 - xf;
   const K0_ppm = kp * (xf + xl) * (aqPPB / caPPB) * CA_CALCITE_PPM * keVal;
   if (K0_ppm <= 0) {
-    setHint('<span style="color:#ffa032">K₀ ≤ 0 — check Kp and fractions</span>');
+    setHint('<span style="color:#ffa032">Dr Paleo says: K₀ ≤ 0 — check Kp and fractions</span>');
     return;
   }
 
@@ -4660,7 +4660,7 @@ function autoCalcKd(prefix) {
 
   const expKmu = -Math.log(E1) / tau;
   if (expKmu <= 0 || !isFinite(expKmu)) {
-    setHint('<span style="color:#ffa032">Cannot solve for Kd at this drip rate</span>');
+    setHint('<span style="color:#ffa032">Dr Paleo cannot solve for Kd at this drip rate</span>');
     return;
   }
 
@@ -5103,10 +5103,9 @@ function updateTheoKp(prefix) {
       theoField.style.opacity = '0.7';
       theoField.style.color = '';
     } else if (KP_LITERATURE[elem]) {
-      // Has literature guidance — show it and auto-fill
+      // Has literature guidance — show it but keep -1 as sentinel
       const lit = KP_LITERATURE[elem];
-      kpInput.value = lit.suggest;
-      theoField.value = 'Range ' + lit.range + ' (' + lit.ref + ')';
+      theoField.value = 'Kp = -1 → use lit. suggest ' + lit.suggest + ' | range ' + lit.range + ' (' + lit.ref + ')';
       if (lit.caveat) theoField.value = lit.caveat + ' | ' + theoField.value;
       theoField.style.opacity = '0.9';
       theoField.style.color = '#f7a440';
@@ -5201,7 +5200,7 @@ function escHtml(s) {
 
 // ── Initialise on page load ───────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('%c PaleoDripRates v52 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
+  console.log('%c 💧 Dr Paleo v54 loaded ', 'background:#4cc9a0;color:#0d1117;font-weight:bold;padding:2px 8px;border-radius:4px');
   renderTEParamCards();
   setAnalysisMode(analysisMode);
   setReconMode(reconMode);
@@ -5235,15 +5234,17 @@ def upload():
             f.save(path)
             try:
                 df = pd.read_csv(path)
+                # Replace NaN → None so jsonify emits JSON null, not bare NaN
+                df_safe = df.where(df.notna(), None)
                 result_entry = {
                     'filename': f.filename,
                     'columns': list(df.columns),
                     'rows': len(df),
-                    'preview': df.head(3).to_dict(orient='records'),
+                    'preview': df_safe.head(3).to_dict(orient='records'),
                 }
                 # For depth_age, trace_elem1, and monitoring CSVs, return full data
                 if key in ('depth_age', 'trace_elem1') or key.endswith('_aq'):
-                    result_entry['data'] = df.to_dict(orient='list')
+                    result_entry['data'] = df_safe.to_dict(orient='list')
                 results[key] = result_entry
             except Exception as e:
                 results[key] = {'error': str(e)}
@@ -5398,7 +5399,7 @@ def _run_model(params):
         if use_cache:
             # ── Fast path: load cached PDist objects, skip data/BayProX ────
             _set_stage('Loading cached proxy record', 15)
-            log('Found ProxyRecord.pkl — skipping data loading and BayProX.')
+            log('Dr Paleo found ProxyRecord.pkl — skipping data loading and BayProX.')
             with open(proxy_pkl, 'rb') as f:
                 cached = pickle.load(f)
             # Support both the web app format [TE1, TE2, iso]
@@ -5573,7 +5574,7 @@ def _run_model(params):
 
                 # ── 5. BayProX proxy record ──────────────────────────────────
                 _set_stage('Computing proxy record', 15)
-                log('Starting BayProX proxy record computation …')
+                log('Dr Paleo is starting BayProX proxy record computation …')
 
                 PD_unif = dat.ProxyDepth(depth=unified_depth,
                                          proxy=np.zeros(len(unified_depth)),
@@ -5731,7 +5732,7 @@ def _run_model(params):
 
                 if has_iso:
                     _set_stage('Computing proxy distributions (isotope)', 60)
-                    log('Computing isotope proxy distribution …')
+                    log('Dr Paleo is computing isotope proxy distribution …')
                     PDist_iso = get_pdist(x_iso, y_iso, 'isotope', 'iso')
                 else:
                     PDist_iso = None
@@ -5739,11 +5740,11 @@ def _run_model(params):
                 _pkl_list = PDist_TEs + ([PDist_iso] if PDist_iso is not None else [])
                 with open(proxy_pkl, 'wb') as f:
                     pickle.dump(_pkl_list, f)
-                log('Proxy record saved to ProxyRecord.pkl')
+                log('Dr Paleo cached the proxy record → ProxyRecord.pkl')
 
         # ── 6. Drip rate PDFs ───────────────────────────────────────────────
         _set_stage('Computing drip rate PDF (TE1)', 65)
-        log('Computing drip rate PDF for TE1 …')
+        log('Dr Paleo is computing drip rate PDF for TE1 …')
 
         from driprates_stochastic import driprates
 
@@ -5928,7 +5929,7 @@ def _run_model(params):
                 if obs_native and obs_native > 0:
                     kp_  = float(params.get(row + '_Kp', 1))
                     if kp_ < 0:
-                        kp_ = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44}.get(
+                        kp_ = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44, 'Zn': 8, 'Cd': 10, 'Pb': 2.5, 'V': 0.5, 'Mn': 10, 'Fe': 4, 'Al': 0.1}.get(
                             params.get(row + '_elem', ''), 1)
                     kd_  = float(np.exp(float(params[row + '_Kd_mn'])))
                     ke_  = float(params.get(row + '_K_e', 1))
@@ -5972,13 +5973,13 @@ def _run_model(params):
             if _kp_val == -1:
                 if _elem not in _KP_THEORY_ELEMS:
                     # No theoretical Kp — use THEO_KP empirical values or raise error
-                    _empirical = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44}
+                    _empirical = {'Co': 4.4, 'Ni': 1.1, 'Cu': 44, 'Zn': 8, 'Cd': 10, 'Pb': 2.5, 'V': 0.5, 'Mn': 10, 'Fe': 4, 'Al': 0.1}
                     if _elem in _empirical:
                         _kp_val = _empirical[_elem]
                         log(f'  Kp=-1 for {_elem}: resolved to empirical {_kp_val}')
                     else:
                         raise ValueError(
-                            f'Kp=-1 (theoretical) is not supported for {_elem}. '
+                            f'Dr Paleo says: Kp=-1 (theoretical) is not supported for {_elem}. '
                             f'Supported elements: {", ".join(sorted(_KP_THEORY_ELEMS))}. '
                             f'Please enter a numeric Kp value for {_elem}.')
 
@@ -6050,7 +6051,7 @@ def _run_model(params):
             _rk = f'te{_i+1}'
             _pct = 65 + int(15 * _i / len(PDist_TEs))
             _set_stage(f'Computing drip rate PDF ({_rk.upper()})', _pct)
-            log(f'Computing drip rate PDF for {_rk.upper()} …')
+            log(f'Dr Paleo is computing drip rate PDF for {_rk.upper()} …')
             _TE = make_te(_pd, _rk, _i)
             _Ke = float(params.get(f'{_rk}_K_e', params.get(f'K_e{_i+1}', 1)))
 
@@ -6141,7 +6142,7 @@ def _run_model(params):
             _vhi, _, _ = driprates(_kmn + _ksd, _eps, _Ke, TE=_TE_s, calib=False)
             _kd_sens_lo_pdfs.append(np.nan_to_num(_vlo, nan=0.0))
             _kd_sens_hi_pdfs.append(np.nan_to_num(_vhi, nan=0.0))
-        log('Kd sensitivity passes complete')
+        log('Dr Paleo says: Kd sensitivity passes complete')
 
         # ── Kd sensitivity joint PDFs ───────────────────────────────────────
         def _joint_and_median(pdf_list, rsw):
@@ -6213,7 +6214,7 @@ def _run_model(params):
             for p in pcs:
                 V_pcs[p][i] = f_(p / 100.)
         if _n_zero_cols > 0:
-            log(f'Warning: {_n_zero_cols}/{V_pdf.shape[1]} timesteps had zero PDF '
+            log(f'Dr Paleo warns: {_n_zero_cols}/{V_pdf.shape[1]} timesteps had zero PDF '
                 f'— drip rate could not be estimated. Check Kd, aq_conc and data units.')
 
         # ── Semi-quant normalisation ─────────────────────────────────────────
@@ -6248,7 +6249,7 @@ def _run_model(params):
                     V_pcs[_p] = V_pcs[_p] / _scale * 100.0
                 _kd_med_lo = _kd_med_lo / _scale * 100.0
                 _kd_med_hi = _kd_med_hi / _scale * 100.0
-            log('Semi-quant normalisation applied.')
+            log('Dr Paleo applied semi-quant normalisation.')
         else:
             _scale = None  # full mode — no normalisation
 
@@ -6308,7 +6309,7 @@ def _run_model(params):
         for p in pcs:
             df_out[f'pc{p:02d}'] = V_pcs[p]
         df_out.to_csv(summary_path, index=False)
-        log('Saved drip_rate_summary.csv')
+        log('Dr Paleo saved drip_rate_summary.csv')
 
         # Realisations CSV (only if generated)
         if realisations is not None:
@@ -6317,7 +6318,7 @@ def _run_model(params):
             out_arr = np.vstack([V_age, realisations]).T
             np.savetxt(real_path, out_arr, delimiter=',',
                        header=header, comments='')
-            log('Saved drip_rate_realisations.csv')
+            log('Dr Paleo saved drip_rate_realisations.csv')
 
         # Plot data JSON (for browser chart)
         chart_path = os.path.join(OUTPUT_FOLDER, 'chart_data.json')
@@ -6462,7 +6463,7 @@ def _run_model(params):
                 pd.DataFrame({'depth': _age_data['depth'],
                               'age_yBP': _age_data['age_median']}).to_csv(_am_csv, index=False)
                 _outputs.append('age_model.csv')
-                log('Saved age_model.csv')
+                log('Dr Paleo saved age_model.csv')
             else:
                 log('Depth-only mode: age model output skipped')
           except Exception as _e:
@@ -6556,7 +6557,7 @@ def _run_model(params):
             _is_path = os.path.join(OUTPUT_FOLDER, 'input_summary.csv')
             pd.DataFrame(_summary_rows, columns=['parameter', 'value']).to_csv(_is_path, index=False)
             _outputs.append('input_summary.csv')
-            log('Saved input_summary.csv')
+            log('Dr Paleo saved input_summary.csv')
         except Exception as _e:
             log(f'Could not save input summary: {_e}')
 
@@ -6567,11 +6568,11 @@ def _run_model(params):
 
         run_state['outputs'] = _outputs
         _set_stage('Complete', 100)
-        log('✓ Run complete.')
+        log('✓ Dr Paleo says: run complete. Go check your results!')
 
     except Exception:
         run_state['error'] = traceback.format_exc()
-        log('ERROR: ' + run_state['error'])
+        log('Dr Paleo says ERROR: ' + run_state['error'])
     finally:
         run_state['running'] = False
         run_state['done']    = True
@@ -6580,7 +6581,7 @@ def _run_model(params):
 def _set_stage(stage, progress):
     run_state['stage']    = stage
     run_state['progress'] = progress
-    log(f'[{progress}%] {stage}')
+    log(f'[{progress}%] Dr Paleo: {stage}')
 
 
 @app.route('/chart_data')
@@ -6594,6 +6595,6 @@ def chart_data():
 
 # ── Entry point ──────────────────────────────────────────────────────────────
 if __name__ == '__main__':
-    print('\n  Drip Rate Estimator')
+    print('\n  💧 Dr Paleo — Drip Rate Estimator')
     print('  Open your browser at:  http://localhost:5000\n')
     app.run(debug=False, host='0.0.0.0', port=5000)
