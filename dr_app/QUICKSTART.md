@@ -15,20 +15,39 @@ Or download and extract the [Zenodo archive](https://doi.org/10.5281/zenodo.1639
 
 ---
 
-## 2. Install Python dependencies
+## 2. Install Python
 
-Requires **Python 3.9+**. We recommend using a virtual environment or conda.
+Requires **Python 3.10+** (3.12 recommended). If you already have Python installed, skip to step 3.
+
+**Windows:**
+1. Download from https://www.python.org/downloads/
+2. Run the installer — **tick "Add python.exe to PATH"** on the first screen before clicking Install
+3. Restart any open command prompts
+4. Verify: `python --version`
+
+**Mac/Linux:** Python 3 is typically pre-installed. Verify with `python3 --version`. If not present, install via Homebrew (`brew install python`) or your package manager.
+
+---
+
+## 3. Install Python dependencies
+
+```bash
+pip install flask numpy pandas scipy
+```
+
+That's the only pip command needed. Everything else is included in the repository.
+
+Optionally, use a virtual environment to keep dependencies isolated:
 
 ```bash
 # Option A: pip (virtual environment)
 python -m venv venv
 source venv/bin/activate        # Linux/Mac
 venv\Scripts\activate           # Windows
-
 pip install flask numpy pandas scipy
 
 # Option B: conda
-conda create -n paleodriprates python=3.10 flask numpy pandas scipy
+conda create -n paleodriprates python=3.12 flask numpy pandas scipy
 conda activate paleodriprates
 ```
 
@@ -44,7 +63,7 @@ If `bayprox` is not pip-installable, clone it alongside `paleodriprates` and ens
 
 ---
 
-## 3. Repository structure
+## 4. Repository structure
 
 ```
 paleodriprates/
@@ -68,7 +87,7 @@ paleodriprates/
 
 ---
 
-## 4. Run the app
+## 5. Run the app
 
 ```bash
 cd paleodriprates/dr_app
@@ -89,7 +108,7 @@ Open **http://localhost:5000** in any modern browser (Chrome, Firefox, Edge).
 
 ---
 
-## 5. Quick test with HS4 example data
+## 6. Quick test with HS4 example data
 
 The repository includes example input files from **stalagmite HS4, Heshang Cave, China** — the validation dataset from the manuscript. This lets you verify your installation produces correct output in under 15 minutes.
 
@@ -126,7 +145,7 @@ All outputs are downloadable from the **Downloads** tab as CSV/JSON files.
 
 ---
 
-## 6. Prepare your own data
+## 7. Prepare your own data
 
 You need **two CSV files**:
 
@@ -149,7 +168,7 @@ You need **two CSV files**:
 
 ---
 
-## 7. Full workflow
+## 8. Full workflow
 
 ### Step 1 — Data Inputs
 
@@ -197,7 +216,7 @@ All outputs are available as CSV/JSON files from the **Downloads** tab, includin
 
 ---
 
-## 8. Troubleshooting
+## 9. Troubleshooting
 
 | Problem | Fix |
 |---------|-----|
@@ -210,7 +229,7 @@ All outputs are available as CSV/JSON files from the **Downloads** tab, includin
 
 ---
 
-## 9. Citation
+## 10. Citation
 
 If you use this tool, please cite:
 
@@ -220,7 +239,7 @@ Code & data: [github.com/waikatosci/paleodriprates](https://github.com/waikatosc
 
 ---
 
-## 10. Contact
+## 11. Contact
 
 Adam Hartland — [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
 
