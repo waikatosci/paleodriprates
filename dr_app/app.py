@@ -1176,6 +1176,23 @@ HTML = r'''<!DOCTYPE html>
               Default: 5000. Higher = finer grid but slower.
             </div>
           </div>
+          <div class="field" id="depth-res-field">
+            <label>Output depth resolution (cm)
+              <span style="color:var(--muted);font-weight:400;font-size:10px"> — depth-only mode</span>
+            </label>
+            <select id="depth_res">
+              <option value="native">Native TE positions</option>
+              <option value="0.1">0.1 cm</option>
+              <option value="0.25">0.25 cm</option>
+              <option value="0.5">0.5 cm</option>
+              <option value="1" selected>1.0 cm (default)</option>
+            </select>
+            <div style="font-size:9.5px;color:var(--muted);margin-top:3px">
+              "Native" uses the original sample depths (~0.47 cm for HS4).
+              Finer grids preserve more spatial information but run slower.
+              Only applies in depth-only mode (ignored when age model is provided).
+            </div>
+          </div>
         </div>
       </div>
 
@@ -3410,6 +3427,7 @@ function collectParams() {
     with_age:             reconMode === 'age' ? 'yes' : 'no',
     v_max:                parseFloat(document.getElementById('v_max')?.value) || 100,
     v_res:                parseInt(document.getElementById('v_res')?.value) || 5000,
+    depth_res:            document.getElementById('depth_res')?.value || '1',
     hiatus_zones:         hiatusZones.filter(z => z.from !== z.to),
     outlier_win_size:     parseInt(document.getElementById('te-winsize')?.value) || 50,
     semi_anchor:          v('semi_anchor'),
@@ -5561,7 +5579,22 @@ def _run_model(params):
             _set_stage('Building age model', 10)
             CALAGE_MIN = int(params['calage_min'])
             CALAGE_MAX = int(params['calage_max'])
-            calage = np.arange(CALAGE_MIN, CALAGE_MAX, sampling_res)
+
+            if _with_age:
+                # Age mode: always use 1-yr resolution
+                calage = np.arange(CALAGE_MIN, CALAGE_MAX, sampling_res)
+            else:
+                # Depth-only mode: user-configurable resolution
+                _depth_res = params.get('depth_res', '1')
+                if _depth_res == 'native':
+                    # Use actual TE sample positions as the output grid
+                    calage = unified_depth.copy()
+                    log(f'Depth grid: native TE positions ({len(calage)} pts, '
+                        f'median spacing {np.median(np.diff(calage)):.3f} cm)')
+                else:
+                    _step = float(_depth_res)
+                    calage = np.arange(CALAGE_MIN, CALAGE_MAX + _step, _step)
+                    log(f'Depth grid: {_step} cm steps ({len(calage)} pts)')
 
             if _with_age:
                 # ── 4a. BayProX age model setup ──────────────────────────────
@@ -5608,8 +5641,12 @@ def _run_model(params):
                                    bounds_error=False, fill_value=np.nan)
                     y_u = f_y(unified_depth)
 
-                    # Map unified_depth to integer "calage" axis
-                    calage_int = calage.astype(int) if calage.dtype != int else calage
+                    # Map unified_depth to calage axis
+                    # In native/sub-cm mode, keep float depths; only cast to int for 1-cm grid
+                    if _with_age or (hasattr(calage, 'dtype') and np.issubdtype(calage.dtype, np.integer)):
+                        calage_int = calage.astype(int) if calage.dtype != int else calage
+                    else:
+                        calage_int = calage  # preserve float depths
                     # Interpolate proxy onto calage grid
                     f_y_cal = interp1d(unified_depth, y_u, kind='linear',
                                        bounds_error=False, fill_value=np.nan)
@@ -6532,6 +6569,7 @@ def _run_model(params):
                 ('ca_unit', params.get('ca_unit', '')),
                 ('calage_min', params.get('calage_min', '')),
                 ('calage_max', params.get('calage_max', '')),
+                ('depth_res', params.get('depth_res', '1')),
                 ('n_realisations', params.get('n_realisations', '')),
                 ('rng_seed', params.get('rng_seed', '')),
                 ('outlier_win_size', params.get('outlier_win_size', '')),
