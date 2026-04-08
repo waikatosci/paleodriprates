@@ -262,4 +262,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST — QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), Ministry for Business, Innovation and Employment (UOWX2102), and a Rutherford Discovery Fellowship (RDF-UOW1601).
 
-For questions or contributions, open an issue on GitHub or contact the corresponding author: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
+For questions or contributions, open an issue on GitHub or contact the corresponding author: [waikatoscientific@gmail.com](mailto:waikatoscientific@gmail.com)
