@@ -5376,8 +5376,10 @@ def serve_data(filename):
 def _run_model(params):
     """
     Drives the full pipeline using parameters from the UI.
-    Mirrors Drip_rate_parallel.py but reads from uploaded CSVs
-    rather than an Excel workbook.
+    Mirrors drip_rate_mc_realisations.py (the canonical CLI driver)
+    but reads from uploaded CSVs rather than an Excel workbook, and
+    emits the same outputs (percentile summary + full MC realisation
+    ensemble for RQA).
     """
     try:
         # Add the parent directory (where bayprox, model.py etc. live) to path
