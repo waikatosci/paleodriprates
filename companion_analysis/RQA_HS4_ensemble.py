@@ -4,7 +4,7 @@ Recurrence Quantification Analysis — HS4 Speleothem Study
 Author  : Adam Hartland (ensemble RQA framework)
 Figure  : Fig. 5 + Supplementary RP figure
 
-INPUT FILES  (all produced by Drip_rate_parallel_fr.py)
+INPUT FILES  (all produced by drip_rate_mc_realisations.py)
 --------------------------------------------------------
 drip_rate_realisations.csv   — age + r0...r999  (drip rate, drips min-1)
 d18O_realisations.csv        — age + r0...r999  (d18O, per mil VPDB)
