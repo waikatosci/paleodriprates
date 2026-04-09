@@ -1,7 +1,21 @@
-# Drip rate estimation using trace element concentrations in speleothem
-# The script processes data from an Excel file to estimate drip rates 
-# using trace element concentrations found in speleothems. 
-# includes new section to output 1000 realisations from the MC analysis
+"""
+drip_rate_mc_realisations.py — canonical CLI driver for paleodriprates.
+
+Reconstructs drip rates from speleothem trace-element concentrations using
+the Hartland et al. kinetic proxy model, with parallel Monte Carlo
+propagation of uncertainties. Reads input from `Drip_rate.xlsx`.
+
+Outputs:
+    - Drip rate percentiles (pc05–pc95) at each time step
+    - Full ensemble of MC realisations (typically 1000) — required input for
+      the RQA stationarity tests in `drip_rate_stationarity_tests.py`
+
+Historical note: this file was previously named `Drip_rate_parallel_fr.py`,
+where `_fr` stood for "full realisations". Renamed 2026-04-09 for clarity.
+This is the canonical CLI version; earlier `Drip_rate.py`,
+`Drip_rate_serial.py`, and `Drip_rate_parallel.py` were superseded variants
+and have been removed.
+"""
 
 # Import Libraries
 import os, sys, io, openpyxl, copy, pickle
