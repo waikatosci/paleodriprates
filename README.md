@@ -262,3 +262,9 @@ MIT License. See [LICENSE](LICENSE) for details.
 Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST, QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), Ministry for Business, Innovation and Employment (UOWX2102), and a Rutherford Discovery Fellowship (RDF-UOW1601).
 
 For questions or contributions, open an issue on GitHub or contact the corresponding author: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
+
+---
+
+## AI Assistance Statement
+
+The scientific method, kinetic model, and analyses in this repository are the work of the authors. Generative AI tools (Anthropic's Claude) were used to assist with software engineering and documentation tasks, including refactoring and organising the codebase, and building the Dr Paleo web interface. All AI-assisted output was reviewed, tested, and verified by the authors, who take full responsibility for the content and correctness of the code, data, and documentation.
