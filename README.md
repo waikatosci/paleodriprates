@@ -6,7 +6,7 @@ This repository contains code, data, and Dr Paleo, a browser-based application f
 
 The methods are described in:
 
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Decoupled infiltration and isotope signals reveal hidden East Asian monsoon megadroughts. Preprint and DOI to follow.
 
 ---
 
@@ -238,7 +238,7 @@ Raw proxy data and monitoring records are included in the Excel files. Full arch
 ## Citation
 
 Manuscript:
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Decoupled infiltration and isotope signals reveal hidden East Asian monsoon megadroughts. Preprint and DOI to follow.
 
 Repository:
 > Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
