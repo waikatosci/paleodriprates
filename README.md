@@ -6,7 +6,7 @@ This repository contains code, data, and Dr Paleo, a browser-based application f
 
 The methods are described in:
 
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Decoupled infiltration and isotope signals reveal hidden East Asian monsoon megadroughts. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
 ---
 
@@ -95,6 +95,15 @@ paleodriprates/
 │   ├── P_quantification_Holocene.ipynb
 │   ├── precip_recon_readme.txt
 │   └── (regression input/output Excel files)
+│
+├── manuscript_figures/                Nature Communications source data + figures
+│   ├── HS4_SourceData.xlsx                Single source for every display item
+│   ├── generate_figures.py                Renders all figures from the workbook
+│   ├── ngeo_style.py                      Shared figure style
+│   ├── figures/                           One script per figure (Figs 3-7)
+│   ├── external/                          Bulk arrays + Zhu 2017 IRM flux (cited inputs)
+│   ├── output/                            Rendered figures
+│   └── README.md
 │
 └── legacy/                            Read-only archive of superseded files
     ├── README.md                          (provenance and rationale)
@@ -231,14 +240,14 @@ All tests report effect sizes and bootstrap 95% confidence intervals.
 
 ## Data Availability
 
-Raw proxy data and monitoring records are included in the Excel files. Full archive (including all calibration datasets): [Zenodo DOI: 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
+Raw proxy data and monitoring records are included in the Excel files. The manuscript's figures are fully reproducible from `manuscript_figures/`, whose single workbook `HS4_SourceData.xlsx` is the canonical source for every display item (drip-rate reconstruction at σ = π/√6). Full archive (including all calibration datasets): [Zenodo DOI: 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
 
 ---
 
 ## Citation
 
 Manuscript:
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Decoupled infiltration and isotope signals reveal hidden East Asian monsoon megadroughts. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
 Repository:
 > Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
