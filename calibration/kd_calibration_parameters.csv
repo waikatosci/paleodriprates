@@ -1,0 +1,5 @@
+mode,metal,parameter,value,sd,ci95_lo,ci95_hi,sigma_ln_kd,sigma_source,target_drip_min,metal_median_ppm,n_metal_samples,lambda_F,published_mu
+faithfulness,Ni,mu_ln_kd,-3.9629,0.3549,-4.6143,-3.1794,1.385,legacy fixed 1.385,16.0,3.6382,17,0.01,-3.91
+faithfulness,Co,mu_ln_kd,-5.5756,0.3508,-6.2494,-4.9314,1.385,legacy fixed 1.385,16.0,0.3121,17,0.01,-5.57
+refit,Ni,mu_ln_kd,-3.9362,0.3452,-4.577,-3.1801,1.2825,pi/sqrt(6) kinetic window (fixed),15.09,3.6382,17,0.01,
+refit,Co,mu_ln_kd,-5.5163,0.3454,-6.1824,-4.8859,1.2825,pi/sqrt(6) kinetic window (fixed),15.09,0.3121,17,0.01,

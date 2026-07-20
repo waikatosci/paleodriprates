@@ -1439,7 +1439,7 @@ HTML = r'''<!DOCTYPE html>
         <div class="card-title">📄 Manuscript</div>
         <div style="font-size:12px; line-height:1.9; color:var(--text)">
           <div style="font-size:14px; color:var(--texthi); margin-bottom:10px; line-height:1.5">
-            Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought
+            Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers
           </div>
           <div style="color:var(--muted); margin-bottom:12px">
             Adam Hartland, Bedartha Goswami, Jungho Park, Sebastian Höpker, Dorisel Torres Rojas,
@@ -1473,31 +1473,17 @@ HTML = r'''<!DOCTYPE html>
         <div style="font-size:12px; line-height:1.9; color:var(--text)">
           This tool implements a novel kinetic proxy approach that harnesses the dissociation
           of organic-metal complexes (OMC) in cave dripwater to reconstruct past drip rates —
-          and thus cave-water infiltration and effective precipitation — from stalagmite trace
-          metals. Crucially, drip rate is a <em>direct</em> record of infiltration, recovered
-          independently of the stable-isotope (δ¹⁸O) and other proxies measured on the same
-          sample. This lets the method deconvolve the hydrological (amount) signal from the
-          isotopic one, which conflates moisture source, rainout, circulation and temperature —
-          separating <em>how much water reached the cave</em> from the tangle of influences
-          carried by δ¹⁸O. The underlying model
+          and thus precipitation — from stalagmite trace metals. The underlying model
           links the concentration of trace elements in speleothem calcite to past fluid residence
           times via the kinetics of metal-organic dissociation, calibrated through monitoring data
           and refined using Monte Carlo propagation of paleo-temperature uncertainty. While
           developed for speleothems, the approach generalises to any mineral deposit formed from
           waters containing OMC with sufficiently slow dissociation kinetics — see below.<br><br>
-          The method was developed and validated using stalagmite HS4 from Heshang Cave, China.
-          Applied there, decoupling infiltration from the δ¹⁸O record reveals a hidden mid-Holocene
-          megadrought at ~5.2 ka. The event is above all a collapse in <em>infiltration</em> — drip
-          rate falls by roughly three-quarters, to a few drips per minute — whereas the reconstructed
-          <em>rainfall</em> declines far more modestly, of order 30% below the Holocene mean
-          (to ~730 from ~1,020 mm yr⁻¹). It is a recharge drought: a moderate rainfall shortfall,
-          amplified by the non-linear response of effective infiltration, produces a severe drip-rate
-          anomaly. Because that anomaly is nearly absent from δ¹⁸O, the event is effectively invisible
-          to conventional isotope-based reconstructions — and would be understated by a rainfall
-          record alone. More broadly, the framework delivers a quantitative,
-          probabilistic view of East Asian Summer Monsoon hydrology over the past 9,500 years; the
-          full ensemble of drip rate realisations — available for download —
-          enables recurrence quantification analysis (RQA) and other
+          The method was developed and validated using stalagmite HS4 from Heshang Cave, China,
+          reconstructing Holocene rainfall for the Yangtze region and providing new insights
+          into East Asian Summer Monsoon dynamics over the past 9,500 years. The probabilistic
+          reconstruction framework — including the full ensemble of drip rate realisations
+          available for download — enables recurrence quantification analysis (RQA) and other
           nonlinear time series methods.<br><br>
           <strong>Generalisation beyond stalagmite drip rates</strong><br>
           While the default output is expressed as drip rate (drips min⁻¹), the fundamental
@@ -1651,7 +1637,7 @@ HTML = r'''<!DOCTYPE html>
     <span class="footer-badge">⚠ Pre-publication review</span>
     <div class="footer-text">
       This is a pre-publication version of the drip rate model provided for review purposes and is based on the following manuscript submitted to <em>Nature Communications</em>:
-      <strong> Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought</strong>
+      <strong> Quantitative Holocene precipitation reconstruction from stalagmite trace metal kinetics reveals East Asian monsoon drivers</strong>
       — Hartland et al.
       &nbsp;·&nbsp;
       <a href="#" onclick="showPanel('about'); return false;">About &amp; Funding ↗</a>
@@ -1940,8 +1926,8 @@ function renderTERows() {
 // = 1.282549830161864 fixed a priori as a kinetic constant (Hartland et al.,
 // Nature Communications). Kd_mn, aq_conc and Ca are the refitted values.
 const ELEM_DEFAULTS = {
-  'Ni': { Kd_mn: -3.90807930448765, Kd_sd: 1.282549830161864, F: 0.01, InertF: 0.10, aq_conc: 4.370005432, K_e: 1.0 },
-  'Co': { Kd_mn: -5.57161302013095, Kd_sd: 1.282549830161864, F: 0.01, InertF: 0.40, aq_conc: 0.460490861, K_e: 1.0 },
+  'Ni': { Kd_mn: -3.9361940015, Kd_sd: 1.282549830161864, F: 0.01, InertF: 0.10, aq_conc: 4.370005432, K_e: 1.0 },
+  'Co': { Kd_mn: -5.5162692714, Kd_sd: 1.282549830161864, F: 0.01, InertF: 0.40, aq_conc: 0.460490861, K_e: 1.0 },
   'Cu': { Kd_mn: -0.083, Kd_sd: 1.282549830161864, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 },
 };
 const ELEM_DEFAULT_FALLBACK = { Kd_mn: -2.000, Kd_sd: 1.282549830161864, F: 0.00001, InertF: 0.10, aq_conc: 1.000, K_e: 1.0 };

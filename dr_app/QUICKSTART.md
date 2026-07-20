@@ -163,7 +163,7 @@ The repository includes example input files from stalagmite HS4, Heshang Cave, C
 
 If you use Dr Paleo, please cite:
 
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (in review). Decoupled infiltration and isotope signals reveal hidden East Asian monsoon megadroughts. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
 Code and data: [github.com/waikatosci/paleodriprates](https://github.com/waikatosci/paleodriprates) · [doi:10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750)
 
