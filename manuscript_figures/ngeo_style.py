@@ -183,3 +183,30 @@ def make_heatmap_cmap(n=256):
 MM = 1 / 25.4   # multiply mm by this to get inches
 SINGLE_COL = 89 * MM    # Nature single column
 DOUBLE_COL = 180 * MM   # Nature double column
+
+
+def panel_label(ax, letter, x=0.02, y=0.96):
+    """Bare bold panel letter inside the axes (house convention: no panel titles;
+    descriptive text lives in the caption)."""
+    ax.text(x, y, letter, transform=ax.transAxes, fontsize=9, fontweight='bold',
+            va='top', ha='left', zorder=20)
+
+
+
+# ══════════════════════════════════════════════════════════════════════
+# LABEL BUBBLES (Fig 5 style) — descriptive in-panel labels linked to a
+# feature by an arrow, drawn on a rounded pale bubble so text sits over
+# data without collision.
+# ══════════════════════════════════════════════════════════════════════
+
+def label_bubble(ax, text, xy, xytext, ha='center', va='bottom',
+                 fontsize=5.5, color='#444', bubble_ec='#AAA', arrow_color='#555',
+                 lw=0.6):
+    """Fig-5 style descriptive label with a rounded bubble and thin arrow.
+    xy is the data point the arrow points at; xytext is where the label sits."""
+    return ax.annotate(text, xy=xy, xytext=xytext,
+                       ha=ha, va=va, fontsize=fontsize, color=color, zorder=8,
+                       bbox=dict(boxstyle='round,pad=0.12', fc='white',
+                                 ec=bubble_ec, lw=0.4, alpha=0.9),
+                       arrowprops=dict(arrowstyle='->', color=arrow_color,
+                                       lw=lw, shrinkA=2, shrinkB=2))
