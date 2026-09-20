@@ -65,7 +65,7 @@ RATIO_COL = {"Ni": "NiCa_umol_per_mol", "Co": "CoCa_umol_per_mol"}
 
 # Record anchors (canonical native run 20260720_202730)
 V_MODERN = 15.62        # top-of-record pc50, drips/min (16.66-target refit)
-V_FLOOR = 1.19          # lowest resolved point (156.88 cm)
+V_FLOOR = 2.81          # lowest resolved point (157.01 cm; 568-point record, 2026-09-21)
 LN_SIGNAL = np.log(V_MODERN / V_FLOOR)   # ln-range of the native record
 
 V_REFS = [V_FLOOR, 2.0, 5.0, 10.0, V_MODERN, 20.0]
@@ -168,7 +168,7 @@ def main():
     worst = hd.loc[V_REFS].sigma_lnV.max()
     print(f"\n  Worst-case across anchors: sigma_lnV = {worst:.3f} "
           f"= {100 * worst / LN_SIGNAL:.0f} % of the native record ln-range "
-          f"(ln {V_MODERN}/{V_FLOOR} = {LN_SIGNAL:.2f}); the >90 % megadrought "
+          f"(ln {V_MODERN}/{V_FLOOR} = {LN_SIGNAL:.2f}); the 5.2 ka megadrought "
           f"collapse is ~{LN_SIGNAL / worst:.0f}x the worst-case source-induced spread.")
 
     # ── Figure ───────────────────────────────────────────────────────────

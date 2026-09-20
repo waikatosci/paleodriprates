@@ -209,8 +209,8 @@ def add_event_labels(ax, events):
 		xy=(5.2, 26),
                 xytext=(4.0, y_top * 0.78),
                 arrowprops=arrow, **desc)
-    ax.annotate('Little\nIce Age',
-                xy=(0.3, 20),
+    ax.annotate('Late Little\nIce Age',
+                xy=(0.15, 28),
                 xytext=(0.9, y_top * 0.75),
                 arrowprops=arrow, **desc)
 

@@ -75,7 +75,7 @@ Z_FLAG = 4.0           # formal detrital flag: robust log-z > Z_FLAG in BOTH
                        # window edge effects at the basal contact).
 
 # Event windows (canonical framing)
-WIN_52_CORE = ("depth", 155.2, 157.8)       # ~5049-5161 yr BP
+WIN_52_CORE = ("depth", 155.7, 157.1)       # ~5072-5127 yr BP; the three elevated A-series samples (568-point record, 2026-09-21)
 WIN_82 = ("age", 8000.0, 8400.0)
 WIN_BASAL = ("depth", 253.4, 256.0)         # outside the dated span (>253.0 cm)
 V_MODERN, V_FLOOR = 14.14, 1.07
@@ -105,7 +105,7 @@ def summarise(te):
     rows = []
     windows = [
         ("record baseline", te),
-        ("5.2 ka core (155.2-157.8 cm)", window(te, WIN_52_CORE)),
+        ("5.2 ka core (155.7-157.1 cm)", window(te, WIN_52_CORE)),
         ("8.2 ka window (8.0-8.4 ka)", window(te, WIN_82)),
         ("basal detrital (>253.4 cm)", window(te, WIN_BASAL)),
     ]
@@ -172,17 +172,29 @@ def main():
               "affects any headline result.")
 
     # ── Trajectory slopes: kinetic vs source vs observed ────────────────
+    # The trajectory is the direction of the excursion from the baseline
+    # origin (EF = 1, 1), so the slopes are fitted through the origin for
+    # both the observations and the kinetic path (which passes through the
+    # origin at V = V_MODERN by construction). The ordinary least-squares
+    # slope among the excursion points alone is also reported; with only
+    # three elevated samples in the 568-point record it is not a stable
+    # estimate of the trajectory direction.
     ev = window(te, WIN_52_CORE)
-    lnN, lnC = np.log(ev.EF_Ni), np.log(ev.EF_Co)
-    obs_slope, obs_r = np.polyfit(lnN, lnC, 1)[0], np.corrcoef(lnN, lnC)[0, 1]
+    lnN, lnC = np.log(ev.EF_Ni.values), np.log(ev.EF_Co.values)
+    obs_slope = float((lnN * lnC).sum() / (lnN ** 2).sum())
+    obs_ols, obs_r = np.polyfit(lnN, lnC, 1)[0], np.corrcoef(lnN, lnC)[0, 1]
+    per_point = lnC / lnN
     Vg = np.geomspace(0.3, V_MODERN, 200)
     kN = np.log(phi_of_V(Vg, **PARAMS["Ni"]) / phi_of_V(np.array([V_MODERN]), **PARAMS["Ni"])[0])
     kC = np.log(phi_of_V(Vg, **PARAMS["Co"]) / phi_of_V(np.array([V_MODERN]), **PARAMS["Co"])[0])
-    kin_slope = np.polyfit(kN[Vg >= 1.0], kC[Vg >= 1.0], 1)[0]
-    print(f"\n5.2 ka trajectory: observed d lnEF_Co/d lnEF_Ni = {obs_slope:.2f} "
-          f"(r = {obs_r:.2f}, n = {len(ev)})")
-    print(f"  kinetic model (V {V_MODERN} -> 1): {kin_slope:.2f}, steepening "
-          f"toward Ni saturation at low V; source-covariance axis: 0.49; "
+    m = Vg >= 1.0
+    kin_slope = float((kN[m] * kC[m]).sum() / (kN[m] ** 2).sum())
+    print(f"\n5.2 ka trajectory: observed d lnEF_Co/d lnEF_Ni from the baseline "
+          f"origin = {obs_slope:.2f} (per-sample {per_point.min():.2f}-"
+          f"{per_point.max():.2f}, n = {len(ev)}; OLS among the excursion "
+          f"points alone {obs_ols:.2f}, r = {obs_r:.2f})")
+    print(f"  kinetic model (V {V_MODERN} -> 1, through the origin): {kin_slope:.2f}, "
+          f"steepening toward Ni saturation at low V; source-covariance axis: 0.49; "
           f"detrital axis: ~1 with lithogenic co-enrichment (absent here).")
 
     # ── 8.2 ka window statement ─────────────────────────────────────────
@@ -218,7 +230,7 @@ def main():
     fig, (axE, axD) = plt.subplots(1, 2, figsize=(DOUBLE_COL, 2.7),
                                    gridspec_kw=dict(width_ratios=[1.25, 1], wspace=0.3))
     bars = tab.set_index("window")
-    groups = [("5.2 ka core (155.2-157.8 cm)", "5.2 ka core", COL_TEAL_600),
+    groups = [("5.2 ka core (155.7-157.1 cm)", "5.2 ka core", COL_TEAL_600),
               ("8.2 ka window (8.0-8.4 ka)", "8.2 ka window", COL_BG_300),
               ("basal detrital (>253.4 cm)", "basal detrital layer", COL_BROWN_500)]
     order = ["Co", "Cu", "Ni", "Zn", "V", "Cr"]          # OMC-bound -> lithogenic

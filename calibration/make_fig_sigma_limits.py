@@ -15,13 +15,13 @@ Panels
      sigma. The response never narrows below the single-rate floor and follows
      the quadrature sum; near the floor the response is insensitive to sigma,
      so sigma cannot be recovered from a drip-rate calibration.
-  c  Drip rate inferred for the resolved drought minimum (156.88 cm) from Ni,
+  c  Drip rate inferred for the drought minimum (157.01 cm, A-880) from Ni,
      from Co and jointly, against sigma, with mu re-anchored to 16.66 drips/min
      for every sigma. All three fall monotonically as sigma increases, so the
      reported drought magnitudes are lower bounds.
-  d  Single-proxy posteriors for the censored 156.23 cm point at the adopted
-     sigma: Ni and Co are disjoint, the joint has no mass, and the point is
-     reported as <= 1 drip/min (as in the earlier censoring figure).
+  (the former panel d, single-proxy posteriors for a censored point, was
+     removed 2026-09-21 with the exclusion of the second-laboratory samples;
+     no point in the 568-point record falls below the joint resolution limit).
 
 Outputs ../manuscript_figures/output/FigS_sigma_limits.{png,pdf}
 """
@@ -49,8 +49,8 @@ SIG_FLOOR = np.pi / np.sqrt(6)          # 1.2825
 SIG_CAL = 1.39                          # width returned by the modern calibration
 TARGET = 16.66                          # 2004-2023 annual-baseflow mean, drips/min
 CAL_MED = {"Ni": 3.6382, "Co": 0.3121}  # HS4 calcite medians over the calibration window (ppm)
-PT_MIN = {"Ni": 10.7487, "Co": 3.4955}  # 156.88 cm, resolved drought minimum
-PT_CEN = {"Ni": 10.7, "Co": 3.73}       # 156.23 cm, censored point
+PT_MIN = {"Ni": 7.4381, "Co": 1.4920}    # 157.01 cm (A-880), drought minimum of the 568-point record (2026-09-21)
+# PT_CEN (former censored point at 156.23 cm) removed 2026-09-21: that sample came from the excluded second-laboratory run
 REL = 0.08                               # illustrative relative concentration uncertainty
 V = np.logspace(np.log10(2e-3), np.log10(60), 4000); lnV = np.log(V)
 
@@ -168,11 +168,11 @@ if __name__ == "__main__":
                  color=COL_BG_600, bubble_ec=COL_BG_600, arrow_color=COL_BG_600)
     ax.set_yscale("log"); ax.set_xlim(0, 4.05)
     ax.set_xlabel("Population width $\\sigma$ (ln $k_d$ units)")
-    ax.set_ylabel("Inferred drip rate, 156.88 cm\n(drips min$^{-1}$)")
+    ax.set_ylabel("Inferred drip rate, 157.01 cm\n(drips min$^{-1}$)")
     ax.legend(frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.22), ncol=3, fontsize=5.2, columnspacing=1.0, handlelength=1.4)
     panel_label(ax, "c")
     j = np.argmin(abs(sig_c - SIG_FLOOR))
-    print(f"(c) 156.88 cm at sigma {sig_c[j]:.2f}: Ni {vN[j]:.2f} Co {vC[j]:.2f} joint {vJ[j]:.2f}; "
+    print(f"(c) 157.01 cm at sigma {sig_c[j]:.2f}: Ni {vN[j]:.2f} Co {vC[j]:.2f} joint {vJ[j]:.2f}; "
           f"at sigma 4.0: Ni {vN[-1]:.3f} Co {vC[-1]:.3f} joint {vJ[-1]:.3f}")
 
     for ax in axs:
