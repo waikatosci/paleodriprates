@@ -175,7 +175,7 @@ def main():
     apply_style()
     fig, axs = plt.subplots(1, 2, figsize=(DOUBLE_COL, 2.5))
 
-    # (a) transfer curves + mapped source band at V = 14.14
+    # (a) transfer curves + mapped source band at the modern anchor V_MODERN
     ax = axs[0]
     for m, c in (("Ni", COL_NI), ("Co", COL_CO)):
         ax.plot(Vgrid, phi_of_V(Vgrid, **PARAMS[m]), color=c, lw=1.0, label=m)
@@ -191,10 +191,10 @@ def main():
     ax.axvspan(v_lo, v_hi, color=COL_TEAL_200, alpha=0.9, lw=0, zorder=0)
     ax.plot([V_MODERN], [phi_ref], "o", ms=3, color=COL_BG_900, zorder=5)
     label_bubble(ax, f"source band (GSD {np.exp(sig):.2f})",
-                 xy=(1.3, 0.1544), xytext=(0.5935, 0.3191), va="center",
+                 xy=(1.3, 0.5 * (band[0] + band[1])), xytext=(0.5935, 0.3191), va="center",
                  color=COL_NI, bubble_ec=COL_NI, arrow_color=COL_NI)
     label_bubble(ax, f"mapped drip-rate band\n{v_lo:.1f}\u2013{v_hi:.1f} drips min$^{{-1}}$",
-                 xy=(12.35, 0.5162), xytext=(3.407, 0.7823), va="center",
+                 xy=(np.sqrt(v_lo * v_hi), 0.52), xytext=(3.407, 0.7823), va="center",
                  color=COL_NI, bubble_ec=COL_NI, arrow_color=COL_NI)
     ax.set_ylim(0, 1.0)
     ax.set_xscale("log")
@@ -221,12 +221,13 @@ def main():
                 lw=0.7, alpha=0.8, label=f"{m} only (conservative)")
     for v in (V_FLOOR, V_MODERN):
         ax.axvline(v, color=COL_BG_300, lw=0.5, ls=":")
-    label_bubble(ax, "drought floor", xy=(1.236, 255.1), xytext=(2.669, 255), va="center", color=COL_BG_600, bubble_ec=COL_BG_600, arrow_color=COL_BG_600)
-    label_bubble(ax, "modern",        xy=(16.07, 224.3), xytext=(28.27, 387.4), va="center", color=COL_BG_600, bubble_ec=COL_BG_600, arrow_color=COL_BG_600)
+    # arrow tips are tied to the lines they label, so they follow any re-anchoring of the record
+    label_bubble(ax, "drought floor", xy=(V_FLOOR, 250.0), xytext=(1.2, 250.0), va="center", color=COL_BG_600, bubble_ec=COL_BG_600, arrow_color=COL_BG_600)
+    label_bubble(ax, "modern",        xy=(V_MODERN, 250.0), xytext=(30.0, 1200.0), va="center", color=COL_BG_600, bubble_ec=COL_BG_600, arrow_color=COL_BG_600)
     ax.axhline(100 * (np.exp(LN_SIGNAL) - 1), color=COL_DORANGE, lw=0.6)
     label_bubble(ax, "record signal range",
-                 xy=(3, 100 * (np.exp(LN_SIGNAL) - 1)),
-                 xytext=(6.907, 568.7), va="center",
+                 xy=(6.0, 100 * (np.exp(LN_SIGNAL) - 1)),
+                 xytext=(6.0, 1200.0), va="center",
                  color=COL_DORANGE, bubble_ec=COL_DORANGE, arrow_color=COL_DORANGE)
     ax.set_ylim(10, 3000)
     ax.set_xscale("log")
