@@ -217,11 +217,14 @@ elif args.monitoring:
     print(f'Monitoring: n={len(dr_vals)}, mean={mon_mean:.2f}, '
           f'sd={mon_sd:.2f}, CV={mon_cv_raw:.3f}')
 else:
-    # Fallback defaults from Heshang Cave 2005-2015
-    mon_mean = 16.04
-    mon_sd = 6.53
-    mon_cv_raw = 0.407
-    print('Using default Heshang monitoring values')
+    # Fallback defaults: Heshang Cave 2004-2023 (workbook sheet 05_monitoring, 788 readings at
+    # V_DROP 0.14 mL: CV 0.445), plotted at the 2004-2023 mean annual baseflow of 16.66 drips/min
+    # (05b_calibration), the level to which mu is anchored. These are the values in the
+    # Supplementary Figure 11 caption.
+    mon_mean = 16.66
+    mon_cv_raw = 0.445
+    mon_sd = mon_cv_raw * mon_mean
+    print('Using default Heshang monitoring values (2004-2023)')
 
 # Integration-time corrected CV: sigma_eff = sigma / sqrt(T * f_s)
 T_sample = args.T_sample

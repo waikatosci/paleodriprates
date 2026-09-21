@@ -1,20 +1,24 @@
 # HS4_TE_full_suite_both_labs.xlsx
 
-Solid-phase ICP-MS analyses of 21 HS4 stalagmite powders, measured for the
-full trace-element suite (Li to U) by both analytical runs used in this
-paper. Circulated by C. Hu on 21 September 2026 as the primary evidence for
-the decisions taken in Supplementary Methods 14.3 and 14.4.
+Solid-phase ICP-MS analyses of HS4 stalagmite powders measured for the full
+trace-element suite (Li to U): 20 powders in the 2019 second-laboratory run
+and five in the 2009 primary run. Circulated by C. Hu on 21 September 2026
+as the primary evidence for the decisions taken in Supplementary Methods
+14.3 and 14.4. Provided as Source Data with the paper.
 
 ## Sheets
 
 **Lab 2** — Second-laboratory supplementary run, November 2019 (Agilent
 8900 triple-quadrupole ICP-MS, analysis prefix W19111...).
-21 HS4 samples: 12 from the 5.2 ka interval (HS4-A-871…893, 155.2–157.8 cm)
-and 8 from near the growth surface (HS4-C-985…993, 7.0–8.5 cm), plus four
-silicate reference materials (AGV-2, BHVO-2, BCR-2, RGM-2) and two blanks.
+20 HS4 samples: 12 from the 5.2 ka interval (HS4-A-871…893, 155.2–157.8 cm)
+and 8 from near the growth surface (HS4-C-985…993, 7.0–8.5 cm), plus a
+procedural blank (HS1-0), four silicate reference materials (AGV-2, BHVO-2,
+BCR-2, RGM-2) and two laboratory blanks.
 
 **lab 1** — Primary run, 2009 (Agilent 7500a; the run used throughout the
-paper), same three shared depths only: A-870/875/880/885/890, and standards.
+paper), full suite for five powders across the event (A-870/875/880/885/890; two of
+the three depths shared with the 2019 run, 156.38 and 157.48 cm, are among
+them, and A-880 is the resolved 5.2 ka minimum at 157.01 cm), and standards.
 
 Concentrations are ppm in the calcite (silicate reference materials also in
 ppm). Row `<u:</u> 10-9 (ng/g)…` (last row of sheet Lab 2) records the
@@ -32,14 +36,27 @@ distinction for the blanks and standards.
   interference at m/z 56; the Co and Ni baselines are consistent with the
   corresponding Ca-bearing ions at m/z 59 and 60. The primary run's
   standards were matrix-matched to high-purity Ca and do not carry it.
-* Across the 21 samples, Al ≤38 ppm, Th ≤0.013 ppm, Ti ≤7.1 ppm and
+* Across the seven core samples, Al ≤38 ppm, Th ≤0.013 ppm, Ti ≤7.1 ppm and
   Zr ≤0.13 ppm. At upper-continental-crust ratios this bounds detrital
-  Co at ≤0.03 ppm and Ni at ≤0.09 ppm — below 1% of the measured event
-  excesses.
+  Co at ≤0.03 ppm and Ni at ≤0.09 ppm: sample by sample, 1.0–3.5% of the
+  excess Co and 1.6–6.0% of the excess Ni, and 1–2% for the samples that
+  carry the largest excesses. Neither Co nor Ni correlates with Al across
+  the 20 samples (Spearman ρ = 0.16 and 0.27).
+* The correlations with Ca are anchored by the sample with the highest
+  reported Ca (HS4-A-873, 536 ×10³ ppm); without it they remain
+  significant (r = 0.88 Co, 0.68 Ni, 0.80 Fe; p ≤ 0.014, n = 12), the Co
+  and Fe slopes are unchanged and the Ni slope falls to ~4.2 ppm at
+  calcite Ca. Reported Ca runs 376–536 ×10³ ppm and exceeds the
+  stoichiometric 400 ×10³ ppm of calcite in nine samples, so the Ca axis is
+  an analytical quantity of each digest, not a solid composition.
 * Once the Ca-proportional baseline is removed, the excess Co and Ni at
   the 5.2 ka horizon scale with Mn (Co/Mn = 0.022, Ni/Mn = 0.039;
-  Spearman ρ(Co,Mn) = 0.81, ρ(Ni,Mn) = 0.75), while Cu rises ×4 and Ce/La
-  from ~1.0 to 1.5–2.3.
+  Spearman ρ(Co,Mn) = 0.85, ρ(Ni,Mn) = 0.70), Mn rises from ~1 ppm to
+  25–111 ppm and Cu from ~0.6 to 1.5–2.9 ppm. The light rare earths are
+  enriched roughly tenfold in the core (Ce 0.14–0.65 ppm against ≤0.05 ppm
+  outside it), consistent with a minor Mn-oxide component, but Ce/La in the
+  core (1.0–2.3) overlaps its range outside the core (0.8–1.7) and does not
+  track Mn, so a cerium anomaly is not resolved.
 
 ## Reproduced by
 

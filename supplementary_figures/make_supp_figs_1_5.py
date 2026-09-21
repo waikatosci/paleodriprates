@@ -14,7 +14,7 @@ panel letters, no titles), from the released data and the locked calibration.
 Inputs  ../manuscript_figures/external/HS4_TE_multielement.csv
         ../manuscript_figures/external/drip_rate_summary_hr_censored.csv
         ../manuscript_figures/external/drip_rate_summary_ap.csv
-        ../extended_data/Ex_Data_2_RQA/Drip_rate.xlsx (sheet 6.OutIsotope)
+        ../Drip_rate.xlsx (sheet 6.OutIsotope)
         ../extended_data/Ex_Data_2_RQA/rqa_parameters.csv
 Outputs ./output/SuppFig{1..5}.{png,pdf}
 """
@@ -137,7 +137,7 @@ def sf3():
     from RQA_HS4_ensemble import (build_recurrence_matrix, rqa_from_matrix,
                                   load_d18o_summary)
     ap = pd.read_csv(os.path.join(EXT, "drip_rate_summary_ap.csv"))
-    xl = os.path.join(ROOT, "extended_data", "Ex_Data_2_RQA", "Drip_rate.xlsx")
+    xl = os.path.join(ROOT, "Drip_rate.xlsx")   # repository-root workbook, sheet 6.OutIsotope
     d18 = load_d18o_summary(xl, "6.OutIsotope")
     par = pd.read_csv(os.path.join(ROOT, "extended_data", "Ex_Data_2_RQA",
                                    "rqa_parameters.csv")).set_index("proxy")

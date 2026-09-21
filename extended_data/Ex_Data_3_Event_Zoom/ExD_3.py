@@ -33,6 +33,9 @@ HEATMAP_JSON  = 'pdf_heatmap.json'
 DRIP_SUMMARY  = 'drip_rate_summary.csv'
 AGE_DEPTH     = 'HS4_age_depth.csv'
 DRIP_XLSX     = 'Drip_rate.xlsx'
+import os as _os
+if not _os.path.exists(DRIP_XLSX):   # the isotope workbook lives at the repository root
+    DRIP_XLSX = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), '..', '..', 'Drip_rate.xlsx')
 ISO_SHEET     = '3.Isotopes'
 LIU_FILE      = 'liu2013_hs4_full.csv'
 BASEFLOW_DRIP = 16.7   # 2004-2023 annual-baseflow mean

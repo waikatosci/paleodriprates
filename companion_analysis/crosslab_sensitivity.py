@@ -6,25 +6,30 @@ imply for the 5.2 ka event if they were retained after a cross-laboratory
 correction.
 
 Twenty samples in the working trace-element table came from a supplementary
-analytical run at a second laboratory (12 with prefix HS4-A- across the 5.2 ka
-event, 155.2-157.8 cm; 8 with prefix HS4-C- at the core top, 7.0-8.5 cm). The
-data owner reports that the second-laboratory calibration does not reproduce a
-certified standard (Ni 5.20 ppm returned 2.38 ppm) and asked for the samples
-to be removed; the primary reconstruction therefore uses the 568-point
-single-laboratory input (calibration/excluded_points.csv).
+analytical run at a second laboratory (Wuhan, November 2019; 12 with prefix
+HS4-A- across the 5.2 ka event, 155.2-157.8 cm; 8 with prefix HS4-C- at the
+core top, 7.0-8.5 cm). That run is correctly calibrated against silicate
+reference materials but was not matrix-matched to the ~40% Ca of a calcite
+digest, and carries a Ca-proportional polyatomic interference on Co, Ni
+and Fe that the primary run does not (crosslab_matrix_check.py; Supp.
+Methods 14.3, Supp. Fig. 18). The two runs therefore cannot be combined
+uncorrected, and the primary reconstruction uses the 568-point primary-run
+input (calibration/excluded_points.csv).
 
 At three depths both laboratories analysed the same horizon (8.09, 156.38,
 157.48 cm). Across those pairs the second-laboratory values are a linear
 function of the primary-laboratory values (r >= 0.998 for Ni and Co),
-consistent with a near-constant additive offset (~+3.9 ppm Ni, ~+0.9 ppm Co).
-Rescaling the second-laboratory rows with that fit and re-running the
-inversion gives an upper-bound sensitivity on the event amplitude. The fit is
-not independently validated (the certified-standard test points the other way,
-an under-read), so it is reported as a bound, not adopted.
+consistent with a near-constant additive offset (the second laboratory reading
+higher by ~3.3 ppm Ni and ~1.0 ppm Co, as an additive matrix contribution
+requires). Rescaling the second-laboratory rows with that fit and re-running
+the inversion gives an upper-bound sensitivity on the event amplitude. Three
+pairs cannot fix a correction to the precision the inversion needs, so the
+result is reported as a bound, not adopted.
 
 Inputs   dr_app/HS4_example_inputs/HS4_TE.csv          raw table (both laboratories)
          calibration/excluded_points.csv               the 20 excluded rows
-         runs written by drive_run.py: hr_clean (568-pt) and hr_corr (585-pt, rescaled)
+         manuscript_figures/external/drip_rate_summary_hr.csv        568-point run (used)
+         manuscript_figures/external/drip_rate_summary_hr_corr585.csv 585-point rescaled run (sensitivity)
 Outputs  ../manuscript_figures/output/FigS_crosslab_sensitivity.{png,pdf}
          ../manuscript_figures/output/TableS_crosslab_pairs.csv
 """
@@ -44,7 +49,12 @@ import matplotlib.pyplot as plt  # noqa: E402
 
 RAW = os.path.join(ROOT, "dr_app", "HS4_example_inputs", "HS4_TE.csv")
 EXC = os.path.join(ROOT, "calibration", "excluded_points.csv")
-RUNS = os.environ.get("DRPALEO_RUNS", "/home/claude/work/runs")
+RUNS = os.environ.get("DRPALEO_RUNS", "")   # optional: a folder holding hr_clean/ and hr_corr/ run outputs
+EXT = os.path.join(ROOT, "manuscript_figures", "external")
+# released copies: the 568-point run is drip_rate_summary_hr.csv; the 585-point rescaled run
+# (second-laboratory rows retained after the paired-depth correction) is drip_rate_summary_hr_corr585.csv
+CLEAN_CSV = os.path.join(RUNS, "hr_clean", "drip_rate_summary.csv") if RUNS else os.path.join(EXT, "drip_rate_summary_hr.csv")
+CORR_CSV = os.path.join(RUNS, "hr_corr", "drip_rate_summary.csv") if RUNS else os.path.join(EXT, "drip_rate_summary_hr_corr585.csv")
 OUT = os.path.join(ROOT, "manuscript_figures", "output")
 PAIR_DEPTHS = [8.09, 156.38, 157.48]
 MODERN = 16.66
@@ -80,8 +90,13 @@ def main():
     pairs.to_csv(os.path.join(OUT, "TableS_crosslab_pairs.csv"), index=False)
 
     # ── inversions: cleaned (568) vs corrected-inclusive (585) ───────────
-    clean = pd.read_csv(os.path.join(RUNS, "hr_clean", "drip_rate_summary.csv"))
-    corr = pd.read_csv(os.path.join(RUNS, "hr_corr", "drip_rate_summary.csv"))
+    clean = pd.read_csv(CLEAN_CSV)
+    if not os.path.exists(CORR_CSV):
+        raise SystemExit(f"{CORR_CSV} not found: the 585-point rescaled run (Dr Paleo, native mode, "
+                         "PRODUCTION_SETTINGS parameters, input = the 568 primary rows plus the 17 "
+                         "non-duplicate second-laboratory rows rescaled with the paired-depth fit) is "
+                         "needed for panel (c); place its drip_rate_summary.csv at that path.")
+    corr = pd.read_csv(CORR_CSV)
     ref = lambda df: df[((df.depth >= 140) & (df.depth < 155)) | ((df.depth > 158) & (df.depth <= 175))].pc50.median()
     for lab, df in (("cleaned 568", clean), ("corrected 585", corr)):
         w = df[(df.depth >= 150) & (df.depth <= 165)]

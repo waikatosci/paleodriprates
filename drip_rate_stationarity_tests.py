@@ -33,8 +33,13 @@ except ImportError:
 # ---------------------------------------------------------------------------
 # *** SET PATHS HERE ***
 # ---------------------------------------------------------------------------
-CSV_PATH  = r'C:\Users\hartlana\OneDrive - lincolnagritech.co.nz\Documents\Python\N Geosci - Drip rates\Main\Fig 5 Record\Drip_rate_realisations_HS4.csv'
-XLSX_PATH = r'C:\Users\hartlana\OneDrive - lincolnagritech.co.nz\Documents\Python\N Geosci - Drip rates\Main\Fig 5 Record\Drip_rate_data_HS4.xlsx'
+import os as _os
+_EXT = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'manuscript_figures', 'external')
+# Age-propagated run (Dr Paleo, age mode, PRODUCTION_SETTINGS): 1,000 realisations and the
+# full-posterior summary. Override with the environment variables DRPALEO_AP_REALISATIONS and
+# DRPALEO_AP_SUMMARY. The realisations file is ~100 MB and is archived on Zenodo, not in git.
+CSV_PATH  = _os.environ.get('DRPALEO_AP_REALISATIONS', _os.path.join(_EXT, 'drip_rate_realisations_ap.csv.gz'))
+XLSX_PATH = _os.environ.get('DRPALEO_AP_SUMMARY', _os.path.join(_EXT, 'drip_rate_summary_ap.csv'))
 
 # ---------------------------------------------------------------------------
 # Load data — normalise ALL column names to lowercase on load
@@ -48,7 +53,7 @@ real_cols = [c for c in df_r.columns if c != 'age']
 n_real = len(real_cols)
 
 # Full-posterior XLSX
-df_m = pd.read_excel(XLSX_PATH)
+df_m = pd.read_csv(XLSX_PATH) if XLSX_PATH.endswith('.csv') else pd.read_excel(XLSX_PATH)
 df_m.columns = [c.lower() for c in df_m.columns]   # 'Age'->'age', 'DR_med'->'dr_med'
 
 # Accept flexible naming in XLSX: e.g. 'dr_med', 'median', 'pc25', 'p25', etc.
@@ -57,7 +62,7 @@ col_renames = {}
 for col in df_m.columns:
     if col == 'age':
         pass  # already correct
-    elif 'med' in col:
+    elif 'med' in col or col == 'pc50':
         col_renames[col] = 'dr_med'
     elif 'pc25' in col or ('25' in col and col != 'age'):
         col_renames[col] = 'dr_pc25'

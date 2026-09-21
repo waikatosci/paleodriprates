@@ -6,19 +6,23 @@ analysed by a second laboratory and shows why the two runs cannot be combined
 uncorrected.
 
 The second laboratory (Wuhan, November 2019) measured the full trace-element
-suite for 21 HS4 powders on an Agilent 8900 triple-quadrupole ICP-MS, and
-returned the four common silicate reference materials within a few percent of
-their certified values for every element used here. The two laboratories
-nonetheless disagree at three depths (8.09, 156.38, 157.48 cm) they both
-analysed, by a near-constant additive amount. The reason, evident once the
-full suite is examined, is the calcium matrix: the second-run standards were
-not matrix-matched to the ~40% Ca of a calcite digest, so its Co, Ni and Fe
-signals in the calcite samples carry a Ca-proportional polyatomic interference
-(40Ca16O+ at m/z 56 for Fe; the same on 59 and 60 for Co and Ni). The primary
-run used Ca-matrix-matched standards and does not carry it.
+suite for 20 HS4 powders on an Agilent 8900 triple-quadrupole ICP-MS (the
+sheet also carries a procedural blank, HS1-0, four silicate reference
+materials and two laboratory blanks), and returned the reference materials
+within a few percent of their certified values for every element used here.
+The two laboratories nonetheless disagree at three depths (8.09, 156.38,
+157.48 cm) they both analysed, by a near-constant additive amount. The reason,
+evident once the full suite is examined, is the calcium matrix: the second-run
+standards were not matrix-matched to the ~40% Ca of a calcite digest, so its
+Co, Ni and Fe signals in the calcite samples carry a Ca-proportional
+polyatomic interference (40Ca16O+ at m/z 56 for Fe; the same on 59 and 60 for
+Co and Ni). The primary run used Ca-matrix-matched standards and does not
+carry it.
 
-This script prints every number cited in the text and Supplementary Figure 18,
-and re-renders the figure.
+This script prints every number cited in the text and Supplementary Figure 18
+(including the leverage of the highest-Ca sample on the Ca regressions and the
+sample-by-sample detrital share of the Co and Ni excess), and re-renders the
+figure.
 
 Input   manuscript_figures/external/HS4_TE_full_suite_both_labs.xlsx
 Output  manuscript_figures/output/FigS_matrix_interference.{png,pdf}
@@ -59,7 +63,8 @@ UCC_NI = 47.0
 
 
 def load_lab2(path: Path) -> pd.DataFrame:
-    """Return a per-sample dataframe of the 2019 (Lab 2) run of the 21 HS4 powders."""
+    """Return a per-sample dataframe of the 2019 (Lab 2) run: the 20 HS4 powders
+    (HS1-0, a procedural blank, and the reference materials are dropped)."""
     raw = pd.read_excel(path, sheet_name='Lab 2', header=None)
     names = raw.iloc[0].tolist()                       # analysis IDs
     samples = raw.iloc[1].tolist()                     # sample names
@@ -123,6 +128,22 @@ def ca_matrix_baseline(df: pd.DataFrame) -> dict:
     print('  strongly negative Fe intercept are compatible with the interference')
     print('  reading, since real dissolved Co is trace and real Fe is scavenged')
     print('  below the range the interference lifts it into.')
+    # the reported Ca is an analytical quantity of each digest, not a solid composition
+    ca_k = df['Ca'] / 1e3
+    print(f'  reported Ca across the 20 samples: {ca_k.min():.0f}-{ca_k.max():.0f} x10^3 ppm; '
+          f'{(ca_k > 400).sum()} samples exceed the stoichiometric 400 x10^3 ppm of calcite')
+    # leverage of the highest-Ca sample (HS4-A-873, ~536 x10^3 ppm)
+    top = base['Ca'].idxmax()
+    rest = base.drop(top)
+    print(f'\n== leverage of the highest-Ca sample ({top}, Ca = {base.loc[top, "Ca"]/1e3:.0f} x10^3 ppm) ==')
+    for element in ('Co', 'Ni', 'Fe'):
+        r = stats.linregress(rest['Ca'], rest[element])
+        rho, p_rho = stats.spearmanr(rest['Ca'], rest[element])
+        print(f'  {element} without it (n = {len(rest)}): r = {r.rvalue:+.2f} (p = {r.pvalue:.3f}), '
+              f'Spearman rho = {rho:+.2f}, slope*400k = {r.slope * 400_000:.2f} ppm, '
+              f'intercept = {r.intercept:+.2f} ppm')
+    print('  the sample anchors the correlations but does not create them; the Co and Fe')
+    print('  slopes are unchanged without it and the Ni slope is the least well determined.')
     return out
 
 
@@ -144,10 +165,23 @@ def detrital_mass_balance(df: pd.DataFrame, base_by_ca: dict) -> None:
         ni_ucc = m * UCC_NI / UCC[tracer]
         print(f'    {tracer:<3s} <= {m:>7.3f} ppm  ->  detrital bound '
               f'Co <= {co_ucc:.4f} ppm, Ni <= {ni_ucc:.4f} ppm')
-    print('  every tracer bounds detrital Co and Ni at below 1% of the observed excess.')
+    # sample by sample: the loosest bound (over the four tracers) against that sample's own excess
+    print('  sample-by-sample detrital share of the excess (loosest tracer bound / excess):')
+    shares_co, shares_ni = [], []
+    for name, row in ev.iterrows():
+        b_co = max(row[t] * UCC_CO / UCC[t] for t in UCC)
+        b_ni = max(row[t] * UCC_NI / UCC[t] for t in UCC)
+        s_co = 100 * b_co / (row['Co'] - co_base)
+        s_ni = 100 * b_ni / (row['Ni'] - ni_base)
+        shares_co.append(s_co); shares_ni.append(s_ni)
+        print(f'    {name} ({row["depth_cm"]:.2f} cm): excess Co {row["Co"] - co_base:.2f} ppm, '
+              f'Ni {row["Ni"] - ni_base:.2f} ppm -> detrital share {s_co:.1f}% (Co), {s_ni:.1f}% (Ni)')
+    print(f'  range: {min(shares_co):.1f}-{max(shares_co):.1f}% of the excess Co and '
+          f'{min(shares_ni):.1f}-{max(shares_ni):.1f}% of the excess Ni; a few per cent at most, '
+          f'and 1-2% for the samples that carry the largest excesses.')
     for name, other in (('Al', 'Co'), ('Al', 'Ni')):
         rho, p = stats.spearmanr(df[name], df[other])
-        print(f'  Spearman rho({name}, {other}) across the 21 samples = {rho:+.2f} (p = {p:.2f})')
+        print(f'  Spearman rho({name}, {other}) across the {len(df)} samples = {rho:+.2f} (p = {p:.2f})')
 
 
 def residence_time_signature(df: pd.DataFrame, base_by_ca: dict) -> None:
@@ -156,16 +190,36 @@ def residence_time_signature(df: pd.DataFrame, base_by_ca: dict) -> None:
                         + base_by_ca['Co']['slope_per_ppm_Ca'] * df['Ca'])
     ex_ni = df['Ni'] - (base_by_ca['Ni']['intercept_ppm']
                         + base_by_ca['Ni']['slope_per_ppm_Ca'] * df['Ca'])
-    print('\n== Mn residence-time signature (all 21 samples) ==')
+    print(f'\n== Mn residence-time signature (all {len(df)} samples) ==')
+    core = df['in_5.2ka_core']
+    print(f"  Mn outside the core: {df.loc[~core, 'Mn'].min():.2f}-{df.loc[~core, 'Mn'].max():.2f} ppm; "
+          f"inside: {df.loc[core, 'Mn'].min():.1f}-{df.loc[core, 'Mn'].max():.1f} ppm")
+    print(f"  Cu outside the core: {df.loc[~core, 'Cu'].min():.2f}-{df.loc[~core, 'Cu'].max():.2f} ppm; "
+          f"inside: {df.loc[core, 'Cu'].min():.2f}-{df.loc[core, 'Cu'].max():.2f} ppm")
     for name, series in (('Co', ex_co), ('Ni', ex_ni)):
         r = stats.linregress(df['Mn'], series)
         rho, p = stats.spearmanr(df['Mn'], series)
         print(f'  excess {name} / Mn slope = {r.slope:.4f} '
               f'(Pearson r = {r.rvalue:+.2f}), Spearman rho = {rho:+.2f} (p = {p:.3f})')
+    ratio_ni_co = (ex_ni / ex_co)[core]
+    print(f'  excess Ni / excess Co across the core: median {ratio_ni_co.median():.2f} '
+          f'(range {ratio_ni_co.min():.2f}-{ratio_ni_co.max():.2f})')
+    # light rare earths: a strong enrichment in the core, but no resolved Ce anomaly
     ratio_all = df['Ce'] / df['La']
-    print(f"  Ce/La outside the event: median = {ratio_all[~df['in_5.2ka_core']].median():.2f}")
-    print(f"  Ce/La inside the event:  median = {ratio_all[df['in_5.2ka_core']].median():.2f}, "
-          f"max = {ratio_all[df['in_5.2ka_core']].max():.2f}")
+    print(f"  Ce outside the core: <= {df.loc[~core, 'Ce'].max():.3f} ppm; inside: "
+          f"{df.loc[core, 'Ce'].min():.2f}-{df.loc[core, 'Ce'].max():.2f} ppm")
+    print(f"  Ce/La outside the core: median = {ratio_all[~core].median():.2f} "
+          f"(range {ratio_all[~core].min():.2f}-{ratio_all[~core].max():.2f})")
+    print(f"  Ce/La inside the core:  median = {ratio_all[core].median():.2f} "
+          f"(range {ratio_all[core].min():.2f}-{ratio_all[core].max():.2f}); the two Mn-richest "
+          f"samples: {', '.join(f'{ratio_all[s]:.2f}' for s in df[core].nlargest(2, 'Mn').index)}")
+    print('  -> the light rare earths are enriched roughly tenfold in the core, consistent with a')
+    print('     minor Mn-oxide component, but Ce/La in the core overlaps its range outside the core')
+    print('     and does not track Mn, so a cerium anomaly is not resolved.')
+    top2 = df[core].nlargest(2, 'Co').index.tolist()
+    depths = ', '.join('%.2f cm' % df.loc[s, 'depth_cm'] for s in top2)
+    print('  the two samples with the highest Co and Ni: %s (%s); the three Mn-richest: %s'
+          % (top2, depths, df[core].nlargest(3, 'Mn').index.tolist()))
 
 
 def render_figure(df: pd.DataFrame, out_dir: Path) -> None:
@@ -204,8 +258,11 @@ def render_figure(df: pd.DataFrame, out_dir: Path) -> None:
     scatter(axes[0, 0], 'Co', 'a')
     scatter(axes[0, 1], 'Ni', 'b')
     scatter(axes[1, 0], 'Fe', 'c')
+    # legend above the data in panel a: headroom added so it covers no sample
+    y0, y1 = axes[0, 0].get_ylim()
+    axes[0, 0].set_ylim(y0, y1 + 0.32 * (y1 - y0))
     axes[0, 0].legend(frameon=True, framealpha=0.9, edgecolor='none',
-                      fontsize=6.5, loc='upper left', bbox_to_anchor=(0.06, 0.93),
+                      fontsize=6.5, loc='upper right',
                       handlelength=1.2, borderpad=0.3)
 
     ax = axes[1, 1]

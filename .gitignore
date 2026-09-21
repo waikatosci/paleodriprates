@@ -32,3 +32,4 @@ Thumbs.db
 *.swo
 .vscode/
 .idea/
+.crosslab_run/

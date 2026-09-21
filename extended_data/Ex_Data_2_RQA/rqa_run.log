@@ -1,0 +1,517 @@
+=================================================================
+ HS4 Ensemble RQA  —  Fig. 5
+=================================================================
+
+Loading drip_rate_realisations.csv
+  10293 time steps, 1000 realisations | age -51-10241 BP
+Loading d18O_realisations.csv
+  9551 time steps, 1000 realisations | age -51-9499 BP
+
+Loading summary from Drip_rate.xlsx
+  Common age range: -51-9499 yr BP
+
+Estimating global embedding parameters from median series ...
+  drip rate: tau=1 (AMI estimated)
+  drip rate: m=5 (Cao estimated)
+  drip rate: Theiler window=4
+  d18O: tau=1 (AMI estimated)
+  d18O: m=5 (Cao estimated)
+  d18O: Theiler window=4
+
+  Ensemble RQA: drip rate  (200 realisations x 1891 windows, tau=1, m=5)
+    25/1891  (1%)    50/1891  (3%)    75/1891  (4%)    100/1891  (5%)    125/1891  (7%)    150/1891  (8%)    175/1891  (9%)    200/1891  (11%)    225/1891  (12%)    250/1891  (13%)    275/1891  (15%)    300/1891  (16%)    325/1891  (17%)    350/1891  (19%)    375/1891  (20%)    400/1891  (21%)    425/1891  (22%)    450/1891  (24%)    475/1891  (25%)    500/1891  (26%)    525/1891  (28%)    550/1891  (29%)    575/1891  (30%)    600/1891  (32%)    625/1891  (33%)    650/1891  (34%)    675/1891  (36%)    700/1891  (37%)    725/1891  (38%)    750/1891  (40%)    775/1891  (41%)    800/1891  (42%)    825/1891  (44%)    850/1891  (45%)    875/1891  (46%)    900/1891  (48%)    925/1891  (49%)    950/1891  (50%)    975/1891  (52%)    1000/1891  (53%)    1025/1891  (54%)    1050/1891  (56%)    1075/1891  (57%)    1100/1891  (58%)    1125/1891  (59%)    1150/1891  (61%)    1175/1891  (62%)    1200/1891  (63%)    1225/1891  (65%)    1250/1891  (66%)    1275/1891  (67%)    1300/1891  (69%)    1325/1891  (70%)    1350/1891  (71%)    1375/1891  (73%)    1400/1891  (74%)    1425/1891  (75%)    1450/1891  (77%)    1475/1891  (78%)    1500/1891  (79%)    1525/1891  (81%)    1550/1891  (82%)    1575/1891  (83%)    1600/1891  (85%)    1625/1891  (86%)    1650/1891  (87%)    1675/1891  (89%)    1700/1891  (90%)    1725/1891  (91%)    1750/1891  (93%)    1775/1891  (94%)    1800/1891  (95%)    1825/1891  (97%)    1850/1891  (98%)    1875/1891  (99%)    1891/1891  (100%)
+
+  Ensemble RQA: d18O  (200 realisations x 1891 windows, tau=1, m=5)
+    25/1891  (1%)    50/1891  (3%)    75/1891  (4%)    100/1891  (5%)    125/1891  (7%)    150/1891  (8%)    175/1891  (9%)    200/1891  (11%)    225/1891  (12%)    250/1891  (13%)    275/1891  (15%)    300/1891  (16%)    325/1891  (17%)    350/1891  (19%)    375/1891  (20%)    400/1891  (21%)    425/1891  (22%)    450/1891  (24%)    475/1891  (25%)    500/1891  (26%)    525/1891  (28%)    550/1891  (29%)    575/1891  (30%)    600/1891  (32%)    625/1891  (33%)    650/1891  (34%)    675/1891  (36%)    700/1891  (37%)    725/1891  (38%)    750/1891  (40%)    775/1891  (41%)    800/1891  (42%)    825/1891  (44%)    850/1891  (45%)    875/1891  (46%)    900/1891  (48%)    925/1891  (49%)    950/1891  (50%)    975/1891  (52%)    1000/1891  (53%)    1025/1891  (54%)    1050/1891  (56%)    1075/1891  (57%)    1100/1891  (58%)    1125/1891  (59%)    1150/1891  (61%)    1175/1891  (62%)    1200/1891  (63%)    1225/1891  (65%)    1250/1891  (66%)    1275/1891  (67%)    1300/1891  (69%)    1325/1891  (70%)    1350/1891  (71%)    1375/1891  (73%)    1400/1891  (74%)    1425/1891  (75%)    1450/1891  (77%)    1475/1891  (78%)    1500/1891  (79%)    1525/1891  (81%)    1550/1891  (82%)    1575/1891  (83%)    1600/1891  (85%)    1625/1891  (86%)    1650/1891  (87%)    1675/1891  (89%)    1700/1891  (90%)    1725/1891  (91%)    1750/1891  (93%)    1775/1891  (94%)    1800/1891  (95%)    1825/1891  (97%)    1850/1891  (98%)    1875/1891  (99%)    1891/1891  (100%)
+
+  Drip DET  range: 0.712-0.990
+  d18O DET  range: 0.712-0.836
+  RQA statistics -> rqa_ensemble_results.csv
+  RQA parameters -> rqa_parameters.csv
+
+Building PDF heatmaps ...
+
+Rendering main figure ...
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Font family ['sans-serif'] not found. Falling back to DejaVu Sans.
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+  Saved -> Fig5_RQA_HS4.pdf
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+  Saved -> Fig5_RQA_HS4.png
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+The PostScript backend does not support transparency; partially transparent artists will be rendered opaque.
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+  Saved -> Fig5_RQA_HS4.eps
+
+  Building supplementary recurrence plot figure ...
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Font family ['sans-serif'] not found. Falling back to DejaVu Sans.
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Font family ['sans-serif'] not found. Falling back to DejaVu Sans.
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+  Saved -> FigS1_RP_HS4.pdf
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial
+findfont: Generic family 'sans-serif' not found because none of the following families were found: Helvetica, Arial

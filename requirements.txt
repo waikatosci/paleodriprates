@@ -18,3 +18,6 @@ pandas==2.2.*
 pillow==11.1.*
 progressbar==2.5
 scipy==1.11.*
+
+# companion analyses and supplementary figures (not needed by the app)
+astropy>=6.0        # extended_data/Ex_Data_5_Spectral_analysis (Lomb-Scargle, bootstrap FAP)

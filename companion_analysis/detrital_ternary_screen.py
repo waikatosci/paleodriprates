@@ -78,7 +78,7 @@ Z_FLAG = 4.0           # formal detrital flag: robust log-z > Z_FLAG in BOTH
 WIN_52_CORE = ("depth", 155.7, 157.1)       # ~5072-5127 yr BP; the three elevated A-series samples (568-point record, 2026-09-21)
 WIN_82 = ("age", 8000.0, 8400.0)
 WIN_BASAL = ("depth", 253.4, 256.0)         # outside the dated span (>253.0 cm)
-V_MODERN, V_FLOOR = 14.14, 1.07
+from source_variation_propagation import V_MODERN, V_FLOOR   # 15.62 / 2.81: top-of-record pc50 and resolved minimum of the 568-point record (16.66-target refit)
 
 
 def load_te():
