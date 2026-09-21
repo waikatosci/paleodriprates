@@ -5,14 +5,14 @@ ED_Fig_age_model.py
 Extended Data Figure: HS4 age-depth chronology.
 
 Two-panel figure:
-  (A) Full age-depth model with 31 U-Th tie points (2σ error bars),
+  (A) Full age-depth model with 31 tie points (30 U-Th ages and the growth surface; 2σ error bars),
       interpolated 1-yr resolution curve, growth rate inset, and
       8.2 ka zone highlight.
   (B) 8.2 ka zone detail showing age reversals in raw U-Th dates
       and the monotonic interpolation.
 
 Inputs:
-  - HS4_age_depth.csv      (31 U-Th tie points: depth, age, 2σ error)
+  - HS4_age_depth.csv      (31 tie points: 30 U-Th ages and the growth surface; depth, age, 2σ error)
   - age_model.csv           (interpolated 1-yr resolution: depth, age_yBP)
 
 Outputs:
@@ -63,6 +63,10 @@ tp_err = tp.iloc[:, 2].values
 am = pd.read_csv(args.age_model)
 am_depth = am['depth'].values
 am_age = am['age_yBP'].values
+# the 1-yr age grid runs on past the base of the stalagmite with depth held at its maximum;
+# keep the model only up to the first time it reaches the base
+_n_end = int(np.argmax(am_depth >= am_depth.max())) + 1
+am_depth, am_age = am_depth[:_n_end], am_age[:_n_end]
 
 # ── Identify 8.2 ka zone (dense tie points) ─────────────────────────
 zone_82_mask = (tp_depth >= 228) & (tp_depth <= 240)
@@ -81,25 +85,24 @@ ax1.plot(am_depth, am_age / 1000, color=COL_NI, lw=0.7, zorder=2,
 ax1.errorbar(tp_depth[normal_mask], tp_age[normal_mask] / 1000,
              yerr=tp_err[normal_mask] / 1000,
              fmt='o', markersize=3.5, color=COL_RED_900, ecolor=COL_RED_900, elinewidth=0.4, capsize=1.2, capthick=0.3, markeredgecolor=COL_BG_900, markeredgewidth=0.25,
-             zorder=4, label=f'U-Th tie points (n={normal_mask.sum()})')
+             zorder=4, label=f'U\u2013Th ages and growth surface (n = {normal_mask.sum()})')
 
 # 8.2 ka zone tie points — different marker
 ax1.errorbar(tp_depth[zone_82_mask], tp_age[zone_82_mask] / 1000,
              yerr=tp_err[zone_82_mask] / 1000,
              fmt='s', markersize=3.5, color=COL_DORANGE, ecolor=COL_DORANGE, elinewidth=0.4, capsize=1.2, capthick=0.3, markeredgecolor=COL_BG_900, markeredgewidth=0.25,
-             zorder=4, label=f'8.2 ka zone tie points (n={zone_82_mask.sum()})')
+             zorder=4, label=f'8.2 ka zone U\u2013Th ages (n = {zone_82_mask.sum()})')
 
 # 8.2 ka zone shading
 ax1.axvspan(228, 240, color=COL_DORANGE, alpha=0.10, lw=0, zorder=0)
-ax1.annotate('8.2 ka zone', xy=(234, 10.5), xytext=(0, 3),
-             textcoords='offset points', fontsize=5.5, color=COL_DORANGE,
-             ha='center', va='bottom', style='italic', clip_on=False)
+ax1.text(226, 10.2, '8.2 ka zone', fontsize=5.5, color=COL_DORANGE,
+         ha='right', va='top', style='italic')
 
 ax1.set_xlabel('Depth (cm)')
 ax1.set_ylabel('Age (ka BP)')
 ax1.set_xlim(-5, 260)
 ax1.set_ylim(-0.5, 10.5)
-ax1.legend(loc='upper left', frameon=False, fontsize=5.5)
+ax1.legend(loc='upper left', bbox_to_anchor=(0.07, 1.0), frameon=False, fontsize=5.5)
 style_ax(ax1)
 panel_label(ax1, 'a')
 
@@ -114,12 +117,12 @@ gr_depth_mid = (am_depth_mono[:-1] + am_depth_mono[1:]) / 2
 from scipy.ndimage import uniform_filter1d
 gr_smooth = uniform_filter1d(gr_raw, size=50)
 
-ax1_inset = ax1.inset_axes([0.55, 0.08, 0.42, 0.25])
+ax1_inset = ax1.inset_axes([0.60, 0.13, 0.24, 0.21])   # clear of the data and short of the 8.2 ka band
 ax1_inset.fill_between(gr_depth_mid, gr_smooth, color=COL_NI, alpha=0.2, lw=0)
 ax1_inset.plot(gr_depth_mid, gr_smooth, color=COL_NI, lw=0.5)
 ax1_inset.set_xlabel('Depth (cm)', fontsize=5)
 ax1_inset.set_ylabel('Growth rate\n(cm kyr$^{-1}$)', fontsize=5)
-ax1_inset.tick_params(labelsize=4.5)
+ax1_inset.tick_params(labelsize=5)
 ax1_inset.set_xlim(0, 253)
 ax1_inset.set_ylim(0, None)
 ax1_inset.axvspan(228, 240, color=COL_DORANGE, alpha=0.15, lw=0)
@@ -141,18 +144,43 @@ z_idx = np.where(zone_82_mask)[0]
 z_sorted = sorted(zip(tp_depth[z_idx], tp_age[z_idx], tp_err[z_idx]),
                   key=lambda t: t[1])
 
-# Spread labels evenly in age space to avoid overlap
-age_min_label = min(a for _, a, _ in z_sorted) - 40
-age_max_label = max(a for _, a, _ in z_sorted) + 40
-label_ages = np.linspace(age_min_label, age_max_label, len(z_sorted))
+# Keep each label as close to its own age as the text height allows (1-D repel), so the
+# connectors stay short and do not cross
+MIN_GAP = 62.0   # yr: one 5 pt line at this panel's scale
+label_ages = np.array([a for _, a, _ in z_sorted], float)
+for _ in range(500):
+    moved = False
+    for i in range(len(label_ages) - 1):
+        gap = label_ages[i + 1] - label_ages[i]
+        if gap < MIN_GAP - 1e-6:
+            push = (MIN_GAP - gap) / 2
+            label_ages[i] -= push; label_ages[i + 1] += push; moved = True
+    if not moved:
+        break
+
+# Assign labels to those slots so that no two connectors cross: swap neighbours whose
+# connectors intersect until none do
+def _cross(p1, p2, q1, q2):
+    def o(a, b, c): return (b[0]-a[0])*(c[1]-a[1]) - (b[1]-a[1])*(c[0]-a[0])
+    return (o(p1, p2, q1) * o(p1, p2, q2) < 0) and (o(q1, q2, p1) * o(q1, q2, p2) < 0)
+slots = list(label_ages); order = list(range(len(z_sorted)))
+for _ in range(200):
+    swapped = False
+    for i in range(len(order) - 1):
+        (d1, a1, _), (d2, a2, _) = z_sorted[order[i]], z_sorted[order[i + 1]]
+        if _cross((d1, a1), (LABEL_X, slots[i]), (d2, a2), (LABEL_X, slots[i + 1])):
+            order[i], order[i + 1] = order[i + 1], order[i]; swapped = True
+    if not swapped:
+        break
+z_sorted = [z_sorted[k] for k in order]
 
 for (d, a, e), y_label in zip(z_sorted, label_ages):
     # Dashed connector line from point to label
-    ax2.plot([d, LABEL_X], [a, y_label], color=COL_BG_300, lw=0.3, ls='--',
+    ax2.plot([d, LABEL_X], [a, y_label], color=COL_BG_300, lw=0.3,
              clip_on=False, zorder=1)
     # Label text
     ax2.text(LABEL_X + 0.5, y_label, f'{a:.0f} \u00b1 {e:.0f}',
-             fontsize=4.5, color=COL_BG_700 if False else COL_BG_600, va='center', ha='left',
+             fontsize=5, color=COL_BG_600, va='center', ha='left',
              clip_on=False)
 
 # Mark age reversals with arrows
@@ -167,6 +195,8 @@ for i in range(len(z_depths) - 1):
 ax2.set_xlabel('Depth (cm)')
 ax2.set_ylabel('Age (yr BP)')
 ax2.set_xlim(226, 248)
+ax2.set_ylim(min(label_ages.min(), (tp_age[zone_82_mask] - tp_err[zone_82_mask]).min()) - 60,
+             max(label_ages.max(), (tp_age[zone_82_mask] + tp_err[zone_82_mask]).max()) + 60)
 panel_label(ax2, 'b')
 
 style_ax(ax2); style_ax(ax1_inset)
