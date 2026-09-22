@@ -5,8 +5,9 @@ Figure 18. Reproduces the numbers behind the withdrawal of the 20 samples
 analysed by a second laboratory and shows why the two runs cannot be combined
 uncorrected.
 
-The second laboratory (Wuhan, November 2019) measured the full trace-element
-suite for 20 HS4 powders on an Agilent 8900 triple-quadrupole ICP-MS (the
+The second laboratory (Wuhan SampleSolution Analytical Technology Co., Ltd,
+November 2019) measured the full trace-element suite for 20 HS4 powders on an
+Agilent 7700e ICP-MS, with the method of the primary run (the
 sheet also carries a procedural blank, HS1-0, four silicate reference
 materials and two laboratory blanks), and returned the reference materials
 within a few percent of their certified values for every element used here.

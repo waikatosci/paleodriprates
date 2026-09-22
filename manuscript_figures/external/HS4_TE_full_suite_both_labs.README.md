@@ -4,12 +4,14 @@ Solid-phase ICP-MS analyses of HS4 stalagmite powders measured for the full
 trace-element suite (Li to U): 20 powders in the 2019 second-laboratory run
 and five in the 2009 primary run. Circulated by C. Hu on 21 September 2026
 as the primary evidence for the decisions taken in Supplementary Methods
-14.3 and 14.4. Provided as Source Data with the paper.
+14.3 and 14.4. Provided as Source Data with the paper, with C. Hu's permission
+(22 September 2026).
 
 ## Sheets
 
-**Lab 2** — Second-laboratory supplementary run, November 2019 (Agilent
-8900 triple-quadrupole ICP-MS, analysis prefix W19111...).
+**Lab 2** — Second-laboratory supplementary run, November 2019 (Wuhan
+SampleSolution Analytical Technology Co., Ltd; Agilent 7700e ICP-MS, same
+method as the 2009 run; analysis prefix W19111...).
 20 HS4 samples: 12 from the 5.2 ka interval (HS4-A-871…893, 155.2–157.8 cm)
 and 8 from near the growth surface (HS4-C-985…993, 7.0–8.5 cm), plus a
 procedural blank (HS1-0), four silicate reference materials (AGV-2, BHVO-2,

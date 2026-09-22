@@ -195,3 +195,10 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
 - Methods: the primary (2009) run did not measure Ca (determined separately by ICP-AES, per
   C. Hu, 22 Sep 2026); the earlier statement that its standards were matrix-matched with Ca is
   withdrawn.
+
+## 23 Sep 2026: second-laboratory details (C. Hu)
+
+- The 2019 run was made at Wuhan SampleSolution Analytical Technology Co., Ltd on an Agilent 7700e
+  ICP-MS with the method of the 2009 run (not an Agilent 8900 triple-quadrupole, as previously
+  stated). Docstring of crosslab_matrix_check.py and the full-suite README corrected.
+- C. Hu has agreed to the release of the measurement report as Source Data.
