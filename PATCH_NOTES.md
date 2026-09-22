@@ -157,3 +157,41 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
 - `manuscript_figures/external/drip_rate_realisations_ap.csv.gz` (SM7, SF12;
   regenerate with Dr Paleo in age mode, or take from the Zenodo deposit)
 - the DGT deployment table behind Supplementary Figure 19, for Source Data
+
+## Round 4 (22 Sep 2026): Ni-constrained 5.2 ka minimum
+
+- New `companion_analysis/run_single_metal.py`: the canonical inversion on Ni alone or Co alone
+  (native, 1-cm and age-propagated modes; `--metal both` re-runs the joint inversion as a check
+  and reproduces the released summaries to 0.000%). Outputs
+  `manuscript_figures/external/drip_rate_summary_{hr,lr,ap}_Nionly.csv`,
+  `drip_rate_summary_hr_Coonly.csv` and their run logs.
+- New `companion_analysis/ni_co_agreement.py`: Supplementary Figure 19 and the numbers of
+  Supplementary Methods 14.4. Outside the 5.2 ka interval the Ni- and Co-implied drip rates agree
+  (ratio median 1.15, 5th-95th percentile 0.80-1.51, n = 565); at the three 5.2 ka samples Co gives
+  drip rates about three times lower than Ni, the three largest departures in the record. The
+  event is now reported from Ni alone: minimum 6.42 drips/min at 157.01 cm (IQR 6.11-6.75), 69%
+  below the surrounding median (71% against the 5,500-6,500 BP background; 6.46 and 71% at 1 cm;
+  11.1 drips/min and ~50% age-propagated). The joint minimum (2.81, 85%) is kept as an upper bound.
+- `run_crosslab_585.py`: `production_params()` takes the run log to read, and `run()` accepts
+  extra input files (the age-depth table for the age-propagated mode). Behaviour of the script
+  itself is unchanged.
+- The DGT figure is now Supplementary Figure 20.
+
+## Round 5 (22 Sep 2026, afternoon): second-laboratory run as replication
+
+- New `companion_analysis/crosslab_replication.py`: corrects each 2019 value for the Ca of its own
+  digest (slope from the 13 non-core samples, relative to the run mean), places it on the
+  primary-run scale with the relation at the three shared depths (Ni: primary = 1.117 x corrected
+  second - 4.222), and runs the Ni-only inversion on the 568 + 17 samples. The corrected second-run
+  samples reproduce the 5.2 ka event on Ni (5.1-5.9 drips/min at 156.23-156.88 cm beside 6.4 at
+  157.01 cm; nine samples in 155.2-157.0 cm; minimum 5.12, 75% below the surrounding median). The
+  Ca step removes the false dip at 157.65 cm (the Ca-richest digest; 9.4 with the paired-depth
+  relation alone, 18.4 with the Ca step). Outputs `drip_rate_summary_hr_Nionly_rep585.csv`,
+  `crosslab_replication_2019_corrected.csv` and the run log. The primary record is unchanged.
+- `ni_co_agreement.py`: Supplementary Figure 19b now overlays the corrected second-run Ni values.
+- New `companion_analysis/element_covariance.py`: which elements covary with Ni and Co in the
+  record, the 2019 full suite and the dripwater (tables and a summary figure in
+  `manuscript_figures/output/`; not cited in the paper).
+- Methods: the primary (2009) run did not measure Ca (determined separately by ICP-AES, per
+  C. Hu, 22 Sep 2026); the earlier statement that its standards were matrix-matched with Ca is
+  withdrawn.

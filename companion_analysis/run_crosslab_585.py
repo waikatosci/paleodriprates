@@ -38,9 +38,10 @@ EXC = os.path.join(ROOT, 'calibration', 'excluded_points.csv')
 PAIR_DEPTHS = [8.09, 156.38, 157.48]
 
 
-def production_params():
-    """The canonical native run's parameters, read from its own log."""
-    log = pd.read_csv(os.path.join(EXT, 'run_logs', 'input_summary_native.csv'))
+def production_params(log_name: str = 'input_summary_native.csv'):
+    """The canonical run's parameters, read from its own log (native by default;
+    input_summary_1cm.csv and input_summary_ageprop.csv give the other two runs)."""
+    log = pd.read_csv(os.path.join(EXT, 'run_logs', log_name))
     p = dict(zip(log.parameter, log.value.astype(str)))
     for k in ('run_id', 'timestamp'):
         p.pop(k, None)
@@ -84,7 +85,7 @@ def build_585():
     return out
 
 
-def run(te: pd.DataFrame, params: dict, workdir: str) -> pd.DataFrame:
+def run(te: pd.DataFrame, params: dict, workdir: str, extra_files: dict = None) -> pd.DataFrame:
     sys.path.insert(0, APP)
     sys.path.insert(0, ROOT)
     import app as drp
@@ -92,6 +93,8 @@ def run(te: pd.DataFrame, params: dict, workdir: str) -> pd.DataFrame:
     for f in (up, outd):
         shutil.rmtree(f, ignore_errors=True); os.makedirs(f)
     te.to_csv(os.path.join(up, 'trace_elem1.csv'), index=False)
+    for name, src in (extra_files or {}).items():
+        shutil.copy(src, os.path.join(up, name))
     drp.UPLOAD_FOLDER, drp.OUTPUT_FOLDER = up, outd
     t0 = time.time()
     drp._run_model(dict(params))
