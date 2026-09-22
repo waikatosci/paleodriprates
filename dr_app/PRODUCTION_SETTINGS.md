@@ -1,13 +1,20 @@
-# Dr Paleo — HS4 production run settings (canonical, 2026-07-20, rev 3)
+# Dr Paleo: HS4 production run settings (canonical, rev 4, 2026-09-23)
 
 Reproduces the manuscript record at the locked calibration. Any deviation
 from this sheet is not the production record.
 
-## Input file (decided 2026-07-20)
-Upload **HS4_TE_canonical_588.csv** — the full raw TE table (589 rows,
-value-identical to Drip_rate.xlsx 2.Trace_Elems) minus the single documented
-exclusion: the 0.06 cm surface-cap point (Ni/Co both >2× neighbours; would
-invert to a spurious slow-drip point at the top of the record).
+## Input file (rev 4, 2026-09-22)
+Upload **HS4_TE_canonical.csv** (in `HS4_example_inputs/`): the 568 samples of
+the primary (2009) ICP-MS run. It is the full raw TE table (`HS4_TE.csv`, 589
+rows, value-identical to Drip_rate.xlsx 2.Trace_Elems) minus 21 documented
+exclusions: the 0.06 cm surface-cap point (Ni/Co both >2× neighbours; would
+invert to a spurious slow-drip point at the top of the record) and the 20
+samples of the second-laboratory run (2019), withdrawn on 2026-09-22 and
+examined separately (Supp. Methods 14.3–14.4; companion_analysis/crosslab_*.py).
+Do not upload `HS4_TE.csv` for a production run; it still holds those rows.
+
+Rev 3 (2026-07-20) used a 588-row input that kept the 20 second-laboratory
+samples (file `HS4_TE_canonical_588.csv`, no longer in the repository).
 Build chain lives in the repo: calibration/excluded_points.csv (the rule) +
 calibration/make_canonical_te_input.py (applies it). To change cleaning,
 edit the CSV and re-run the script — never hand-edit data files.
@@ -63,17 +70,21 @@ reads −3.844, the auto-calibration clobbered the boxes — kill the run.
 | 3. Age-propagated ("Run4") | native | yes | Fig5_driprate_AP (then re-anchor to modern baseflow as before) |
 
 ## Acceptance checks (native run)
-- **588 points, depth 0.18–255.5 cm** (old 576-point grid + the 12
-  re-included depths; duplicates at 8.09/156.38/157.48 retained)
-- Top-of-record pc50 ≈ 15–16 drips/min (old value 15.74 at 0.18 cm)
+- **568 points, depth 0.18–255.5 cm**, no duplicate depths (rev 3 had 588,
+  with duplicates at 8.09/156.38/157.48 from the second-laboratory run);
+  `drip_rate_summary_hr.csv` is this run
+- Top-of-record pc50 ≈ 15.6 drips/min at 0.18 cm (15.74 in rev 2)
 - On the 576 shared depths: single-digit-percent shift vs the old σ=π/√6
   externals (expected e^Δμ: −2.8% via Ni, +5.7% via Co), NOT a factor of ~2
 - The 12 re-included points will read as slow-drip-side excursions (all are
   high-Ni) — expected, not a failure; watch 132.38/140.8 cm near the event
   window when re-deriving event magnitudes
-- Megadrought minimum pc50 near the old 2.84 on shared depths, not 0
+- 5.2 ka minimum pc50 2.81 drips/min at 157.01 cm (joint Ni–Co; the Ni-only
+  run, companion_analysis/run_single_metal.py, gives 6.42), not 0
 
 ## MS reconciliation (assembly checklist)
-- "n = 585" is a confirmed error. Restate from this pipeline: **588** on the
-  native depth grid; **586** within the dated span (age model 0.0–253.0 cm
-  excludes rows at 253.5 and 255.5 from age-mode products).
+- Restate from this pipeline: **568** on the native depth grid; **566** within
+  the dated span (age model 0.0–253.0 cm excludes rows at 253.5 and 255.5 from
+  age-mode products). The 585-point input is the sensitivity run that adds 17
+  Ca-corrected second-laboratory samples to the 568
+  (companion_analysis/run_crosslab_585.py), not the production record.

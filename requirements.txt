@@ -21,3 +21,4 @@ scipy==1.11.*
 
 # companion analyses and supplementary figures (not needed by the app)
 astropy>=6.0        # extended_data/Ex_Data_5_Spectral_analysis (Lomb-Scargle, bootstrap FAP)
+opencv-python-headless>=4.8   # companion_analysis/hs4_composite (photographic composite)

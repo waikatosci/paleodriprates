@@ -1,10 +1,10 @@
-# Dr Paleo — Paleodriprates
+# Dr Paleo: Paleodriprates
 
 Kinetic proxy for stalagmite drip rate and precipitation reconstruction.
 
-This repository contains code, data, and Dr Paleo, a browser-based application for reconstructing cave drip rates and Holocene precipitation from stalagmite trace metals. The kinetic proxy model exploits the dissociation kinetics of organic-metal complexes (OMCs) bound to transition metals (Co, Ni, Cu, Zn, Al, and others) in cave dripwater: because drip rate governs the thin-film residence time available for OMC dissociation, trace metal concentrations in stalagmite calcite encode past drip rates (drips min⁻¹). Through calibrated site-specific regressions and Monte Carlo propagation of uncertainties, these are translated into absolute precipitation estimates (mm yr⁻¹).
+This repository contains the code, data and Dr Paleo, a browser-based application for reconstructing cave drip rates and Holocene precipitation from trace metals in stalagmites. The kinetic proxy rests on the dissociation of organic-metal complexes (OMCs) that carry transition metals (Co, Ni, Cu, Zn and others) in cave dripwater. Drip rate sets how long the water film on the stalagmite surface has for these complexes to dissociate, so the metal content of the calcite records past drip rate (drips min⁻¹). Calibrated site-specific regressions, with uncertainties propagated by Monte Carlo, convert drip rate to absolute precipitation (mm yr⁻¹).
 
-The methods are described in:
+The methods and the Heshang Cave (HS4) record are described in:
 
 > Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
@@ -12,7 +12,7 @@ The methods are described in:
 
 ## Quick Start
 
-See [dr_app/QUICKSTART.md](dr_app/QUICKSTART.md) for a step-by-step guide, including a worked example with the HS4 dataset.
+See [dr_app/QUICKSTART.md](dr_app/QUICKSTART.md) for a step-by-step guide with a worked HS4 example, and [dr_app/PRODUCTION_SETTINGS.md](dr_app/PRODUCTION_SETTINGS.md) for the settings that reproduce the published record.
 
 ```bash
 git clone https://github.com/waikatosci/paleodriprates.git
@@ -26,107 +26,127 @@ python app.py
 
 ## Repository Structure
 
-There are two ways to run the model: a Flask web app (recommended for most users) and a command-line driver (for batch processing). Both share a common core of forward-model code at the repo root.
+There are two ways to run the model: a Flask web app (recommended for most users) and a command-line driver (for batch processing). Both use the same forward-model code at the repository root. The remaining folders hold the calibration, the analyses behind the paper, and the scripts that draw every figure.
 
 ```
 paleodriprates/
 │
 ├── README.md                          This file
+├── PATCH_NOTES.md                     Change log for the revision (what changed and why)
 ├── LICENSE                            MIT License
-├── requirements.txt
-├── drip_rate.yml                      Conda environment file
+├── requirements.txt                   pip install path
+├── drip_rate.yml                      Conda environment file (recommended)
 │
 │   ---- Shared core (used by both the CLI and the web app) ----
-├── model.py                           Forward model: h(V) trace element kinetics
+├── model.py                           Forward model: h(V) trace-element kinetics
 ├── params.py                          Physical constants (VMAX, VMIN, VRES, etc.)
 ├── utils.py                           Generic helpers (progress bars, IO)
-├── drip_rate_util.py                  Drip rate-specific helpers (outlier
-│                                          detection, residual optimisation)
+├── drip_rate_util.py                  Drip-rate helpers (outlier detection,
+│                                          residual optimisation)
 │
 │   ---- CLI entry point ----
-├── drip_rate_mc_realisations.py       Canonical CLI driver. Parallel Monte
-│                                          Carlo over the kinetic inversion;
-│                                          emits both percentile summaries and
-│                                          the full MC realisation ensemble used
-│                                          by the RQA stationarity tests.
-│                                          (Reads Drip_rate.xlsx at the root.)
-├── Drip_rate.xlsx                     Reference dataset: depth-age and trace
-│                                          element profiles for CLI runs.
-├── drip_rate_stationarity_tests.py    RQA stationarity tests on the MC
-│                                          realisation ensemble emitted above.
+├── drip_rate_mc_realisations.py       Canonical CLI driver: parallel Monte Carlo
+│                                          over the kinetic inversion; writes
+│                                          percentile summaries and the full
+│                                          realisation ensemble. Reads Drip_rate.xlsx.
+├── Drip_rate.xlsx                     Reference dataset: age-depth, trace elements
+│                                          and isotopes for CLI runs
+├── drip_rate_stationarity_tests.py    Stationarity tests on the realisation ensemble
 │
 ├── dr_app/                            Dr Paleo Flask web application
 │   ├── app.py                         Flask app entry point
 │   ├── model_stochastic.py            Stochastic-prior wrapper around model.py
-│   ├── driprates_stochastic.py        Drip rate PDF computation with priors
+│   ├── driprates_stochastic.py        Drip-rate PDF computation with priors
 │   ├── concentration_prior.py         Log-normal priors for [TE]aq and [Ca]aq
 │   ├── QUICKSTART.md                  Step-by-step guide for the web app
+│   ├── PRODUCTION_SETTINGS.md         Settings that reproduce the HS4 record
 │   ├── launch_windows.bat             Windows one-click launcher
 │   ├── launch_mac_linux.sh            macOS/Linux one-click launcher
-│   ├── HS4_example_inputs/            Example data (Heshang Cave stalagmite HS4)
-│   │   ├── HS4_age_depth.csv          U-Th dating table
-│   │   ├── HS4_TE.csv                 Co and Ni LA-ICP-MS profiles (CSV)
-│   │   └── HS4_TE.xlsx                Same data, Excel format
-│   ├── uploads/                       Uploaded CSV data (created at runtime,
-│   │                                      gitignored)
-│   └── outputs/                       Model outputs and cached proxy records
-│                                          (created at runtime, gitignored)
+│   ├── HS4_example_inputs/            Heshang Cave stalagmite HS4
+│   │   ├── HS4_age_depth.csv          ²³⁰Th ages (30) and the growth surface
+│   │   ├── HS4_TE.csv / .xlsx         Full Ni and Co table as measured
+│   │   │                                  (589 rows, both laboratories)
+│   │   └── HS4_TE_canonical.csv       Reconstruction input: the 568 samples of
+│   │                                      the primary (2009) run
+│   ├── uploads/, outputs/             Created at runtime (gitignored)
 │
-├── bayprox/                           BayProX: Bayesian proxy-age modelling
-│   ├── data.py
-│   ├── agedepth.py
-│   ├── proxyrecord.py
-│   ├── simulate.py
-│   ├── visualize.py
-│   └── other/
-│       ├── motabar/                   Vendored MoTaBaR (Heitzig, PIK Potsdam):
-│       │                                  Monotonic Tail-Adapted Bayesian
-│       │                                  Regression. Live dependency of
-│       │                                  bayprox/agedepth.py.
-│       └── calibration/               Radiocarbon calibration data: IntCal09,
-│                                          IntCal13, Marine13, Hua-Barbetti
-│                                          postbomb tables.
+├── calibration/                       Kd calibration against the monitoring record,
+│                                          canonical-input builder, exclusion list,
+│                                          below-resolution censoring, Fig. 3 curves
+├── dripwater/                         HS4 dripwater monitoring record (2007 onward):
+│                                          drip rate and full solution chemistry
 │
-├── companion_analysis/
-│   └── RQA_HS4_ensemble.py            Recurrence quantification analysis on
-│                                          the HS4 MC ensemble.
+├── companion_analysis/                Analyses cited in the Supplementary Information
+│   ├── RQA_HS4_ensemble.py            Recurrence quantification of the MC ensemble
+│   ├── run_single_metal.py            Ni-only and Co-only inversions
+│   ├── ni_co_agreement.py             Ni-Co agreement and the 5.2 ka interval
+│   ├── crosslab_*.py, run_crosslab_585.py
+│   │                                  Second-laboratory (2019) run: matrix check,
+│   │                                      sensitivity, Ca-corrected replication
+│   ├── detrital_ternary_screen.py     Detrital and source-covariance screens
+│   ├── events_differ_lithogenic.py,
+│   │   make_fig_events_differ.py      8.2 ka and 5.2 ka event comparison
+│   ├── dripwater_source_stability.py,
+│   │   source_variation_propagation.py
+│   │                                  Stability of the dripwater metal source
+│   ├── element_covariance.py          Which elements covary with Ni and Co
+│   └── hs4_composite/                 Photographic composite of the polished
+│                                          section and the Fig. 5c axial slice
+│
+├── extended_data/                     Scripts for Supplementary Figures 11-16
+│                                          (see extended_data/README.md)
+├── supplementary_figures/             Scripts for Supplementary Figures 1-5, and a
+│                                          table mapping every Supplementary Figure
+│                                          to the script that draws it
+│
+├── manuscript_figures/                Main-text figures and Source Data
+│   ├── HS4_SourceData.xlsx            Single source for every display item
+│   ├── generate_figures.py            Renders all main-text figures
+│   ├── build_precip_onestep.py        One-step precipitation transfer
+│   ├── ngeo_style.py                  Shared figure style
+│   ├── figures/                       One script per figure (Figs 2-7)
+│   ├── external/                      Bulk arrays and cited inputs (see its README)
+│   └── output/                        Rendered figures and tables
 │
 ├── precip_recon/                      Precipitation reconstruction notebook
 │   ├── P_quantification_Holocene.ipynb
 │   ├── precip_recon_readme.txt
-│   └── (regression input/output Excel files)
+│   └── (regression inputs and outputs)
 │
-├── manuscript_figures/                Nature Communications source data + figures
-│   ├── HS4_SourceData.xlsx                Single source for every display item
-│   ├── generate_figures.py                Renders all figures from the workbook
-│   ├── ngeo_style.py                      Shared figure style
-│   ├── figures/                           One script per figure (Figs 3-7)
-│   ├── external/                          Bulk arrays + Zhu 2017 IRM flux (cited inputs)
-│   ├── output/                            Rendered figures
-│   └── README.md
+├── bayprox/                           BayProX: Bayesian proxy-age modelling
+│   ├── data.py, agedepth.py, proxyrecord.py, simulate.py, visualize.py
+│   └── other/
+│       ├── motabar/                   Vendored MoTaBaR (Heitzig, PIK Potsdam):
+│       │                                  Monotonic Tail-Adapted Bayesian
+│       │                                  Regression, used by bayprox/agedepth.py
+│       └── calibration/               Radiocarbon calibration data (IntCal09,
+│                                          IntCal13, Marine13, Hua-Barbetti)
 │
 └── legacy/                            Read-only archive of superseded files
-    ├── README.md                          (provenance and rationale)
-    ├── scripts/                           (earlier CLI variants)
-    ├── env/                               (Windows 7 conda env file)
-    └── bayprox/                           (dated bayprox snapshots, scratch
-                                            files)
+    ├── README.md                      Provenance and rationale
+    ├── scripts/                       Earlier CLI variants
+    ├── env/                           Windows 7 conda environment file
+    └── bayprox/                       Dated bayprox snapshots
 ```
 
 ### Two front-ends, one core
 
-The shared core (`model.py`, `params.py`, `utils.py`, `drip_rate_util.py` at the repo root) contains the forward kinetic model and the helpers needed to run it. Both front-ends import from these directly:
+The shared core (`model.py`, `params.py`, `utils.py`, `drip_rate_util.py`) contains the forward kinetic model and the helpers needed to run it. Both front-ends import from it directly:
 
-- Web app (`dr_app/app.py`): implements its own Monte Carlo loop on top of the shared core, with stochastic priors (via `model_stochastic.py`, `driprates_stochastic.py`, `concentration_prior.py`). Reads CSVs uploaded through the browser.
-- CLI driver (`drip_rate_mc_realisations.py`): parallel MC over the shared core, no stochastic priors. Reads `Drip_rate.xlsx` at the repo root.
+- Web app (`dr_app/app.py`): its own Monte Carlo loop on the shared core, with stochastic priors (`model_stochastic.py`, `driprates_stochastic.py`, `concentration_prior.py`). Reads CSV files uploaded through the browser.
+- CLI driver (`drip_rate_mc_realisations.py`): parallel Monte Carlo on the shared core, without stochastic priors. Reads `Drip_rate.xlsx`.
 
-The two front-ends emit comparable outputs (percentile summaries plus full MC realisation ensemble), but they are separate implementations of the MC loop. Changing the kinetic model (`model.py`) changes both. Changing one front-end's MC handling does not automatically affect the other.
+The two front-ends write comparable outputs (percentile summaries and the full realisation ensemble) but are separate implementations of the Monte Carlo loop. A change to `model.py` affects both; a change to one front-end's Monte Carlo handling does not affect the other.
+
+### HS4 inputs
+
+The published record is the inversion of `HS4_TE_canonical.csv`: the 568 samples of the primary ICP-MS run (2009). The full table, `HS4_TE.csv`, also holds the 0.06 cm surface-cap point and the 20 samples of a second-laboratory run (2019), which are withdrawn from the reconstruction and examined separately (Supplementary Methods 14.3–14.4; `companion_analysis/crosslab_*.py`). `calibration/make_canonical_te_input.py` builds the canonical file from the full table and `calibration/excluded_points.csv`.
 
 ---
 
 ## Dependencies
 
-Python 3.9 or later is required.
+Python 3.9 or later; the conda environment (`drip_rate.yml`) pins Python 3.12.
 
 ```
 numpy
@@ -135,11 +155,13 @@ scipy
 matplotlib
 openpyxl
 Pillow
-progressbar2
+progressbar
 flask                  # Dr Paleo web app
 ```
 
-`bayprox` is a custom Bayesian proxy-age modelling library included in this repository. No external installation is required.
+Some companion analyses and figure scripts need further packages that the app does not use: `astropy` (spectral analysis, Supplementary Figure 15), `cartopy` and `xarray` (site map, Fig. 2) and `opencv-python` (photographic composite, `companion_analysis/hs4_composite/`).
+
+`bayprox` is a Bayesian proxy-age modelling library included in this repository; no separate installation is needed.
 
 ---
 
@@ -147,50 +169,57 @@ flask                  # Dr Paleo web app
 
 ### 1. Dr Paleo, browser-based (recommended)
 
-The web application provides a complete GUI for the reconstruction pipeline.
+The web application provides a complete interface for the reconstruction.
 
 ```bash
 cd dr_app
 python app.py
 ```
 
-Open `http://localhost:5000` in any modern browser. Dr Paleo walks you through data upload, parameter configuration, model execution, and result visualisation. See [QUICKSTART.md](dr_app/QUICKSTART.md) for a full walkthrough.
+Open `http://localhost:5000` in any modern browser. Dr Paleo takes you through data upload, parameter settings, model runs and results. See [QUICKSTART.md](dr_app/QUICKSTART.md) for a full walkthrough.
 
 - Windows: double-click `launch_windows.bat`
 - macOS/Linux: run `./launch_mac_linux.sh`
 
 ### 2. Command-line driver
 
-For batch processing or integration into existing pipelines:
+For batch processing or use in existing pipelines:
 
 ```bash
 python drip_rate_mc_realisations.py
 ```
 
-Reads input from `Drip_rate.xlsx` at the repo root. Emits drip-rate percentile summaries and the full Monte Carlo realisation ensemble (CSV) used by `drip_rate_stationarity_tests.py`. Parallel by default; uses Python's `concurrent.futures` thread pool.
+Reads `Drip_rate.xlsx` at the repository root and writes drip-rate percentile summaries and the full Monte Carlo realisation ensemble (CSV) used by `drip_rate_stationarity_tests.py`. Runs in parallel by default (Python's `concurrent.futures` thread pool).
 
-> Earlier CLI variants (`Drip_rate.py`, `Drip_rate_serial.py`, `Drip_rate_parallel.py`) are preserved in [`legacy/scripts/`](legacy/) for provenance and are no longer maintained. The current driver was previously named `Drip_rate_parallel_fr.py`; the `_fr` suffix stood for "full realisations".
+> Earlier CLI variants (`Drip_rate.py`, `Drip_rate_serial.py`, `Drip_rate_parallel.py`) are kept in [`legacy/scripts/`](legacy/) for provenance and are no longer maintained. The current driver was previously named `Drip_rate_parallel_fr.py` (`_fr` for "full realisations").
 
 ### 3. Precipitation reconstruction
 
-After obtaining drip rate percentiles (via Dr Paleo or command-line):
+After obtaining drip-rate percentiles (from Dr Paleo or the command line):
 
 ```bash
 cd precip_recon
 jupyter notebook P_quantification_Holocene.ipynb
 ```
 
-Chains site-specific regressions (drip rate, discharge, precipitation) with Monte Carlo propagation.
+Chains the site-specific regressions (drip rate, discharge, precipitation) with Monte Carlo propagation.
 
-### 4. RQA stationarity tests
-
-For testing stationarity of the Monte Carlo realisation ensemble:
+### 4. Stationarity tests
 
 ```bash
 python drip_rate_stationarity_tests.py
 ```
 
-Runs five tests (ADF, KPSS, Mann-Kendall, Ljung-Box, Runs) on the realisation CSV exported by Dr Paleo.
+Runs five tests (ADF, KPSS, Mann-Kendall, Ljung-Box, runs) on a realisation ensemble written by Dr Paleo or the CLI driver.
+
+### 5. Figures and companion analyses
+
+```bash
+cd manuscript_figures
+python generate_figures.py          # main-text figures from HS4_SourceData.xlsx
+```
+
+Each Supplementary Figure is drawn by one script; `supplementary_figures/README.md` lists which. The companion analyses in `companion_analysis/` run from the repository root and write to `manuscript_figures/output/` and `manuscript_figures/external/`.
 
 ---
 
@@ -200,31 +229,31 @@ Runs five tests (ADF, KPSS, Mann-Kendall, Ljung-Box, Runs) on the realisation CS
 
 | Panel | Purpose |
 |-------|---------|
-| Data Inputs | Upload CSV files (depth/age, trace elements, isotopes, aqueous monitoring). Map columns and set units. |
-| Model Parameters | Set cave conditions (temperature, Ca, drip rate), kinetic parameters (Kp, Kd, fractions), and aqueous chemistry per TE. |
-| Analysis Mode | Choose full quantification (absolute drips min⁻¹) or semi-quantitative (% of reference). |
-| Output Options | Configure V-grid, realisations, proxy record caching. |
-| Run | Execute the model with progress bar, ETA, and live log. |
-| Results | Interactive charts (time series, heatmap, Smart & Friedrich classification, age model) and downloadable CSVs. |
+| Data Inputs | Upload CSV files (age-depth, trace elements, isotopes, dripwater monitoring). Map columns and set units. |
+| Model Parameters | Set cave conditions (temperature, Ca, drip rate), kinetic parameters (Kp, Kd, fractions) and dripwater chemistry for each element. |
+| Analysis Mode | Full quantification (absolute drips min⁻¹) or semi-quantitative (% of a reference). |
+| Output Options | Configure the V-grid, number of realisations and proxy-record caching. |
+| Run | Run the model with progress bar, time remaining and live log. |
+| Results | Interactive charts (time series, heatmap, Smart & Friedrich classification, age model) and downloadable CSV files. |
 
 ### Supported elements
 
-Cu, Ni, Co (full theoretical Kp via Wang & Xu 2001 plus Lindeman 2022 empirical), Zn, Cd, Pb, V, Mn, Fe, Al (literature Kp), and user-defined elements.
+Cu, Ni, Co (theoretical Kp from Wang & Xu 2001 and empirical Kp from Lindeman et al. 2022), Zn, Cd, Pb, V, Mn, Fe, Al (literature Kp) and user-defined elements.
 
 ### Output files
 
 | File | Contents |
 |------|----------|
-| `drip_rate_summary.csv` | Percentile summary (pc05-pc95) at each timestep |
-| `drip_rate_realisations.csv` | Full MC ensemble for RQA analysis |
+| `drip_rate_summary.csv` | Percentile summary (pc05-pc95) at each step |
+| `drip_rate_realisations.csv` | Full Monte Carlo ensemble for RQA and stationarity tests |
 | `age_model.csv` | Depth-age mapping with errors |
-| `input_summary.csv` | All input parameters for reproducibility |
+| `input_summary.csv` | All input parameters, for reproducibility |
 
 ---
 
 ## Statistical Tests
 
-`drip_rate_stationarity_tests.py` performs five stationarity/trend tests on Monte Carlo realisations:
+`drip_rate_stationarity_tests.py` performs five stationarity and trend tests on the Monte Carlo realisations:
 
 | Test | Null hypothesis | Measures |
 |------|----------------|----------|
@@ -240,7 +269,7 @@ All tests report effect sizes and bootstrap 95% confidence intervals.
 
 ## Data Availability
 
-Raw proxy data and monitoring records are included in the Excel files. The manuscript's figures are fully reproducible from `manuscript_figures/`, whose single workbook `HS4_SourceData.xlsx` is the canonical source for every display item (drip-rate reconstruction at σ = π/√6). Full archive (including all calibration datasets): [Zenodo DOI: 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
+The stalagmite proxy data, the U-Th chronology and the dripwater monitoring record are in this repository (`dr_app/HS4_example_inputs/`, `Drip_rate.xlsx`, `dripwater/`). Every main-text display item is drawn from the single workbook `manuscript_figures/HS4_SourceData.xlsx` (drip-rate reconstruction at σ = π/√6). The full trace-element measurement report of the second-laboratory run is in `manuscript_figures/external/HS4_TE_full_suite_both_labs.xlsx`, and the photographic composite of the polished section is in `manuscript_figures/external/HS4_composite.jpg` (the original photographs are available from C. Hu). Bulk arrays too large for the repository (for example the age-propagated realisation ensemble) are in the Zenodo archive: [DOI 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
 
 ---
 
@@ -268,7 +297,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST, QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), Ministry for Business, Innovation and Employment (UOWX2102), and a Rutherford Discovery Fellowship (RDF-UOW1601).
+Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST, QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), the Ministry of Business, Innovation and Employment (UOWX2102) and a Rutherford Discovery Fellowship (RDF-UOW1601). The ICP-MS and ICP-AES analyses were funded by the National Natural Science Foundation of China (41731177) to C. Hu, who also provided the photographs of the HS4 section.
 
 For questions or contributions, open an issue on GitHub or contact the corresponding author: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
 
@@ -276,4 +305,4 @@ For questions or contributions, open an issue on GitHub or contact the correspon
 
 ## AI Assistance Statement
 
-The scientific method, kinetic model, and analyses in this repository are the work of the authors. Generative AI tools (Anthropic's Claude) were used to assist with software engineering and documentation tasks, including refactoring and organising the codebase, and building the Dr Paleo web interface. All AI-assisted output was reviewed, tested, and verified by the authors, who take full responsibility for the content and correctness of the code, data, and documentation.
+The scientific method, kinetic model and interpretations in this repository are the work of the authors. Generative AI (Anthropic's Claude) was used under the authors' direction for software engineering and documentation: refactoring and organising the codebase, building the Dr Paleo web interface, writing analysis and figure scripts for the revision (including the image-processing code in `companion_analysis/hs4_composite/`), and checking that values, settings and figure provenance agree across the code, data and manuscript. All AI-assisted output was reviewed, tested and verified by the authors, who take full responsibility for the content and correctness of the code, data and documentation.

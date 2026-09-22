@@ -69,7 +69,7 @@ The repository includes example input files from stalagmite HS4, Heshang Cave, C
 
 1. Navigate to Data Inputs.
 2. Upload `dr_app/HS4_example_inputs/HS4_age_depth.csv` to the Depth / Age dropzone.
-3. Upload `dr_app/HS4_example_inputs/HS4_TE.csv` to the Trace Elements dropzone.
+3. Upload `dr_app/HS4_example_inputs/HS4_TE_canonical.csv` to the Trace Elements dropzone. This is the input behind the published record (568 samples); `HS4_TE.csv` is the full table as measured and also holds rows withdrawn from the reconstruction (see `PRODUCTION_SETTINGS.md`).
 4. Dr Paleo auto-detects the columns; verify the dropdowns map depth, age, and proxy columns correctly.
 
 ### Step 2 — Check parameters

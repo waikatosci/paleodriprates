@@ -215,3 +215,12 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
   below (`figures/Fig5_record.py`; the event bands carry through).
 - Band spacing in the photographs was tested against the 230Th growth rate and does not track it; the
   photographs do not resolve annual layers, so no lamina counts are reported (README in the new folder).
+- README revised: repository tree brought up to date (calibration/, dripwater/, companion_analysis/,
+  extended_data/, supplementary_figures/, PRODUCTION_SETTINGS.md), the HS4 inputs explained (full
+  589-row table against the 568-sample canonical input), optional dependencies listed, NSFC funding
+  and the photographs acknowledged, and the AI statement updated. `opencv-python-headless` added to
+  requirements.txt for the composite.
+- `dr_app/QUICKSTART.md` now points to `HS4_TE_canonical.csv` (568 samples) rather than the full
+  `HS4_TE.csv`, and `dr_app/PRODUCTION_SETTINGS.md` is revised to rev 4: the 568-sample input (the
+  retired rev 3 named a 588-row file that kept the second-laboratory samples), acceptance checks and
+  point counts updated (568 native; 566 within the dated span).
