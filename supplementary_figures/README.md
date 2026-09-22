@@ -17,6 +17,8 @@ data in house style (bare bold panel letters, no titles). Supplementary Figures
 | SF18 | `companion_analysis/crosslab_matrix_check.py` |
 | SF19 | `companion_analysis/run_single_metal.py --metal Ni` and `--metal Co` (single-metal inversions at the production settings; `--mode 1cm` / `--mode ageprop` repeat the other two canonical runs), then `companion_analysis/crosslab_replication.py` (the Ca-corrected second-run samples on Ni, panel b) and `companion_analysis/ni_co_agreement.py` |
 | SF20 | redrawn from the DGT deployment data of Salmanzadeh et al. (in preparation); provided as Source Data |
+| SF21 | `companion_analysis/hs4_composite/build_composite.py` (stitches the photographs; needs PHOTO_DIR) then `companion_analysis/hs4_composite/si_figures.py` |
+| SF22 | `companion_analysis/hs4_composite/si_figures.py` (composite across 148–164 cm with primary-run and Ca-corrected second-run Ni and Co) |
 
 Outputs are written to `supplementary_figures/output/` (SF1-5) and
 `manuscript_figures/output/` (SF6-10).

@@ -22,6 +22,9 @@ Nature Communications production figure — two-panel layout.
            + age-propagated IQR envelope + 30°N June insolation +
            approximate precipitation axis.
   Panel b: δ¹⁸O (best-estimate chronology) + age-propagated IQR band.
+  Panel c: axial slice of HS4 (external/HS4_axial_slice.jpg, cut from the
+           stitched photographic composite; companion_analysis/hs4_composite/)
+           placed on the same age axis through the age model, base at left.
 
 Event zoom panels (c1–c3) moved to extended data figure.
 Colour palette from ngeo_style for manuscript consistency.
@@ -403,18 +406,21 @@ print(f"  Insolation: {INSOL_FILE} -> {insol.min():.1f}-{insol.max():.1f} W m-2 
 # FIGURE — two panels (v20 layout)
 # ══════════════════════════════════════════════════════════════════════
 print("Rendering ...")
-fig = plt.figure(figsize=(180 / 25.4, 140 / 25.4))
-gs = gridspec.GridSpec(2, 1, figure=fig, hspace=0.12,
-                       height_ratios=[4.0, 2.5],
+fig = plt.figure(figsize=(180 / 25.4, 156 / 25.4))
+gs0 = gridspec.GridSpec(2, 1, figure=fig, hspace=0.13,
+                       height_ratios=[6.5 + 0.12 * 3.25, 0.75],
                        left=0.16, right=0.82, top=0.96, bottom=0.08)
 
+gs = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=gs0[0], hspace=0.12,
+                                      height_ratios=[4.0, 2.5])
 ax_hero = fig.add_subplot(gs[0])
 ax_d18o = fig.add_subplot(gs[1], sharex=ax_hero)
+ax_slice = fig.add_subplot(gs0[1], sharex=ax_hero)
 
 for ax in (ax_hero, ax_d18o):
     style_ax(ax)
 
-draw_event_bands([ax_hero, ax_d18o], EVENTS)
+draw_event_bands([ax_hero, ax_d18o, ax_slice], EVENTS)
 
 # ══════════════════════════════════════════════════════════════════════
 # PANEL a — drip rate hero
@@ -543,12 +549,64 @@ ax_d18o.text(0.015, 0.94, 'b', transform=ax_d18o.transAxes,
                        fc='white', ec='none', alpha=0.8))
 
 # ══════════════════════════════════════════════════════════════════════
+# PANEL c — axial slice of the stalagmite on the age axis
+# ══════════════════════════════════════════════════════════════════════
+SLICE_IMG = 'external/HS4_axial_slice.jpg'    # rows = depth at 100 px/cm from 0 cm
+SLICE_META = 'external/HS4_axial_slice.json'
+if os.path.exists(SLICE_IMG):
+    from PIL import Image
+    _meta = json.load(open(SLICE_META))
+    _sl = np.asarray(Image.open(SLICE_IMG).convert('RGB'), dtype=float)
+    _depth = _meta['row0_depth_cm'] + np.arange(_sl.shape[0]) / _meta['px_per_cm']
+    _age = depth2age(_depth)
+    # each image row is splatted onto a regular age grid (the age model is used as
+    # plotted in panels a-b, so the slice and the records share one x mapping)
+    _NC = 3000
+    _edges = np.linspace(hm_ages.min(), hm_ages.max(), _NC + 1)
+    _col = np.clip(np.searchsorted(_edges, _age) - 1, 0, _NC - 1)
+    _inr = (_age >= _edges[0]) & (_age <= _edges[-1])
+    _acc = np.zeros((_NC, _sl.shape[1], 3)); _n = np.zeros(_NC)
+    np.add.at(_acc, _col[_inr], _sl[_inr]); np.add.at(_n, _col[_inr], 1)
+    _img = np.full((_NC, _sl.shape[1], 3), 255.0)
+    _k = _n > 0
+    _img[_k] = _acc[_k] / _n[_k][:, None, None]
+    _img = np.transpose(_img, (1, 0, 2)).astype(np.uint8)   # width across, age along
+    ax_slice.imshow(_img, extent=[_edges[0], _edges[-1], 0, 1], aspect='auto',
+                    interpolation='antialiased', zorder=1)
+    ax_slice.set_ylim(0, 1); ax_slice.set_yticks([])
+    for sp in ax_slice.spines.values():
+        sp.set_linewidth(0.4)
+    # depth ticks on the slice, placed through the age model
+    _dt = np.arange(0, 250, 20)
+    _dt = _dt[(_dt >= _depth[0]) & (_dt <= _depth[-1])]
+    _sec = ax_slice.twiny()
+    _sec.xaxis.set_ticks_position('bottom'); _sec.xaxis.set_label_position('bottom')
+    _sec.spines['bottom'].set_position(('outward', 0))
+    ax_slice.tick_params(axis='x', labelbottom=False)
+    ax_slice.text(0.015, 0.88, 'c', transform=ax_slice.transAxes, fontsize=10,
+                  fontweight='bold', va='top', zorder=9,
+                  bbox=dict(boxstyle='round,pad=0.2', fc='white', ec='none', alpha=0.8))
+    SLICE_DEPTH_TICKS = (_dt, depth2age(_dt))
+    SLICE_SEC = _sec
+    print(f"  Axial slice: {_sl.shape[0]} rows, {_meta['x_from_line_cm']} cm from the depth line")
+else:
+    SLICE_SEC = None
+    ax_slice.set_visible(False)
+
+# ══════════════════════════════════════════════════════════════════════
 # SHARED
 # ══════════════════════════════════════════════════════════════════════
 ax_hero.set_xlim(hm_ages.max(), hm_ages.min())
 ax_d18o.set_xlabel('Age (ka BP)', fontsize=7, fontweight='bold')
 ax_d18o.xaxis.set_major_locator(ticker.MaxNLocator(12))
 ax_d18o.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))
+ax_d18o.tick_params(axis='x', labelbottom=True)
+if SLICE_SEC is not None:
+    SLICE_SEC.set_xlim(ax_hero.get_xlim())
+    SLICE_SEC.set_xticks(SLICE_DEPTH_TICKS[1])
+    SLICE_SEC.set_xticklabels([f'{d:g}' for d in SLICE_DEPTH_TICKS[0]], fontsize=5)
+    SLICE_SEC.tick_params(axis='x', length=2, width=0.4, pad=1.5, direction='out')
+    SLICE_SEC.set_xlabel('Depth (cm)', fontsize=6, labelpad=2)
 
 # ══════════════════════════════════════════════════════════════════════
 # ²³⁰Th TIE-POINTS — above the panel-a top spine.

@@ -202,3 +202,16 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
   ICP-MS with the method of the 2009 run (not an Agilent 8900 triple-quadrupole, as previously
   stated). Docstring of crosslab_matrix_check.py and the full-suite README corrected.
 - C. Hu has agreed to the release of the measurement report as Source Data.
+
+## 23 Sep 2026: photographic composite of the section
+
+- New `companion_analysis/hs4_composite/`: `build_composite.py` stitches C. Hu's eight photographs of the
+  polished section onto the pencil depth scale (100 px/cm; tick residuals < 1 mm; overlaps agree to
+  0.1–0.5 mm) and cuts a 6 cm axial slice; `si_figures.py` draws Supplementary Figures 21 (composite) and
+  22 (the 5.2 ka horizon with Ni and Co). New inputs `external/HS4_composite.*` and `external/HS4_axial_slice.*`.
+- The enriched 5.2 ka samples lie within the loose fragment between the breaks at 155.1 and 157.3 cm, with the
+  highest Ni and Co in its interior (156.2–157.0 cm) and background values at its lower break (157.10–157.30 cm).
+- Fig. 5 gains panel c: the axial slice placed on the age axis through the best-estimate age model, depth marked
+  below (`figures/Fig5_record.py`; the event bands carry through).
+- Band spacing in the photographs was tested against the 230Th growth rate and does not track it; the
+  photographs do not resolve annual layers, so no lamina counts are reported (README in the new folder).
