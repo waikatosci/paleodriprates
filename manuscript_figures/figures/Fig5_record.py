@@ -461,7 +461,7 @@ if has_ap:
 
 # Baseflow anchor
 ax_hero.plot(BASEFLOW_AGE, BASEFLOW_DRIP, '*', color=COL_BASEFLOW,
-             markersize=7, zorder=7,
+             markersize=7, zorder=7, clip_on=False,
              markeredgecolor='white', markeredgewidth=0.3)
 
 ax_hero.set_ylim(0, 45)
@@ -596,7 +596,9 @@ else:
 # ══════════════════════════════════════════════════════════════════════
 # SHARED
 # ══════════════════════════════════════════════════════════════════════
-ax_hero.set_xlim(hm_ages.max(), hm_ages.min())
+# the calibrated modern baseflow marker sits at BASEFLOW_AGE, just younger than the top of the
+# record, so the young end of the axis is extended to keep it inside the frame
+ax_hero.set_xlim(hm_ages.max(), min(hm_ages.min(), BASEFLOW_AGE - 0.10))
 ax_d18o.set_xlabel('Age (ka BP)', fontsize=7, fontweight='bold')
 ax_d18o.xaxis.set_major_locator(ticker.MaxNLocator(12))
 ax_d18o.xaxis.set_minor_locator(ticker.AutoMinorLocator(2))

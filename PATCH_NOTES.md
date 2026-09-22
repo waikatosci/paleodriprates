@@ -224,3 +224,9 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
   `HS4_TE.csv`, and `dr_app/PRODUCTION_SETTINGS.md` is revised to rev 4: the 568-sample input (the
   retired rev 3 named a 588-row file that kept the second-laboratory samples), acceptance checks and
   point counts updated (568 native; 566 within the dated span).
+- Fig. 5a: the modern-baseflow star (17 drips/min at -0.060 ka) sat outside the axis, which ended at
+  -0.045 ka, so it was clipped by the right spine and effectively invisible. The young end of the
+  axis now extends past the marker (`figures/Fig5_record.py`); nothing else in the figure changes.
+- MS text: the one-step precipitation calibration regresses drip rate on the HESHANG P/T series
+  (workbook sheet 05b_calibration, PT_h; Supp. Methods 5), not Yichang. Three places in the main
+  text said Yichang; corrected. Yichang remains the independent level check in Fig. 4c.
