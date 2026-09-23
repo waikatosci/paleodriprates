@@ -90,8 +90,9 @@ paleodriprates/
 │   │   source_variation_propagation.py
 │   │                                  Stability of the dripwater metal source
 │   ├── element_covariance.py          Which elements covary with Ni and Co
-│   └── hs4_composite/                 Photographic composite of the polished
-│                                          section and the Fig. 5c axial slice
+│   └── dripwater_integration_timescale.py
+│                                      Over what timescale the dripwater metals track drip
+│                                          rate (Supplementary Methods 16)
 │
 ├── extended_data/                     Scripts for Supplementary Figures 11-16
 │                                          (see extended_data/README.md)
@@ -159,7 +160,7 @@ progressbar
 flask                  # Dr Paleo web app
 ```
 
-Some companion analyses and figure scripts need further packages that the app does not use: `astropy` (spectral analysis, Supplementary Figure 15), `cartopy` and `xarray` (site map, Fig. 2) and `opencv-python` (photographic composite, `companion_analysis/hs4_composite/`).
+Some companion analyses and figure scripts need further packages that the app does not use: `astropy` (spectral analysis, Supplementary Figure 15) and `cartopy` and `xarray` (site map, Fig. 2).
 
 `bayprox` is a Bayesian proxy-age modelling library included in this repository; no separate installation is needed.
 
@@ -269,7 +270,7 @@ All tests report effect sizes and bootstrap 95% confidence intervals.
 
 ## Data Availability
 
-The stalagmite proxy data, the U-Th chronology and the dripwater monitoring record are in this repository (`dr_app/HS4_example_inputs/`, `Drip_rate.xlsx`, `dripwater/`). Every main-text display item is drawn from the single workbook `manuscript_figures/HS4_SourceData.xlsx` (drip-rate reconstruction at σ = π/√6). The full trace-element measurement report of the second-laboratory run is in `manuscript_figures/external/HS4_TE_full_suite_both_labs.xlsx`, and the photographic composite of the polished section is in `manuscript_figures/external/HS4_composite.jpg` (the original photographs are available from C. Hu). Bulk arrays too large for the repository (for example the age-propagated realisation ensemble) are in the Zenodo archive: [DOI 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
+The stalagmite proxy data, the U-Th chronology and the dripwater monitoring record are in this repository (`dr_app/HS4_example_inputs/`, `Drip_rate.xlsx`, `dripwater/`). Every main-text display item is drawn from the single workbook `manuscript_figures/HS4_SourceData.xlsx` (drip-rate reconstruction at σ = π/√6). The full trace-element measurement report of the second-laboratory run is in `manuscript_figures/external/HS4_TE_full_suite_both_labs.xlsx`. Bulk arrays too large for the repository (for example the age-propagated realisation ensemble) are in the Zenodo archive: [DOI 10.5281/zenodo.16392750](https://doi.org/10.5281/zenodo.16392750).
 
 ---
 
@@ -297,7 +298,7 @@ MIT License. See [LICENSE](LICENSE) for details.
 
 ## Acknowledgments
 
-Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST, QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), the Ministry of Business, Innovation and Employment (UOWX2102) and a Rutherford Discovery Fellowship (RDF-UOW1601). The ICP-MS and ICP-AES analyses were funded by the National Natural Science Foundation of China (41731177) to C. Hu, who also provided the photographs of the HS4 section.
+Funded by EU Horizon 2020 Marie Skłodowska-Curie Actions (no. 691037, QUEST, QUantitative paleoEnvironments from SpeleoThems), Te Apārangi Royal Society of New Zealand (RIS-UOW1501), the Ministry of Business, Innovation and Employment (UOWX2102) and a Rutherford Discovery Fellowship (RDF-UOW1601). The ICP-MS and ICP-AES analyses were funded by the National Natural Science Foundation of China (41731177) to C. Hu.
 
 For questions or contributions, open an issue on GitHub or contact the corresponding author: [adam.hartland@lincolnagritech.co.nz](mailto:adam.hartland@lincolnagritech.co.nz)
 
@@ -305,4 +306,4 @@ For questions or contributions, open an issue on GitHub or contact the correspon
 
 ## AI Assistance Statement
 
-The scientific method, kinetic model and interpretations in this repository are the work of the authors. Generative AI (Anthropic's Claude) was used under the authors' direction for software engineering and documentation: refactoring and organising the codebase, building the Dr Paleo web interface, writing analysis and figure scripts for the revision (including the image-processing code in `companion_analysis/hs4_composite/`), and checking that values, settings and figure provenance agree across the code, data and manuscript. All AI-assisted output was reviewed, tested and verified by the authors, who take full responsibility for the content and correctness of the code, data and documentation.
+The scientific method, kinetic model and interpretations in this repository are the work of the authors. Generative AI (Anthropic's Claude) was used under the authors' direction for software engineering and documentation: refactoring and organising the codebase, building the Dr Paleo web interface, writing analysis and figure scripts for the revision, and checking that values, settings and figure provenance agree across the code, data and manuscript. All AI-assisted output was reviewed, tested and verified by the authors, who take full responsibility for the content and correctness of the code, data and documentation.

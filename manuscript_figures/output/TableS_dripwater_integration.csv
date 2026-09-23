@@ -1,0 +1,17 @@
+quantity,n,seasonal_amplitude,cv
+DR,86,0.669,0.409
+NiCa,86,0.271,0.262
+CoCa,86,0.109,0.134
+Ca,86,0.09,0.059
+
+window,r_NiCa,p_NiCa,rho_NiCa,n,r_CoCa,p_CoCa,rho_CoCa
+1D,0.19,0.075,0.34,86,0.3,0.0049,0.41
+30D,0.2,0.062,0.35,86,0.31,0.0034,0.41
+90D,0.22,0.045,0.34,86,0.42,6.5e-05,0.48
+180D,0.31,0.0041,0.36,86,0.53,2e-07,0.53
+365D,0.36,0.00078,0.56,86,0.64,3.4e-11,0.72
+730D,0.45,1.2e-05,0.64,86,0.73,1.8e-15,0.77
+
+summer_mean_drips_min,18.58
+winter_mean_drips_min,13.15
+calibration_annual_baseflow_mean,16.66

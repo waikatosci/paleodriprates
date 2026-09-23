@@ -203,23 +203,19 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
   stated). Docstring of crosslab_matrix_check.py and the full-suite README corrected.
 - C. Hu has agreed to the release of the measurement report as Source Data.
 
-## 23 Sep 2026: photographic composite of the section
+## 23 Sep 2026: documentation, Fig. 5a marker, calibration series
 
-- New `companion_analysis/hs4_composite/`: `build_composite.py` stitches C. Hu's eight photographs of the
-  polished section onto the pencil depth scale (100 px/cm; tick residuals < 1 mm; overlaps agree to
-  0.1–0.5 mm) and cuts a 6 cm axial slice; `si_figures.py` draws Supplementary Figures 21 (composite) and
-  22 (the 5.2 ka horizon with Ni and Co). New inputs `external/HS4_composite.*` and `external/HS4_axial_slice.*`.
-- The enriched 5.2 ka samples lie within the loose fragment between the breaks at 155.1 and 157.3 cm, with the
-  highest Ni and Co in its interior (156.2–157.0 cm) and background values at its lower break (157.10–157.30 cm).
-- Fig. 5 gains panel c: the axial slice placed on the age axis through the best-estimate age model, depth marked
-  below (`figures/Fig5_record.py`; the event bands carry through).
-- Band spacing in the photographs was tested against the 230Th growth rate and does not track it; the
-  photographs do not resolve annual layers, so no lamina counts are reported (README in the new folder).
+- WITHDRAWN the same day: the photographic composite of the polished section (`companion_analysis/hs4_composite/`,
+  `external/HS4_composite.*`, `external/HS4_axial_slice.*`, Supplementary Figures 21-22 and Fig. 5 panel c).
+  The photographs belong to C. Hu and are the subject of his own manuscript on growth rate and mean annual
+  temperature; he does not consent to their use here. He also notes that the trace-element powders were not
+  drilled on the photographed face (they follow the d18O and d13C profile), so sample depths cannot be located
+  on it and the argument built on that placement does not stand. All of it is removed from the repository, the
+  manuscript and the Supplementary Information, and nothing else in the paper depended on it.
 - README revised: repository tree brought up to date (calibration/, dripwater/, companion_analysis/,
   extended_data/, supplementary_figures/, PRODUCTION_SETTINGS.md), the HS4 inputs explained (full
-  589-row table against the 568-sample canonical input), optional dependencies listed, NSFC funding
-  and the photographs acknowledged, and the AI statement updated. `opencv-python-headless` added to
-  requirements.txt for the composite.
+  589-row table against the 568-sample canonical input), optional dependencies listed, and the AI
+  statement updated.
 - `dr_app/QUICKSTART.md` now points to `HS4_TE_canonical.csv` (568 samples) rather than the full
   `HS4_TE.csv`, and `dr_app/PRODUCTION_SETTINGS.md` is revised to rev 4: the 568-sample input (the
   retired rev 3 named a 588-row file that kept the second-laboratory samples), acceptance checks and
@@ -230,3 +226,17 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
 - MS text: the one-step precipitation calibration regresses drip rate on the HESHANG P/T series
   (workbook sheet 05b_calibration, PT_h; Supp. Methods 5), not Yichang. Three places in the main
   text said Yichang; corrected. Yichang remains the independent level check in Fig. 4c.
+
+## 24 Sep 2026: growth seasonality (Supplementary Methods 16)
+
+- New `companion_analysis/dripwater_integration_timescale.py`: asks the 2007-2015 monitoring record over
+  what window the dripwater Me/Ca ratios track drip rate. The correlation rises monotonically with the
+  averaging window (Co/Ca 0.30 at the sampling date, 0.42 at 90 d, 0.64 at 1 yr, 0.73 at 2 yr; Ni/Ca 0.19,
+  0.22, 0.36, 0.45), and the seasonal cycle is damped from 0.67 of the mean in drip rate to 0.27 (Ni/Ca),
+  0.11 (Co/Ca) and 0.09 (Ca). Summer (Jun-Sep) averages 18.6 drips/min against 13.1 in winter, a factor of
+  1.4, so with mu anchored to the annual baseflow mean (16.66) fully summer-weighted calcite carries a
+  level offset of ~12%. Output `manuscript_figures/output/TableS_dripwater_integration.csv`.
+- New Supplementary Methods 16 uses these numbers to attribute the proxy to baseflow despite the summer
+  growth bias: the supply is integrated upstream, the seasonal contrast in flow is small against the
+  calibration anchor, event amplitudes are internal to the record and cancel a constant weighting, and any
+  residual bias reads wetter, so a drought is understated rather than exaggerated.
