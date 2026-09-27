@@ -1,0 +1,19 @@
+{
+  "title": "waikatosci/paleodriprates: kinetic proxy reconstruction of stalagmite drip rates and precipitation (v1.1.0, Nature Communications resubmission)",
+  "upload_type": "software",
+  "version": "1.1.0",
+  "license": "MIT",
+  "creators": [
+    {"name": "Hartland, Adam", "affiliation": "Lincoln Agritech Ltd; University of Waikato; Lincoln University"},
+    {"name": "Goswami, Bedartha", "affiliation": "Indian Institute of Science Education and Research Pune; Potsdam Institute for Climate Impact Research"},
+    {"name": "Park, Jungho", "affiliation": "Lincoln Agritech Ltd"}
+  ],
+  "description": "<p>Python code and data for the kinetic proxy reconstruction of stalagmite drip rates and precipitation from Co and Ni in speleothem calcite (organic-metal complex dissociation, Bayesian inversion), with the HS4 (Heshang Cave, central China) inputs, the calibration, the companion analyses and every script behind the display items of Hartland et al., Nature Communications (in revision, NCOMMS-26-041445-T).</p><p>This version is the state of the repository at resubmission (28 September 2026). Changes since v1.0.2 are recorded in PATCH_NOTES.md: the second-laboratory full trace-element suite and the calcium-matrix explanation of its offset; the Ni-constrained 5.2 ka minimum (6.4 drips per minute, ~70%) with the joint Ni-Co minimum kept as an upper bound; the second-laboratory run as an independent replication; the detrital, lithogenic and PCP screens for the 5.2 and 8.2 ka intervals; the dripwater integration timescale and growth-seasonality analysis; the one-step precipitation calibration on the Heshang P/T series; Fig. 5 and Fig. 6 as submitted; and the documentation of inputs, settings and dependencies.</p><p>Bulk arrays too large for the repository (the age-propagated realisation ensemble) are deposited separately (10.5281/zenodo.16392750).</p>",
+  "keywords": ["speleothem", "stalagmite", "drip rate", "palaeohydrology", "East Asian summer monsoon", "trace metals", "Bayesian inversion", "Holocene"],
+  "related_identifiers": [
+    {"identifier": "https://github.com/waikatosci/paleodriprates", "relation": "isSupplementTo", "resource_type": "software", "scheme": "url"},
+    {"identifier": "10.5281/zenodo.16392750", "relation": "isSupplementedBy", "resource_type": "dataset", "scheme": "doi"}
+  ],
+  "grants": [{"id": "10.13039/501100000780::691037"}],
+  "access_right": "open"
+}

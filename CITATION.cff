@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below, together with the associated article."
+type: software
+title: "paleodriprates: kinetic proxy reconstruction of stalagmite drip rates and precipitation"
+version: 1.1.0
+date-released: 2026-09-28
+license: MIT
+repository-code: "https://github.com/waikatosci/paleodriprates"
+authors:
+  - family-names: Hartland
+    given-names: Adam
+    affiliation: "Lincoln Agritech Ltd; University of Waikato; Lincoln University"
+  - family-names: Goswami
+    given-names: Bedartha
+    affiliation: "Indian Institute of Science Education and Research Pune; Potsdam Institute for Climate Impact Research"
+  - family-names: Park
+    given-names: Jungho
+    affiliation: "Lincoln Agritech Ltd"
+keywords:
+  - speleothem
+  - stalagmite
+  - drip rate
+  - palaeohydrology
+  - East Asian summer monsoon
+  - trace metals
+  - Bayesian inversion
+preferred-citation:
+  type: article
+  title: "Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought"
+  authors:
+    - family-names: Hartland
+      given-names: Adam
+    - family-names: Goswami
+      given-names: Bedartha
+    - family-names: "Höpker"
+      given-names: Sebastian N.
+    - family-names: Park
+      given-names: Jungho
+    - family-names: "Torres Rojas"
+      given-names: Dorisel
+    - family-names: Liao
+      given-names: Jin
+    - family-names: Fox
+      given-names: Bethany R. S.
+    - family-names: Marwan
+      given-names: Norbert
+    - family-names: Breitenbach
+      given-names: Sebastian F. M.
+    - family-names: Hu
+      given-names: Chaoyong
+  journal: "Nature Communications"
+  year: 2026
+  notes: "In revision (NCOMMS-26-041445-T)."

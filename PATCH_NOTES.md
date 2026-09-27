@@ -240,3 +240,205 @@ SF17 caption. `crosslab_sensitivity.py` now reads the released summaries
   growth bias: the supply is integrated upstream, the seasonal contrast in flow is small against the
   calibration anchor, event amplitudes are internal to the record and cancel a constant weighting, and any
   residual bias reads wetter, so a drought is understated rather than exaggerated.
+
+## 24 Sep 2026: Fig. 5 legibility and the Discussion restructure (B. Fox review)
+
+- `figures/Fig5_record.py`: the median and interquartile lines over panel a are now white with a
+  dark outline (`path_effects.withStroke` in `COL_MEDIAN`) at both native and 1-cm resolution. Over
+  the dark end of the posterior colourmap the previous dark lines were lost; the outlined white
+  lines read against both ends of the scale.
+- The modern-baseflow star is now drawn beside the left-hand drip-rate axis (a blended transform
+  with a 7-point outward offset and `clip_on=False`) rather than inside the axes at -0.060 ka. The
+  axis extension added on 23 Sep to keep the marker visible is reverted, so the x-axis again ends at
+  the youngest sample. The marker is a level annotation, not a datum, and belongs on the axis.
+- The 230Th tie-points and their 2-sigma bars were already drawn above panel a; the Fig. 5 caption
+  now says so.
+- Manuscript only (no code): the Discussion is divided into "Climate reconstruction", "Reconciling
+  the drip-rate and magnetic records", "Limitations" and "Implications for hydrological
+  reconstruction", with the limitations paragraph moved below the magnetic-record section. The
+  passage arguing from a "two-stage regression" is withdrawn: the conversion has used a single
+  regression since round 3, and the compression of reconstructed extremes is restated in the
+  Limitations section in terms of the intercept of that one regression and of age propagation.
+  The drip-rate-to-rainfall arithmetic is stated once, in the Methods, and the Results now point
+  there. Reference numbering must be checked at the end, since the moves change citation order.
+
+## 24 Sep 2026: Discussion reference audit (manuscript only, no code change)
+
+Every attribution in the Discussion was paired with the work cited. Corrections applied:
+
+- Mayewski et al. 2004 was credited in the Methods with the rolling z-score used for soft-magnetic
+  event detection. That paper screened ~50 records against the Denton and Karlen glacier framework
+  and used no such method. The attribution is withdrawn and the reference moved to the 5.2 ka
+  paragraph, where the 6.0-5.0 ka interval of globally expressed rapid climate change is what it
+  actually supports.
+- The claim that speleothem d18O integrates upstream rainout, moisture source and seasonality was
+  cited to a vegetation-feedback paper; it now cites Lachniet (2009), which is that paper's subject.
+- Aerosol-driven suppression of the EASM was cited to Moon et al. (2023), which attributes
+  intensification to greenhouse warming and explicitly not to aerosols, and to Lu et al. (2025), a
+  palaeo tipping-point study with no modern large ensemble. Both are removed from that sentence,
+  which now cites Lang et al. (2025) alone. Lu et al. moves to the sentence on the reconstructed
+  Holocene range, which is what it provides.
+- The projection references were split from the reconstruction reference so each sits with the claim
+  it supports.
+- Episodic delivery of fine magnetic minerals now cites Zhu et al. alongside the karst flow-path
+  reference, and the Figure 7 caption carries the numeral for Zhu et al. rather than the name alone.
+
+Reference NUMBERING is not corrected here and should not be: the citations are being relinked to
+Zotero, and a refresh regenerates the sequence and the reference list from the field codes.
+
+## 24 Sep 2026: S. Breitenbach's readability edits merged (manuscript only)
+
+His copy branched from the version circulated before the Heshang correction and before B. Fox's
+round, so it was merged sentence by sentence rather than taken wholesale.
+
+Taken: the sentence splits, which are the substance of his review. The magnetic-record paragraph
+now runs as three sentences rather than one colon-joined chain; the forcing clause in the 5.2 ka
+paragraph is its own sentence; the d13C sentence is broken in two; "The synchrony of this
+excursion with" replaces "Its synchrony with"; "broader reorganisation of (sub)tropical
+atmospheric circulation"; "the dominant source of uncertainty in the quantification of past
+precipitation is the error in palaeotemperature estimates"; "stalagmite growth rate" for "calcite
+extension"; "prolonged, stable climate states"; "At large" dropped; the model-validation clause
+lifted out of its participial tail. The limitations paragraph is split in two, between the
+conversion caveats and the calibration assumption, and "This buffering" is renamed "Epikarst
+buffering" so it does not depend on an antecedent across the break.
+
+Not taken: his opening to the magnetic section, which is the pre-Fox "Beyond reconciling the two
+archives" and reintroduces the dangling reference she flagged; his restored forward reference to
+the magnetic record in the limitations; his citations at 5.2 ka, which predate this morning's
+corrections; his Methods paragraph, which predates the Heshang correction; and "5.2 ka BP"
+throughout, since the figures and Supplement use "ka".
+
+CORRECTED: he had read the "~70%" at 5.2 ka as the fraction of percolation remaining rather than
+the size of the fall, and edited the sentence to say percolation "remained above two-thirds" of
+its mid-Holocene level, describing a "ca. 30% reduction". That inverts the central result. The
+sentence now reads "dropped to roughly a third of its mid-Holocene level, a reduction of about
+70%", which states both and removes the ambiguity he read past.
+
+work/validate_reject2.py added: the earlier check counted a tracked paragraph split as a new
+paragraph and failed a correct document. The new one merges paragraphs whose mark is an insertion,
+which is what rejecting the split actually does.
+
+## 24 Sep 2026 (later): findings resolved against the data; S. Breitenbach's remaining edits and comments
+
+Resolved against the reconstruction outputs (Fig6_P_recon_dense, Fig6_P_comparison.py, the
+native-resolution summary with 02_chronology ages):
+
+- Fig. 6b caption said the 5.2 ka window shows a "~28% negative anomaly". The script computes each
+  bar as the window median against the 0-9.5 ka Holocene mean of the dense series (1,107 mm/yr);
+  the 5,200-5,100 window median is 897 mm/yr, -19%, and that is what the rendered panel shows.
+  The 28% (26-27% on the data) is the departure from the 6.5-5.5 ka mean. Caption corrected to
+  ~19%; the Methods sentence on baselines now states what the script does.
+- The 5.2 ka precipitation minimum (~896 mm/yr) equals the late-Holocene (2.0-0.2 ka) mean
+  (905-918 mm/yr). That is a real feature of the reconstruction, not an error, and the manuscript
+  should say so rather than let a referee find it; wording pending the first author.
+- "The post-1800 surge" in the Limitations is the 1770-1850 CE surge named everywhere else: onset
+  between the 1767 (6.3 drips/min) and 1777 (41) samples, peak 84 at 1805 CE. Label aligned.
+- The post-1850 decline (-0.04 drips/min/yr, R^2 = 0.70) is the native-series regression from 1850
+  CE to the top of the record (1995 CE; n = 34). The text now gives the window. A referee reading
+  the slope against the 1770-1850 median of 26 would get 225 years; the fit starts at 22 in 1850
+  and reaches 17.6 by 1960, which is what the sentence says.
+
+S. Breitenbach's edits outside the four Discussion paragraphs merged sentence by sentence (44
+tracked changes, two paragraph splits: the detrital-screening sentences off the teleconnection
+paragraph in the Results, and the sample-to-sample-variability sentences off the recent-record
+paragraph in the Discussion). Not taken: "ka BP" throughout; "novel"; "median chronology" for
+"best-estimate chronology"; "conservative upper bound" (it is the opposite); "triggered" for
+"contributed to" on the Nile Valley; his split of the delta-18O sentence, which made the
+integration explain the sign rather than the weak coupling; "strong" for "coherent" floods;
+"Salmanzadeh" without the initial. His 38 comments are carried across with his authorship and
+dates, anchored to the passage each concerns or its rewritten successor.
+
+Toolkit: the helper regex for tracked deletions matched self-closing paragraph-mark deletions
+(<w:del .../>) and swallowed the live text up to the next </w:del>; fixed in the r19 script
+(`<w:del [^>]*[^/]>`), and the same fix belongs in edits.py if the helpers are reused.
+
+## 24 Sep 2026 (later): numbers reconciled against the workbook; remaining S. Breitenbach edits
+
+Manuscript only. Four statements the independent read flagged were checked against
+`HS4_SourceData.xlsx` (Fig6_P_recon_dense) and the drip-rate summaries on the 02_chronology age model:
+
+- 5.2 ka precipitation anomaly. The 5,200-5,100 window median is 898 mm/yr against a 0-9.5 ka mean of
+  1,107: -19%, which is what Fig. 6b draws. The Fig. 6b caption said ~28% (stale) and the Methods
+  described baselines the figure does not use (late-Holocene mean; mid-Holocene mean for the event).
+  Caption now ~19%; Methods now state the Holocene-mean baseline and give the event relative to the
+  surrounding mid-Holocene mean (6.5-5.5 ka, 1,216 mm/yr: -26%, "roughly a quarter").
+- ~900 mm/yr is also the late-Holocene (2.0-0.2 ka) mean (918). Not an error: the event drops to a
+  level the record does not otherwise reach until the late Holocene. Fig. 6a caption now says so.
+- Surge dates. Native series: first sample above 1.5x the late-Holocene median at 1777 CE (text
+  "~1770 CE", kept); peak 83.7 drips/min at 1805 CE ("the post-1800 surge" now "the surge, which peaks
+  ... around 1805 CE"); the figure band "post-1750 CE" is a round-number band and is kept.
+- Post-1850 decline. Native median regression 1852-1995: -0.044/yr, R2 0.70, as stated; it starts at
+  ~21 drips/min (1850-1875 median 20.9), not at the 1770-1850 median of 26, and the first sample at or
+  below 17.5 is 1952 CE. The text now gives the starting level, so the arithmetic closes.
+- The "+10%" post-1800 precipitation anomaly is the 1750-1850 window median against the late-Holocene
+  mean (+9%); the baseline is now named.
+
+S. Breitenbach's edits outside the four Discussion paragraphs, taken where correct and better: the
+Abstract ("site-scale hydrological dynamics"; "Holocene" dropped from the closing sentence), the DGT
+sentence split, "highly consistent", "at this drip point", the Fig. 4c caption, the orbital-decline
+paragraph (units on the age-propagated range, "This decline mirrors" as its own sentence, "significant"
+on the p < 0.01 correlation), "background of changing orbital forcing", the conservative-figure
+sentence at 5.2 ka, "compared with", the second-laboratory sentence split, the detrital exclusion as its
+own paragraph, "In marked contrast to the 5.2 ka event", "event-specific precipitation anomaly", "not
+significantly reduced", the age-inversion sentence split, "PCP signature", past tense at 8.2 ka, the
+Qing-drought and 1770-1850 sentences split, and the resolution remark as its own paragraph. Not
+taken: "5.2 ka BP" throughout, his Methods paragraph (predates the Heshang correction), his edit to
+affiliation 9 (C. Hu's, left as supplied), and his unfinished "xxx" sentence.
+
+His 38 comments moved into the live file (37; one was empty), re-anchored on the current text: 24
+exact, 7 disambiguated by context, 5 on the surviving fragment, 1 by preceding context; nine placed
+by hand where his anchor text no longer exists. Comment ids offset by 2000; his paraIds and durableIds
+kept so the Extended/Ids/Extensible parts carry across. Accepted text verified byte-identical before
+and after the transplant.
+
+## 24 Sep 2026: Cr at 5.2 ka (manuscript only)
+
+The Results gave Cr at the event as "at most ×1.8" in one paragraph and "×1.36, p = 0.06" in the
+next. Both reproduce: ×1.8 is EF_Cr_max in the 5.2 ka core against the local rolling baseline
+(detrital_ternary_screen.py; TableS_event_enrichment), ×1.36 is the window-median contrast against
+the rest of the record (events_differ_lithogenic.py, S13). The text now says which is which.
+
+## 24 Sep 2026: TraCE product name (manuscript only)
+
+The Fig. 6 comparator is TraCE-21K-II (sheet Fig6_TraCE, from
+East_Asia_TraCE21KII_PRECT_mm_yr_LGM_to_present.csv). The Methods called it TraCE-21ka and both
+mentions cited only Liu et al. 2009. Both now read TraCE-21K-II and cite Liu et al. 2009 with He &
+Clark 2022 (Nat. Clim. Change 12, 449-454), added as reference 58.
+
+## 24 Sep 2026: PCP expansion (manuscript only)
+
+The Abstract expanded PCP as "prior carbonate precipitation" and the Introduction as "prior calcite
+precipitation". The Abstract now matches the Introduction: the system precipitates calcite, and
+"carbonate" would leave aragonite open.
+
+## 24 Sep 2026: Fig. 5 legibility changes reverted
+
+The two `figures/Fig5_record.py` changes made after the B. Fox review (white outlined median and
+interquartile lines; modern-baseflow star drawn beside the axis) are withdrawn at the lead author's
+request: the white lines are not an improvement, and the star had been placed at the old end of the
+axis. The script returns to the 23 Sep version: dark median and interquartile lines, and the star at
+its own age (-0.060 ka, 17 drips/min) at the young end of panel a, with the x-axis extended past it
+so it sits inside the frame. Outputs re-rendered.
+
+## 24 Sep 2026: Discussion streamlined (manuscript only)
+
+On the lead author's returned working copy: the Discussion tightened for readability at the
+co-reviewers' request (repetition of Results figures removed, long sentences split, the magnetic
+section reduced to two paragraphs), the Fig. 5 caption and image brought back to the reverted
+render, the Fig. 6 caption colours matched to the figure (HS4 blue, TraCE-21K-II red), and the
+8.2 ka flanking-test citation pointed at Supplementary Fig. 14. No code or data changed.
+
+## 25 Sep 2026: editorial pass (manuscript only)
+
+Results and Discussion wording tightened for precision (kinetic, not thermodynamic; metal–organic,
+not organometallic; interpretation moved out of the Results), and growth continuity through the
+5.2 ka and 8.2 ka intervals stated from the chronology (02_chronology tie-points at 154.0 and
+165.8 cm give 0.32 mm/yr across the 5.2 ka bracket; annual laminae are counted through 8.2 ka by
+Liu et al. 2013). No code or data changed.
+
+## 28 Sep 2026: release metadata for v1.1.0
+
+Added `CITATION.cff`, `.zenodo.json` (title, three code authors, MIT, QUEST grant, links to the
+GitHub repository and to the data deposit 10.5281/zenodo.16392750), `RELEASE_NOTES_v1.1.0.md` and
+`DATA_DEPOSIT_MANIFEST.md` (the files for the new version of the data record, and the two that the
+repository does not hold). No code or data changed.
