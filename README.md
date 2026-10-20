@@ -6,7 +6,7 @@ This repository contains the code, data and Dr Paleo, a browser-based applicatio
 
 The methods and the Heshang Cave (HS4) record are described in:
 
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
 ---
 
@@ -277,13 +277,16 @@ The stalagmite proxy data, the U-Th chronology and the dripwater monitoring reco
 ## Citation
 
 Manuscript:
-> Hartland, A., Goswami, B., Park, J., Höpker, S.N., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
+> Hartland, A., Goswami, B., Höpker, S.N., Park, J., Torres Rojas, D., Liao, J., Fox, B.R.S., Marwan, N., Breitenbach, S.F.M. & Hu, C. (submitted 2026, Nature Communications; NCOMMS-26-041445-T). Decoupled infiltration and isotope signals reveal a hidden East Asian monsoon megadrought. Preprint and DOI to follow.
 
 Repository:
 > Hartland, A. et al. (2025). PaleodripRates: Code for stalagmite drip rate and precipitation reconstruction. Zenodo. https://doi.org/10.5281/zenodo.16392750
 
 Partitioning model foundation:
 > Lindeman, I., Hansen, M., Scholz, D., Breitenbach, S.F.M. & Hartland, A. (2022). Effects of organic matter complexation on partitioning of transition metals into calcite: cave-analogue crystal growth experiments. Geochimica et Cosmochimica Acta 317, 118-137.
+
+Dissociation kinetics of organic metal complexes in dripwater:
+> Höpker, S.N., Breitenbach, S.F.M., Grainger, M., Stirling, C.H. & Hartland, A. (2024). Characterising the decay of organic metal complexes in speleothem-forming cave waters. Geochimica et Cosmochimica Acta 373, 98-108. https://doi.org/10.1016/j.gca.2024.03.024
 
 OMC conceptual basis:
 > Hartland, A. & Zitoun, R. (2018). Transition metal availability to speleothems controlled by organic binding ligands. Geochemical Perspectives Letters 8, 22-25.
